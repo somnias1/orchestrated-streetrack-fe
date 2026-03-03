@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import { AuthCallback, LoginRedirect, ProtectedRoute } from './modules/auth0';
 import { Categories } from './modules/categories';
+import { Hangouts } from './modules/hangouts';
 import { Home } from './modules/home';
 import { Layout } from './modules/layout';
 import { Subcategories } from './modules/subcategories';
@@ -48,6 +49,7 @@ export default function App() {
           <Route path={routes.categories} element={<Categories />} />
           <Route path={routes.subcategories} element={<Subcategories />} />
           <Route path={routes.transactions} element={<Transactions />} />
+          <Route path={routes.hangouts} element={<Hangouts />} />
         </Route>
         <Route path="*" element={<Navigate to={routes.home} replace />} />
       </Routes>

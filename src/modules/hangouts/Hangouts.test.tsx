@@ -4,16 +4,16 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { config } from '../../config';
-import { Subcategories } from './index';
-import { useSubcategoriesStore } from './store';
+import { Hangouts } from './index';
+import { useHangoutsStore } from './store';
 
 const API_URL = config.apiUrl;
-const subcategoriesUrl = `${API_URL}/subcategories`;
+const hangoutsUrl = `${API_URL}/hangouts`;
 
 const server = setupServer();
 
 function resetStore() {
-  useSubcategoriesStore.setState({
+  useHangoutsStore.setState({
     items: [],
     loading: false,
     error: null,
@@ -27,62 +27,58 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-describe('Subcategories screen', () => {
+describe('Hangouts screen', () => {
   it('shows loading spinner while fetching', async () => {
     server.use(
-      http.get(subcategoriesUrl, () => {
+      http.get(hangoutsUrl, () => {
         return new Promise((resolve) =>
           setTimeout(() => resolve(HttpResponse.json([])), 500),
         );
       }),
     );
 
-    render(<Subcategories />);
+    render(<Hangouts />);
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
     });
   });
 
-  it('shows virtualized rows when API returns subcategories', async () => {
+  it('shows virtualized rows when API returns hangouts', async () => {
     const items = [
       {
         id: '1',
-        category_id: 'cat-a',
-        name: 'Groceries',
-        description: 'Food shopping',
-        belongs_to_income: false,
+        name: 'Brunch',
+        description: 'Weekend brunch',
+        date: '2026-03-01',
         user_id: 'u1',
       },
       {
         id: '2',
-        category_id: 'cat-b',
-        name: 'Salary',
+        name: 'Movie night',
         description: null,
-        belongs_to_income: true,
+        date: '2026-03-02',
         user_id: 'u1',
       },
     ];
-    server.use(http.get(subcategoriesUrl, () => HttpResponse.json(items)));
+    server.use(http.get(hangoutsUrl, () => HttpResponse.json(items)));
 
-    render(<Subcategories />);
+    render(<Hangouts />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Subcategories\s+\(2\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Hangouts\s+\(2\)/)).toBeInTheDocument();
     });
-    expect(
-      screen.queryByText('No subcategories found.'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('No hangouts found.')).not.toBeInTheDocument();
   });
 
   it('shows error and Retry button on API failure', async () => {
     server.use(
-      http.get(subcategoriesUrl, () =>
+      http.get(hangoutsUrl, () =>
         HttpResponse.json({ detail: 'Server error' }, { status: 500 }),
       ),
     );
 
-    render(<Subcategories />);
+    render(<Hangouts />);
 
     await waitFor(() => {
       expect(
@@ -95,8 +91,7 @@ describe('Subcategories screen', () => {
     let callCount = 0;
     server.use(
       http.get(
-        ({ request }) =>
-          new URL(request.url).pathname === '/subcategories',
+        ({ request }) => new URL(request.url).pathname === '/hangouts',
         () => {
           callCount += 1;
           if (callCount === 1) {
@@ -105,10 +100,9 @@ describe('Subcategories screen', () => {
           return HttpResponse.json([
             {
               id: '1',
-              category_id: 'cat-1',
-              name: 'Groceries',
+              name: 'Coffee',
               description: null,
-              belongs_to_income: false,
+              date: '2026-03-01',
               user_id: 'u1',
             },
           ]);
@@ -116,7 +110,7 @@ describe('Subcategories screen', () => {
       ),
     );
 
-    render(<Subcategories />);
+    render(<Hangouts />);
 
     await waitFor(() => {
       expect(
@@ -127,18 +121,18 @@ describe('Subcategories screen', () => {
     await userEvent.click(screen.getByRole('button', { name: /retry/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Subcategories\s+\(1\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
     });
     expect(callCount).toBe(2);
   });
 
   it('shows empty state when API returns empty array', async () => {
-    server.use(http.get(subcategoriesUrl, () => HttpResponse.json([])));
+    server.use(http.get(hangoutsUrl, () => HttpResponse.json([])));
 
-    render(<Subcategories />);
+    render(<Hangouts />);
 
     await waitFor(() => {
-      expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
+      expect(screen.getByText('No hangouts found.')).toBeInTheDocument();
     });
   });
 });

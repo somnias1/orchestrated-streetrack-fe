@@ -11,4 +11,5 @@ export const routes = {
   categories: '/categories',
   subcategories: '/subcategories',
   transactions: '/transactions',
+  hangouts: '/hangouts',
 } as const;
