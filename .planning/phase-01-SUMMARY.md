@@ -16,6 +16,8 @@
 - **App.tsx**: BrowserRouter, Routes for callback/login/home/categories; ProtectedShell with TokenInjector and Layout; Outlet for protected children.
 - **index.tsx**: Auth0Provider (domain, clientId, redirect_uri, cacheLocation: localstorage); guard when Auth0 env is missing.
 
+**Post-merge fix (rsbuild env):** Rsbuild was not picking up env vars (e.g. from .env or venv). Fixed by: (1) **rsbuild.config.ts**: use `loadEnv({ prefixes: ['VITE_'] })` and `source.define: { ...publicVars }` so VITE_* are injected at build time. (2) **src/config.ts**: read `process.env.VITE_*` (and optional `VITE_AUTH0_AUDIENCE`) instead of `import.meta.env`. (3) **.gitignore**: add `.env` so local secrets are not committed.
+
 ## Files changed
 
 - `.gitattributes`: added (eol=lf).
@@ -27,12 +29,14 @@
 - `src/modules/auth0/*`, `src/modules/layout/index.tsx`, `src/modules/home/index.tsx`, `src/modules/categories/index.tsx`: new.
 - `src/App.tsx`, `src/index.tsx`: Auth0 + Router wiring.
 - `src/App.css`: removed.
+- **Fix:** `rsbuild.config.ts` (loadEnv + define), `src/config.ts` (process.env + audience), `.gitignore` (.env), `src/env.d.ts` (VITE_AUTH0_AUDIENCE).
 
 ## Decisions made
 
 - **legacy-peer-deps**: Used so install completes with react@19.2.3 vs react-dom’s peer; avoids long resolve and Windows lock issues.
 - **TokenInjector**: Single place inside ProtectedRoute tree so callbackApi gets the token getter once for all protected routes.
 - **Auth0 config guard**: If VITE_AUTH0_DOMAIN or VITE_AUTH0_CLIENT_ID are missing, app renders a short message instead of mounting Auth0Provider to avoid cryptic SDK errors.
+- **Rsbuild env**: loadEnv + source.define so .env / venv VITE_* are available; config uses process.env.
 
 ## Tests added
 
@@ -40,4 +44,4 @@
 
 ## Known issues / follow-ups
 
-- None. Phase 02 will add layout shell and navigation; Phase 03 will add categories service and store.
+- None. Phase 02 will add layout shell and navigation; Phase 03 will add categories service and store. Env is loaded from .env (or shell) via Rsbuild loadEnv + define.
