@@ -5,4 +5,6 @@ export type HangoutsTableProps = Readonly<{
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  onEdit: (hangout: HangoutRead) => void;
+  onDelete: (hangout: HangoutRead) => void;
 }>;

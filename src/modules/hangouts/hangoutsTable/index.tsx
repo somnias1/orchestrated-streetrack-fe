@@ -1,7 +1,10 @@
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import EditRounded from '@mui/icons-material/EditRounded';
 import {
   Box,
   Button,
   CircularProgress,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -36,102 +39,135 @@ function formatDate(dateStr: string): string {
   }
 }
 
-const columns: ColumnDef<HangoutRead>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-    size: COLUMN_SIZES[0],
-    cell: (info) => {
-      const value = info.getValue<string>();
-      const truncated = value.length > 36 ? `${value.slice(0, 36)}…` : value;
-      const cell = (
-        <Typography
-          variant="body2"
-          sx={{
-            color: themeTokens.textPrimary,
-            maxWidth: 180,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {truncated}
-        </Typography>
-      );
-      return value.length > 36 ? (
-        <Tooltip title={value} placement="top-start">
-          {cell}
-        </Tooltip>
-      ) : (
-        cell
-      );
-    },
-  },
-  {
-    accessorKey: 'description',
-    header: 'Description',
-    size: COLUMN_SIZES[1],
-    cell: (info) => {
-      const value = info.getValue<string | null>();
-      if (!value) {
-        return (
-          <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-            —
+function createColumns(
+  onEdit: (hangout: HangoutRead) => void,
+  onDelete: (hangout: HangoutRead) => void,
+): ColumnDef<HangoutRead>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      size: COLUMN_SIZES[0],
+      cell: (info) => {
+        const value = info.getValue<string>();
+        const truncated = value.length > 36 ? `${value.slice(0, 36)}…` : value;
+        const cell = (
+          <Typography
+            variant="body2"
+            sx={{
+              color: themeTokens.textPrimary,
+              maxWidth: 180,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {truncated}
           </Typography>
         );
-      }
-      const truncated = value.length > 50 ? `${value.slice(0, 50)}…` : value;
-      const cell = (
-        <Typography
-          variant="body2"
-          sx={{
-            color: themeTokens.textPrimary,
-            maxWidth: 260,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {truncated}
-        </Typography>
-      );
-      return value.length > 50 ? (
-        <Tooltip title={value} placement="top-start">
-          {cell}
-        </Tooltip>
-      ) : (
-        cell
-      );
+        return value.length > 36 ? (
+          <Tooltip title={value} placement="top-start">
+            {cell}
+          </Tooltip>
+        ) : (
+          cell
+        );
+      },
     },
-  },
-  {
-    accessorKey: 'date',
-    header: 'Date',
-    size: COLUMN_SIZES[2],
-    cell: (info) => (
-      <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-        {formatDate(info.getValue<string>())}
-      </Typography>
-    ),
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    size: COLUMN_SIZES[3],
-    cell: () => (
-      <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-        —
-      </Typography>
-    ),
-  },
-];
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      size: COLUMN_SIZES[1],
+      cell: (info) => {
+        const value = info.getValue<string | null>();
+        if (!value) {
+          return (
+            <Typography
+              variant="body2"
+              sx={{ color: themeTokens.textSecondary }}
+            >
+              —
+            </Typography>
+          );
+        }
+        const truncated = value.length > 50 ? `${value.slice(0, 50)}…` : value;
+        const cell = (
+          <Typography
+            variant="body2"
+            sx={{
+              color: themeTokens.textPrimary,
+              maxWidth: 260,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {truncated}
+          </Typography>
+        );
+        return value.length > 50 ? (
+          <Tooltip title={value} placement="top-start">
+            {cell}
+          </Tooltip>
+        ) : (
+          cell
+        );
+      },
+    },
+    {
+      accessorKey: 'date',
+      header: 'Date',
+      size: COLUMN_SIZES[2],
+      cell: (info) => (
+        <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
+          {formatDate(info.getValue<string>())}
+        </Typography>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      size: COLUMN_SIZES[3],
+      cell: (info) => {
+        const hangout = info.row.original;
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => onEdit(hangout)}
+                aria-label={`Edit ${hangout.name}`}
+                sx={{ color: themeTokens.textSecondary }}
+              >
+                <EditRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => onDelete(hangout)}
+                aria-label={`Delete ${hangout.name}`}
+                sx={{ color: themeTokens.textSecondary }}
+              >
+                <DeleteOutlineRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
+      },
+    },
+  ];
+}
 
 export function HangoutsTable({
   items,
   loading,
   error,
   onRetry,
+  onEdit,
+  onDelete,
 }: HangoutsTableProps) {
+  const columns = createColumns(onEdit, onDelete);
   const parentRef = useRef<HTMLDivElement>(null);
 
   const table = useReactTable({
