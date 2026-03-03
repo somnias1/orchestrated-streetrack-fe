@@ -3,15 +3,15 @@
 
 ## Current Phase
 
-Phase 01 — Foundation & Auth Setup (in progress)
+Phase 01 — Foundation & Auth Setup (complete)
 
 ## Last Task Completed
 
-None. Starting fresh.
+Scaffolded Rsbuild React app and src/ structure; pinned deps; Auth0 provider and callbackApi wired; gate and build pass.
 
 ## Next Task
 
-Create branch `feature/phase-01-foundation-auth-setup`. Scaffold the Rsbuild React app and `src/` structure per TECHSPEC §3.2, install and pin core dependencies from §2.2, configure Auth0 provider and env wiring per §4.4, and add `.gitattributes` with `* text=auto eol=lf` per §2.3 so Biome runs cleanly.
+Merge branch `feature/phase-01-foundation-auth-setup` into `main` with `--no-ff`. Then start Phase 02 — Layout & Protected Routes (app layout shell, Home and Categories routes, protected routing flow).
 
 ## Key Decisions
 
