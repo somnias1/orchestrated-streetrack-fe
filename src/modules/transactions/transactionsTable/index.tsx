@@ -1,7 +1,10 @@
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import EditRounded from '@mui/icons-material/EditRounded';
 import {
   Box,
   Button,
   CircularProgress,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -48,87 +51,72 @@ function formatDate(dateStr: string): string {
   }
 }
 
-const columns: ColumnDef<TransactionRead>[] = [
-  {
-    accessorKey: 'description',
-    header: 'Description',
-    size: COLUMN_SIZES[0],
-    cell: (info) => {
-      const value = info.getValue<string>();
-      const truncated = value.length > 40 ? `${value.slice(0, 40)}…` : value;
-      const cell = (
+function createColumns(
+  onEdit: (transaction: TransactionRead) => void,
+  onDelete: (transaction: TransactionRead) => void,
+): ColumnDef<TransactionRead>[] {
+  return [
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      size: COLUMN_SIZES[0],
+      cell: (info) => {
+        const value = info.getValue<string>();
+        const truncated = value.length > 40 ? `${value.slice(0, 40)}…` : value;
+        const cell = (
+          <Typography
+            variant="body2"
+            sx={{
+              color: themeTokens.textPrimary,
+              maxWidth: 180,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {truncated}
+          </Typography>
+        );
+        return value.length > 40 ? (
+          <Tooltip title={value} placement="top-start">
+            {cell}
+          </Tooltip>
+        ) : (
+          cell
+        );
+      },
+    },
+    {
+      accessorKey: 'value',
+      header: 'Value',
+      size: COLUMN_SIZES[1],
+      cell: (info) => (
         <Typography
           variant="body2"
           sx={{
             color: themeTokens.textPrimary,
-            maxWidth: 180,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            fontVariantNumeric: 'tabular-nums',
           }}
         >
-          {truncated}
+          {formatValue(info.getValue<number>())}
         </Typography>
-      );
-      return value.length > 40 ? (
-        <Tooltip title={value} placement="top-start">
-          {cell}
-        </Tooltip>
-      ) : (
-        cell
-      );
+      ),
     },
-  },
-  {
-    accessorKey: 'value',
-    header: 'Value',
-    size: COLUMN_SIZES[1],
-    cell: (info) => (
-      <Typography
-        variant="body2"
-        sx={{
-          color: themeTokens.textPrimary,
-          fontVariantNumeric: 'tabular-nums',
-        }}
-      >
-        {formatValue(info.getValue<number>())}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: 'date',
-    header: 'Date',
-    size: COLUMN_SIZES[2],
-    cell: (info) => (
-      <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-        {formatDate(info.getValue<string>())}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: 'subcategory_id',
-    header: 'Subcategory ID',
-    size: COLUMN_SIZES[3],
-    cell: (info) => (
-      <Typography
-        variant="body2"
-        sx={{
-          color: themeTokens.textSecondary,
-          fontFamily: 'monospace',
-          fontSize: '0.75rem',
-        }}
-      >
-        {truncateUuid(info.getValue<string>())}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: 'hangout_id',
-    header: 'Hangout ID',
-    size: COLUMN_SIZES[4],
-    cell: (info) => {
-      const value = info.getValue<string | null>();
-      return (
+    {
+      accessorKey: 'date',
+      header: 'Date',
+      size: COLUMN_SIZES[2],
+      cell: (info) => (
+        <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
+          {formatDate(info.getValue<string>())}
+        </Typography>
+      ),
+    },
+    {
+      accessorKey: 'subcategory_id',
+      header: 'Subcategory ID',
+      size: COLUMN_SIZES[3],
+      cell: (info) => (
         <Typography
           variant="body2"
           sx={{
@@ -137,36 +125,83 @@ const columns: ColumnDef<TransactionRead>[] = [
             fontSize: '0.75rem',
           }}
         >
-          {value ? truncateUuid(value) : '—'}
+          {truncateUuid(info.getValue<string>())}
         </Typography>
-      );
+      ),
     },
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    size: COLUMN_SIZES[5],
-    cell: () => (
-      <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-        —
-      </Typography>
-    ),
-  },
-];
+    {
+      accessorKey: 'hangout_id',
+      header: 'Hangout ID',
+      size: COLUMN_SIZES[4],
+      cell: (info) => {
+        const value = info.getValue<string | null>();
+        return (
+          <Typography
+            variant="body2"
+            sx={{
+              color: themeTokens.textSecondary,
+              fontFamily: 'monospace',
+              fontSize: '0.75rem',
+            }}
+          >
+            {value ? truncateUuid(value) : '—'}
+          </Typography>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      size: COLUMN_SIZES[5],
+      cell: (info) => {
+        const transaction = info.row.original;
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => onEdit(transaction)}
+                aria-label={`Edit transaction ${transaction.description}`}
+                sx={{ color: themeTokens.primary }}
+              >
+                <EditRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => onDelete(transaction)}
+                aria-label={`Delete transaction ${transaction.description}`}
+                sx={{ color: themeTokens.error }}
+              >
+                <DeleteOutlineRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
+      },
+    },
+  ];
+}
 
 export function TransactionsTable({
   items,
   loading,
   error,
   onRetry,
+  onEdit,
+  onDelete,
 }: TransactionsTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const columns = createColumns(onEdit, onDelete);
 
   const table = useReactTable({
     data: items,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const columnsLength = columns.length;
 
   const { rows } = table.getRowModel();
   const virtualizer = useVirtualizer({
@@ -229,7 +264,7 @@ export function TransactionsTable({
             {loading && (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columnsLength}
                   sx={{
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 6,
@@ -243,7 +278,7 @@ export function TransactionsTable({
             {!loading && error && (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columnsLength}
                   sx={{
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 3,
@@ -266,7 +301,7 @@ export function TransactionsTable({
             {!loading && !error && items.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columnsLength}
                   sx={{
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 3,
