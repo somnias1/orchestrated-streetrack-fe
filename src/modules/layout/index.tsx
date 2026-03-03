@@ -1,5 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
+import EventRoundedIcon from '@mui/icons-material/EventRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
@@ -102,6 +103,17 @@ export function Layout({ children }: Props) {
                 sx={{ ...navLinkBase, ...(isActive ? navLinkActive : {}) }}
               >
                 Transactions
+              </Button>
+            )}
+          </NavLink>
+          <NavLink to={routes.hangouts} style={{ textDecoration: 'none' }}>
+            {({ isActive }) => (
+              <Button
+                component="span"
+                startIcon={<EventRoundedIcon />}
+                sx={{ ...navLinkBase, ...(isActive ? navLinkActive : {}) }}
+              >
+                Hangouts
               </Button>
             )}
           </NavLink>
