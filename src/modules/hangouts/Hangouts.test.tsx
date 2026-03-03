@@ -1,11 +1,32 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { config } from '../../config';
 import { Hangouts } from './index';
 import { useHangoutsStore } from './store';
+
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: (opts: { count: number }) => ({
+    getVirtualItems: () =>
+      Array.from({ length: opts.count }, (_, i) => ({
+        index: i,
+        start: i * 48,
+        size: 48,
+        end: (i + 1) * 48,
+      })),
+    getTotalSize: () => opts.count * 48,
+  }),
+}));
 
 const API_URL = config.apiUrl;
 const hangoutsUrl = `${API_URL}/hangouts`;
@@ -131,6 +152,169 @@ describe('Hangouts screen', () => {
 
     render(<Hangouts />);
 
+    await waitFor(() => {
+      expect(screen.getByText('No hangouts found.')).toBeInTheDocument();
+    });
+  });
+
+  it('has Create hangout button', async () => {
+    server.use(http.get(hangoutsUrl, () => HttpResponse.json([])));
+
+    render(<Hangouts />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /create hangout/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('create flow: open dialog, submit creates and refetches list', async () => {
+    const created = {
+      id: 'h-new',
+      name: 'Brunch',
+      description: 'Weekend brunch',
+      date: '2026-03-01',
+      user_id: 'u1',
+    };
+    const listAfterCreate = [created];
+
+    server.use(
+      http.get(hangoutsUrl, () => HttpResponse.json(listAfterCreate)),
+      http.post(hangoutsUrl, async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        expect(body).toMatchObject({
+          name: 'Brunch',
+          date: '2026-03-01',
+          description: 'Weekend brunch',
+        });
+        return HttpResponse.json(created, { status: 201 });
+      }),
+    );
+
+    render(<Hangouts />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /create hangout/i }),
+      ).toBeInTheDocument();
+    });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /create hangout/i }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('dialog', { name: /create hangout/i }),
+      ).toBeInTheDocument();
+    });
+
+    const dialog = screen.getByRole('dialog', { name: /create hangout/i });
+    await userEvent.type(
+      within(dialog).getByLabelText(/hangout name/i),
+      'Brunch',
+    );
+    await userEvent.type(within(dialog).getByLabelText(/date/i), '2026-03-01');
+    await userEvent.type(
+      within(dialog).getByLabelText(/description/i),
+      'Weekend brunch',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
+    });
+  });
+
+  it('edit flow: edit button opens dialog with prefilled data', async () => {
+    const items = [
+      {
+        id: 'h-1',
+        name: 'Brunch',
+        description: 'Weekend brunch',
+        date: '2026-03-01',
+        user_id: 'u1',
+      },
+    ];
+    server.use(
+      http.get(hangoutsUrl, () => HttpResponse.json(items)),
+      http.patch(`${API_URL}/hangouts/h-1`, async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        expect(body).toMatchObject({ name: 'Updated brunch' });
+        return HttpResponse.json({
+          ...items[0],
+          name: 'Updated brunch',
+        });
+      }),
+    );
+
+    render(<Hangouts />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
+    });
+
+    const editButton = screen.getByRole('button', {
+      name: /edit brunch/i,
+    });
+    await userEvent.click(editButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('dialog', { name: /edit hangout/i }),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText(/hangout name/i)).toHaveValue('Brunch');
+  });
+
+  it('delete flow: delete button opens confirm dialog, confirm deletes', async () => {
+    const items = [
+      {
+        id: 'h-1',
+        name: 'Brunch',
+        description: null,
+        date: '2026-03-01',
+        user_id: 'u1',
+      },
+    ];
+    let getCallCount = 0;
+    server.use(
+      http.get(hangoutsUrl, () => {
+        getCallCount += 1;
+        return HttpResponse.json(getCallCount === 1 ? items : []);
+      }),
+      http.delete(`${API_URL}/hangouts/h-1`, () =>
+        HttpResponse.json(null, { status: 204 }),
+      ),
+    );
+
+    render(<Hangouts />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
+    });
+
+    const deleteButton = screen.getByRole('button', {
+      name: /delete brunch/i,
+    });
+    await userEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('dialog', { name: /delete hangout/i }),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText(/delete this hangout\?/i)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
     await waitFor(() => {
       expect(screen.getByText('No hangouts found.')).toBeInTheDocument();
     });

@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 11 — Transactions Full CRUD UI (complete). **Next:** Phase 12 — Hangouts Full CRUD UI.
+Phase 12 — Hangouts Full CRUD UI (complete). **Next:** Phase 13+ (see ROADMAP / FRAMEWORK.md §6).
 
 ## Last Task Completed
 
-Phase 11: Transactions service CRUD (create, get, update, delete), store create/update/delete actions, transaction form dialog (Zod, subcategory/hangout pickers), delete confirmation dialog, Transactions screen Create button and table Edit/Delete actions; service/store/screen tests and CRUD flow integration tests; gate and phase summary.
+Phase 12: Hangouts service CRUD (create, get, update, delete), store create/update/delete actions, hangout form dialog (Zod), delete confirmation dialog, Hangouts screen Create button and table Edit/Delete actions; service/store/screen/table tests and CRUD flow integration tests; gate and phase summary.
 
 ## Next Task
 
-1. Merge `feature/phase-11-transactions-crud` into `main` (--no-ff).
-2. GSD session start — Phase 12. Create branch `feature/phase-12-hangouts-crud`, write `.planning/phase-12-SPEC.md`, implement Hangouts create/edit/delete UI; see `.planning/phase-00-ROADMAP.md` Phase 12.
+1. Merge `feature/phase-12-hangouts-crud` into `main` (--no-ff).
+2. Future phases (e.g. import/export UI, reports) from `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6.
 
 ## Key Decisions
 
