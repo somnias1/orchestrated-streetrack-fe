@@ -9,4 +9,5 @@ export const routes = {
   },
   home: '/',
   categories: '/categories',
+  subcategories: '/subcategories',
 } as const;

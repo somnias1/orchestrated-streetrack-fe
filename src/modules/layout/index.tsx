@@ -1,4 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react';
+import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
@@ -78,6 +79,17 @@ export function Layout({ children }: Props) {
                 sx={{ ...navLinkBase, ...(isActive ? navLinkActive : {}) }}
               >
                 Categories
+              </Button>
+            )}
+          </NavLink>
+          <NavLink to={routes.subcategories} style={{ textDecoration: 'none' }}>
+            {({ isActive }) => (
+              <Button
+                component="span"
+                startIcon={<AccountTreeRoundedIcon />}
+                sx={{ ...navLinkBase, ...(isActive ? navLinkActive : {}) }}
+              >
+                Subcategories
               </Button>
             )}
           </NavLink>
