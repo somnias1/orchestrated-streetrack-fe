@@ -3,15 +3,15 @@
 
 ## Current Phase
 
-Phase 01 — Foundation & Auth Setup (complete)
+Phase 02 — Layout & Protected Routes (complete)
 
 ## Last Task Completed
 
-Phase 01 fix: Rsbuild env loading (loadEnv + source.define for VITE_*), config switched to process.env, .env in .gitignore.
+Phase 02: Layout shell with AppBar, Home/Categories nav links (routes.*, MUI Icons), theme tokens, and Log out; phase spec and summary added.
 
 ## Next Task
 
-Start Phase 02 — Layout & Protected Routes (app layout shell, Home and Categories routes, protected routing flow).
+Start Phase 03 — Categories Data & Store (categories service, types, Axios client, Zustand store with loading/error/empty).
 
 ## Key Decisions
 
