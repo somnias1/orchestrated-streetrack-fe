@@ -10,6 +10,7 @@ import { AuthCallback, LoginRedirect, ProtectedRoute } from './modules/auth0';
 import { Categories } from './modules/categories';
 import { Home } from './modules/home';
 import { Layout } from './modules/layout';
+import { Subcategories } from './modules/subcategories';
 import { routes } from './routes';
 import { useGetToken } from './utils/auth/useGetToken';
 import { setTokenGetter } from './utils/callbackApi';
@@ -44,6 +45,7 @@ export default function App() {
         <Route element={<ProtectedShell />}>
           <Route path={routes.home} element={<Home />} />
           <Route path={routes.categories} element={<Categories />} />
+          <Route path={routes.subcategories} element={<Subcategories />} />
         </Route>
         <Route path="*" element={<Navigate to={routes.home} replace />} />
       </Routes>

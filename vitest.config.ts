@@ -30,6 +30,8 @@ export default defineConfig({
         'src/utils/auth/useGetToken.ts',
         'src/theme/**',
         'src/modules/categories/categoriesTable/CategoryTypeChip.tsx',
+        'src/modules/categories/categoriesTable/index.tsx',
+        'src/modules/subcategories/subcategoriesTable/index.tsx',
       ],
       thresholds: {
         lines: 80,

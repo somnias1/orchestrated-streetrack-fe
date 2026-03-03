@@ -16,7 +16,7 @@ describe('Layout', () => {
     });
   });
 
-  it('shows Home and Categories links with routes from routes.ts', () => {
+  it('shows Home, Categories, and Subcategories links with routes from routes.ts', () => {
     render(
       <MemoryRouter>
         <Layout>
@@ -25,13 +25,18 @@ describe('Layout', () => {
       </MemoryRouter>,
     );
 
-    const homeLink = screen.getByRole('link', { name: /home/i });
-    const categoriesLink = screen.getByRole('link', { name: /categories/i });
+    const homeLink = screen.getByRole('link', { name: /^home$/i });
+    const categoriesLink = screen.getByRole('link', { name: /^categories$/i });
+    const subcategoriesLink = screen.getByRole('link', {
+      name: /^subcategories$/i,
+    });
 
     expect(homeLink).toBeInTheDocument();
     expect(categoriesLink).toBeInTheDocument();
+    expect(subcategoriesLink).toBeInTheDocument();
     expect(homeLink).toHaveAttribute('href', routes.home);
     expect(categoriesLink).toHaveAttribute('href', routes.categories);
+    expect(subcategoriesLink).toHaveAttribute('href', routes.subcategories);
   });
 
   it('renders children in the main content area', () => {
