@@ -1,15 +1,15 @@
-import { useAuth0 } from '@auth0/auth0-react';
-import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
-import EventRoundedIcon from '@mui/icons-material/EventRounded';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import ListRoundedIcon from '@mui/icons-material/ListRounded';
-import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
-import type { ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
-import { routes } from '../../routes';
-import { themeTokens } from '../../theme/tailwind';
+import { useAuth0 } from "@auth0/auth0-react";
+import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
+import EventRoundedIcon from "@mui/icons-material/EventRounded";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import ListRoundedIcon from "@mui/icons-material/ListRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
+import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
+import type { ReactNode } from "react";
+import { NavLink } from "react-router-dom";
+import { routes } from "../../routes";
+import { themeTokens } from "../../theme/tailwind";
 
 type Props = Readonly<{
   children: ReactNode;
@@ -17,14 +17,14 @@ type Props = Readonly<{
 
 const navLinkBase = {
   color: themeTokens.textPrimary,
-  textDecoration: 'none',
-  display: 'flex',
-  alignItems: 'center',
+  textDecoration: "none",
+  display: "flex",
+  alignItems: "center",
   gap: 1,
   px: 1.5,
   py: 1,
   borderRadius: 1,
-  '&:hover': {
+  "&:hover": {
     backgroundColor: themeTokens.surface,
     color: themeTokens.textPrimary,
   },
@@ -41,7 +41,7 @@ export function Layout({ children }: Props) {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: "100vh",
         backgroundColor: themeTokens.background,
         color: themeTokens.textPrimary,
       }}
@@ -62,7 +62,7 @@ export function Layout({ children }: Props) {
           >
             Streetrack
           </Typography>
-          <NavLink to={routes.home} end style={{ textDecoration: 'none' }}>
+          <NavLink to={routes.home} end style={{ textDecoration: "none" }}>
             {({ isActive }) => (
               <Button
                 component="span"
@@ -73,7 +73,7 @@ export function Layout({ children }: Props) {
               </Button>
             )}
           </NavLink>
-          <NavLink to={routes.categories} style={{ textDecoration: 'none' }}>
+          <NavLink to={routes.categories} style={{ textDecoration: "none" }}>
             {({ isActive }) => (
               <Button
                 component="span"
@@ -84,7 +84,7 @@ export function Layout({ children }: Props) {
               </Button>
             )}
           </NavLink>
-          <NavLink to={routes.subcategories} style={{ textDecoration: 'none' }}>
+          <NavLink to={routes.subcategories} style={{ textDecoration: "none" }}>
             {({ isActive }) => (
               <Button
                 component="span"
@@ -95,7 +95,7 @@ export function Layout({ children }: Props) {
               </Button>
             )}
           </NavLink>
-          <NavLink to={routes.transactions} style={{ textDecoration: 'none' }}>
+          <NavLink to={routes.transactions} style={{ textDecoration: "none" }}>
             {({ isActive }) => (
               <Button
                 component="span"
@@ -106,7 +106,7 @@ export function Layout({ children }: Props) {
               </Button>
             )}
           </NavLink>
-          <NavLink to={routes.hangouts} style={{ textDecoration: 'none' }}>
+          <NavLink to={routes.hangouts} style={{ textDecoration: "none" }}>
             {({ isActive }) => (
               <Button
                 component="span"
@@ -121,11 +121,15 @@ export function Layout({ children }: Props) {
           <Button
             startIcon={<LogoutRoundedIcon />}
             onClick={() =>
-              logout({ logoutParams: { returnTo: window.location.origin } })
+              logout({
+                logoutParams: {
+                  returnTo: window.location.origin + routes.auth.login,
+                },
+              })
             }
             sx={{
               color: themeTokens.textSecondary,
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: themeTokens.surface,
                 color: themeTokens.textPrimary,
               },

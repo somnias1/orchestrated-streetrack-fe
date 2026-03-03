@@ -1,35 +1,51 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchSubcategories } from './index';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { callbackApi } from '../../utils/callbackApi';
+import {
+  createSubcategory,
+  deleteSubcategory,
+  fetchSubcategories,
+  getSubcategory,
+  updateSubcategory,
+} from './index';
 
-const mockGet = vi.fn();
+const mockResponse = (data: unknown) => ({
+  data,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {} as never,
+});
+
 vi.mock('../../utils/callbackApi', () => ({
   callbackApi: {
-    get: (...args: unknown[]) => mockGet(...args),
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
 describe('fetchSubcategories', () => {
-  afterEach(() => {
-    vi.clearAllMocks();
+  beforeEach(() => {
+    vi.mocked(callbackApi.get).mockReset();
   });
 
-  it('calls GET subcategories with default skip and limit', async () => {
-    mockGet.mockResolvedValue({ data: [] });
+  it('calls callbackApi.get with list path and default skip/limit', async () => {
+    vi.mocked(callbackApi.get).mockResolvedValue(mockResponse([]));
 
     await fetchSubcategories();
 
-    expect(mockGet).toHaveBeenCalledTimes(1);
-    expect(mockGet).toHaveBeenCalledWith('subcategories', {
+    expect(callbackApi.get).toHaveBeenCalledWith('subcategories', {
       params: { skip: 0, limit: 50 },
     });
   });
 
-  it('calls GET subcategories with provided skip and limit', async () => {
-    mockGet.mockResolvedValue({ data: [] });
+  it('calls callbackApi.get with custom skip and limit', async () => {
+    vi.mocked(callbackApi.get).mockResolvedValue(mockResponse([]));
 
     await fetchSubcategories({ skip: 10, limit: 20 });
 
-    expect(mockGet).toHaveBeenCalledWith('subcategories', {
+    expect(callbackApi.get).toHaveBeenCalledWith('subcategories', {
       params: { skip: 10, limit: 20 },
     });
   });
@@ -45,10 +61,117 @@ describe('fetchSubcategories', () => {
         user_id: 'u1',
       },
     ];
-    mockGet.mockResolvedValue({ data: items });
+    vi.mocked(callbackApi.get).mockResolvedValue(mockResponse(items));
 
     const result = await fetchSubcategories();
 
     expect(result).toEqual(items);
+  });
+});
+
+describe('createSubcategory', () => {
+  beforeEach(() => {
+    vi.mocked(callbackApi.post).mockReset();
+  });
+
+  it('calls callbackApi.post with list path and body', async () => {
+    const created = {
+      id: 'new-1',
+      category_id: 'cat-1',
+      name: 'New',
+      description: null,
+      belongs_to_income: false,
+      user_id: 'u1',
+    };
+    vi.mocked(callbackApi.post).mockResolvedValue(mockResponse(created));
+
+    const result = await createSubcategory({
+      category_id: 'cat-1',
+      name: 'New',
+      description: null,
+      belongs_to_income: false,
+    });
+
+    expect(callbackApi.post).toHaveBeenCalledWith('subcategories', {
+      category_id: 'cat-1',
+      name: 'New',
+      description: null,
+      belongs_to_income: false,
+    });
+    expect(result).toEqual(created);
+  });
+});
+
+describe('getSubcategory', () => {
+  beforeEach(() => {
+    vi.mocked(callbackApi.get).mockReset();
+  });
+
+  it('calls callbackApi.get with subcategory path', async () => {
+    const subcategory = {
+      id: '1',
+      category_id: 'cat-1',
+      name: 'Groceries',
+      description: null,
+      belongs_to_income: false,
+      user_id: 'u1',
+    };
+    vi.mocked(callbackApi.get).mockResolvedValue(mockResponse(subcategory));
+
+    const result = await getSubcategory('1');
+
+    expect(callbackApi.get).toHaveBeenCalledWith('subcategories/1');
+    expect(result).toEqual(subcategory);
+  });
+});
+
+describe('updateSubcategory', () => {
+  beforeEach(() => {
+    vi.mocked(callbackApi.patch).mockReset();
+  });
+
+  it('calls callbackApi.patch with subcategory path and body', async () => {
+    const updated = {
+      id: '1',
+      category_id: 'cat-1',
+      name: 'Updated',
+      description: 'Desc',
+      belongs_to_income: true,
+      user_id: 'u1',
+    };
+    vi.mocked(callbackApi.patch).mockResolvedValue(mockResponse(updated));
+
+    const result = await updateSubcategory('1', {
+      name: 'Updated',
+      description: 'Desc',
+      belongs_to_income: true,
+    });
+
+    expect(callbackApi.patch).toHaveBeenCalledWith('subcategories/1', {
+      name: 'Updated',
+      description: 'Desc',
+      belongs_to_income: true,
+    });
+    expect(result).toEqual(updated);
+  });
+});
+
+describe('deleteSubcategory', () => {
+  beforeEach(() => {
+    vi.mocked(callbackApi.delete).mockReset();
+  });
+
+  it('calls callbackApi.delete with subcategory path', async () => {
+    vi.mocked(callbackApi.delete).mockResolvedValue({
+      data: undefined,
+      status: 204,
+      statusText: 'No Content',
+      headers: {},
+      config: {} as never,
+    });
+
+    await deleteSubcategory('1');
+
+    expect(callbackApi.delete).toHaveBeenCalledWith('subcategories/1');
   });
 });

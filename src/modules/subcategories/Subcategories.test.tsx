@@ -1,14 +1,37 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { config } from '../../config';
 import { Subcategories } from './index';
 import { useSubcategoriesStore } from './store';
 
+// So virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: (opts: { count: number }) => ({
+    getVirtualItems: () =>
+      Array.from({ length: opts.count }, (_, i) => ({
+        index: i,
+        start: i * 48,
+        size: 48,
+        end: (i + 1) * 48,
+      })),
+    getTotalSize: () => opts.count * 48,
+  }),
+}));
+
 const API_URL = config.apiUrl;
 const subcategoriesUrl = `${API_URL}/subcategories`;
+const categoriesUrl = `${API_URL}/categories`;
 
 const server = setupServer();
 
@@ -35,6 +58,7 @@ describe('Subcategories screen', () => {
           setTimeout(() => resolve(HttpResponse.json([])), 500),
         );
       }),
+      http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
     render(<Subcategories />);
@@ -63,7 +87,10 @@ describe('Subcategories screen', () => {
         user_id: 'u1',
       },
     ];
-    server.use(http.get(subcategoriesUrl, () => HttpResponse.json(items)));
+    server.use(
+      http.get(subcategoriesUrl, () => HttpResponse.json(items)),
+      http.get(categoriesUrl, () => HttpResponse.json([])),
+    );
 
     render(<Subcategories />);
 
@@ -80,6 +107,7 @@ describe('Subcategories screen', () => {
       http.get(subcategoriesUrl, () =>
         HttpResponse.json({ detail: 'Server error' }, { status: 500 }),
       ),
+      http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
     render(<Subcategories />);
@@ -94,26 +122,23 @@ describe('Subcategories screen', () => {
   it('Retry button triggers refetch', async () => {
     let callCount = 0;
     server.use(
-      http.get(
-        ({ request }) =>
-          new URL(request.url).pathname === '/subcategories',
-        () => {
-          callCount += 1;
-          if (callCount === 1) {
-            return HttpResponse.json({ detail: 'Error' }, { status: 500 });
-          }
-          return HttpResponse.json([
-            {
-              id: '1',
-              category_id: 'cat-1',
-              name: 'Groceries',
-              description: null,
-              belongs_to_income: false,
-              user_id: 'u1',
-            },
-          ]);
-        },
-      ),
+      http.get(subcategoriesUrl, () => {
+        callCount += 1;
+        if (callCount === 1) {
+          return HttpResponse.json({ detail: 'Error' }, { status: 500 });
+        }
+        return HttpResponse.json([
+          {
+            id: '1',
+            category_id: 'cat-1',
+            name: 'Groceries',
+            description: null,
+            belongs_to_income: false,
+            user_id: 'u1',
+          },
+        ]);
+      }),
+      http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
     render(<Subcategories />);
@@ -133,12 +158,217 @@ describe('Subcategories screen', () => {
   });
 
   it('shows empty state when API returns empty array', async () => {
-    server.use(http.get(subcategoriesUrl, () => HttpResponse.json([])));
+    server.use(
+      http.get(subcategoriesUrl, () => HttpResponse.json([])),
+      http.get(categoriesUrl, () => HttpResponse.json([])),
+    );
 
     render(<Subcategories />);
 
     await waitFor(() => {
       expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
     });
+  });
+
+  it('create flow: open dialog, fill form, submit, list includes new subcategory', async () => {
+    const categories = [
+      {
+        id: 'cat-1',
+        name: 'Food',
+        description: null,
+        is_income: false,
+        user_id: 'u1',
+      },
+    ];
+    let listCalls = 0;
+    server.use(
+      http.get(categoriesUrl, () => HttpResponse.json(categories)),
+      http.get(subcategoriesUrl, () => {
+        listCalls += 1;
+        return HttpResponse.json(
+          listCalls === 1
+            ? []
+            : [
+                {
+                  id: 'new-1',
+                  category_id: 'cat-1',
+                  name: 'New Sub',
+                  description: null,
+                  belongs_to_income: false,
+                  user_id: 'u1',
+                },
+              ],
+        );
+      }),
+      http.post(subcategoriesUrl, async ({ request }) => {
+        const body = (await request.json()) as { name: string };
+        if (body.name !== 'New Sub') {
+          return HttpResponse.json({ detail: 'Bad' }, { status: 422 });
+        }
+        return HttpResponse.json(
+          {
+            id: 'new-1',
+            category_id: 'cat-1',
+            name: 'New Sub',
+            description: null,
+            belongs_to_income: false,
+            user_id: 'u1',
+          },
+          { status: 201 },
+        );
+      }),
+    );
+
+    render(<Subcategories />);
+
+    await waitFor(() => {
+      expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
+    });
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /create subcategory/i }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('dialog', { name: /create subcategory/i }),
+      ).toBeInTheDocument();
+    });
+
+    const dialog = screen.getByRole('dialog', { name: /create subcategory/i });
+    await userEvent.click(within(dialog).getByLabelText(/^category$/i));
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Food' })).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByRole('option', { name: 'Food' }));
+    await userEvent.type(
+      within(dialog).getByLabelText(/subcategory name/i),
+      'New Sub',
+    );
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Subcategories\s+\(1\)/)).toBeInTheDocument();
+    });
+    expect(screen.getByText('New Sub')).toBeInTheDocument();
+  });
+
+  it('edit flow: click Edit, change name, submit, list updated', async () => {
+    const categories = [
+      {
+        id: 'cat-1',
+        name: 'Food',
+        description: null,
+        is_income: false,
+        user_id: 'u1',
+      },
+    ];
+    const items = [
+      {
+        id: '1',
+        category_id: 'cat-1',
+        name: 'Groceries',
+        description: null,
+        belongs_to_income: false,
+        user_id: 'u1',
+      },
+    ];
+    let listData = [...items];
+    server.use(
+      http.get(categoriesUrl, () => HttpResponse.json(categories)),
+      http.get(subcategoriesUrl, () => HttpResponse.json(listData)),
+      http.patch(`${API_URL}/subcategories/1`, async ({ request }) => {
+        const body = (await request.json()) as { name?: string };
+        const updated = {
+          id: '1',
+          category_id: 'cat-1',
+          name: body.name ?? 'Groceries',
+          description: null,
+          belongs_to_income: false,
+          user_id: 'u1',
+        };
+        listData = [updated];
+        return HttpResponse.json(updated);
+      }),
+    );
+
+    render(<Subcategories />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Groceries')).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByLabelText(/edit groceries/i);
+    await userEvent.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('dialog', { name: /edit subcategory/i }),
+      ).toBeInTheDocument();
+    });
+
+    const nameField = screen.getByLabelText(/subcategory name/i);
+    await userEvent.clear(nameField);
+    await userEvent.type(nameField, 'Groceries Updated');
+    await userEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Groceries Updated')).toBeInTheDocument();
+    });
+  });
+
+  it('delete flow: click Delete, confirm, list no longer contains subcategory', async () => {
+    const categories = [
+      {
+        id: 'cat-1',
+        name: 'Food',
+        description: null,
+        is_income: false,
+        user_id: 'u1',
+      },
+    ];
+    const items = [
+      {
+        id: '1',
+        category_id: 'cat-1',
+        name: 'ToDelete',
+        description: null,
+        belongs_to_income: false,
+        user_id: 'u1',
+      },
+    ];
+    let getCount = 0;
+    server.use(
+      http.get(categoriesUrl, () => HttpResponse.json(categories)),
+      http.get(subcategoriesUrl, () => {
+        getCount += 1;
+        return HttpResponse.json(getCount === 1 ? items : []);
+      }),
+      http.delete(`${API_URL}/subcategories/1`, () =>
+        HttpResponse.json(null, { status: 204 }),
+      ),
+    );
+
+    render(<Subcategories />);
+
+    await waitFor(() => {
+      expect(screen.getByText('ToDelete')).toBeInTheDocument();
+    });
+
+    const deleteButtons = screen.getAllByLabelText(/delete todelete/i);
+    await userEvent.click(deleteButtons[0]);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/delete subcategory «todelete»\?/i),
+      ).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('ToDelete')).not.toBeInTheDocument();
   });
 });

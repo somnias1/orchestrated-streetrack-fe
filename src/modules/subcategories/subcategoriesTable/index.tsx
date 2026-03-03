@@ -1,7 +1,10 @@
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import EditRounded from '@mui/icons-material/EditRounded';
 import {
   Box,
   Button,
   CircularProgress,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -33,96 +36,128 @@ function truncateUuid(uuid: string): string {
   return `${uuid.slice(0, 8)}…`;
 }
 
-const columns: ColumnDef<SubcategoryRead>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-    size: COLUMN_SIZES[0],
-    cell: (info) => (
-      <Typography variant="body2" sx={{ color: themeTokens.textPrimary }}>
-        {info.getValue<string>()}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: 'description',
-    header: 'Description',
-    size: COLUMN_SIZES[1],
-    cell: (info) => {
-      const value = info.getValue<string | null>();
-      const text = value ?? '—';
-      const truncated = text.length > 50 ? `${text.slice(0, 50)}…` : text;
-      const cell = (
+function createColumns(
+  onEdit: (subcategory: SubcategoryRead) => void,
+  onDelete: (subcategory: SubcategoryRead) => void,
+): ColumnDef<SubcategoryRead>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      size: COLUMN_SIZES[0],
+      cell: (info) => (
+        <Typography variant="body2" sx={{ color: themeTokens.textPrimary }}>
+          {info.getValue<string>()}
+        </Typography>
+      ),
+    },
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      size: COLUMN_SIZES[1],
+      cell: (info) => {
+        const value = info.getValue<string | null>();
+        const text = value ?? '—';
+        const truncated = text.length > 50 ? `${text.slice(0, 50)}…` : text;
+        const cell = (
+          <Typography
+            variant="body2"
+            sx={{
+              color: themeTokens.textSecondary,
+              maxWidth: 220,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {truncated}
+          </Typography>
+        );
+        return text.length > 50 ? (
+          <Tooltip title={text} placement="top-start">
+            {cell}
+          </Tooltip>
+        ) : (
+          cell
+        );
+      },
+    },
+    {
+      accessorKey: 'belongs_to_income',
+      header: 'Type',
+      size: COLUMN_SIZES[2],
+      cell: (info) => <CategoryTypeChip isIncome={info.getValue<boolean>()} />,
+    },
+    {
+      accessorKey: 'category_id',
+      header: 'Category ID',
+      size: COLUMN_SIZES[3],
+      cell: (info) => (
         <Typography
           variant="body2"
           sx={{
             color: themeTokens.textSecondary,
-            maxWidth: 220,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            fontFamily: 'monospace',
+            fontSize: '0.75rem',
           }}
         >
-          {truncated}
+          {truncateUuid(info.getValue<string>())}
         </Typography>
-      );
-      return text.length > 50 ? (
-        <Tooltip title={text} placement="top-start">
-          {cell}
-        </Tooltip>
-      ) : (
-        cell
-      );
+      ),
     },
-  },
-  {
-    accessorKey: 'belongs_to_income',
-    header: 'Type',
-    size: COLUMN_SIZES[2],
-    cell: (info) => <CategoryTypeChip isIncome={info.getValue<boolean>()} />,
-  },
-  {
-    accessorKey: 'category_id',
-    header: 'Category ID',
-    size: COLUMN_SIZES[3],
-    cell: (info) => (
-      <Typography
-        variant="body2"
-        sx={{
-          color: themeTokens.textSecondary,
-          fontFamily: 'monospace',
-          fontSize: '0.75rem',
-        }}
-      >
-        {truncateUuid(info.getValue<string>())}
-      </Typography>
-    ),
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    size: COLUMN_SIZES[4],
-    cell: () => (
-      <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-        —
-      </Typography>
-    ),
-  },
-];
+    {
+      id: 'actions',
+      header: 'Actions',
+      size: COLUMN_SIZES[4],
+      cell: (info) => {
+        const subcategory = info.row.original;
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => onEdit(subcategory)}
+                aria-label={`Edit ${subcategory.name}`}
+                sx={{ color: themeTokens.primary }}
+              >
+                <EditRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => onDelete(subcategory)}
+                aria-label={`Delete ${subcategory.name}`}
+                sx={{ color: themeTokens.error }}
+              >
+                <DeleteOutlineRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
+      },
+    },
+  ];
+}
 
 export function SubcategoriesTable({
   items,
   loading,
   error,
   onRetry,
+  onEdit,
+  onDelete,
 }: SubcategoriesTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const columns = createColumns(onEdit, onDelete);
 
   const table = useReactTable({
     data: items,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const columnsLength = columns.length;
 
   const { rows } = table.getRowModel();
   const virtualizer = useVirtualizer({
@@ -185,7 +220,7 @@ export function SubcategoriesTable({
             {loading && (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columnsLength}
                   sx={{
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 6,
@@ -199,7 +234,7 @@ export function SubcategoriesTable({
             {!loading && error && (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columnsLength}
                   sx={{
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 3,
@@ -222,7 +257,7 @@ export function SubcategoriesTable({
             {!loading && !error && items.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columnsLength}
                   sx={{
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 3,
