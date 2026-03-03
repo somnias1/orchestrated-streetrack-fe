@@ -10,28 +10,32 @@ Copy these into the new repo **before** any implementation. They form the framew
 
 ### Must-have (framework core)
 
-| File or folder                             | Purpose                                                                                                                                                                                                                            |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`TECHSPEC.md`**                          | Single source of truth. **Adapt §1 (Problem & Context)** and any product-specific parts of §3–§4 for the new app; keep §2 (constraints), §5–§8 (process, testing, GSD integration) as the pipeline.                                |
-| **`FRAMEWORK.md`**                         | This file. Contains the STATE.md template, ROADMAP template, generic phase prompt pattern, bootstrap and audit prompts, and the full "how to use this pipeline" guide. Phase scope comes from each project's ROADMAP. Keep at root for reference; optionally remove after all phases are complete. |
-| **`.cursor/rules/gsd-git-workflow.mdc`**   | Branch per phase, atomic commits, test+lint gate before every commit, SUMMARY required before merge, §1.3 verification for test phases, merge with `--no-ff`.                                                                      |
-| **`.cursor/rules/gsd-state-tracking.mdc`** | STATE.md as session memory; per-phase SUMMARY.md; session-start routine, spec-first requirement, and DoD self-check against TECHSPEC §8.3 before closing a phase.                                                                  |
-| **`STATE.md`** (template, see below)       | Create once at project root so the agent always has a place to read/write current phase and next task.                                                                                                                             |
-| **`.planning/`**                           | Empty folder (add `.gitkeep`). Phase SPECs and SUMMARYs go here.                                                                                                                                                                   |
+
+| File or folder                             | Purpose                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `**TECHSPEC.md`**                          | Single source of truth. **Adapt §1 (Problem & Context)** and any product-specific parts of §3–§4 for the new app; keep §2 (constraints), §5–§8 (process, testing, GSD integration) as the pipeline.                                                                                                |
+| `**FRAMEWORK.md`**                         | This file. Contains the STATE.md template, ROADMAP template, generic phase prompt pattern, bootstrap and audit prompts, and the full "how to use this pipeline" guide. Phase scope comes from each project's ROADMAP. Keep at root for reference; optionally remove after all phases are complete. |
+| `**.cursor/rules/gsd-git-workflow.mdc**`   | Branch per phase, atomic commits, test+lint gate before every commit, SUMMARY required before merge, §1.3 verification for test phases, merge with `--no-ff`.                                                                                                                                      |
+| `**.cursor/rules/gsd-state-tracking.mdc**` | STATE.md as session memory; per-phase SUMMARY.md; session-start routine, spec-first requirement, and DoD self-check against TECHSPEC §8.3 before closing a phase.                                                                                                                                  |
+| `**STATE.md**` (template, see below)       | Create once at project root so the agent always has a place to read/write current phase and next task.                                                                                                                                                                                             |
+| `**.planning/**`                           | Empty folder (add `.gitkeep`). Phase SPECs and SUMMARYs go here.                                                                                                                                                                                                                                   |
+
 
 ### Optional but recommended
 
-| File or folder                              | Purpose                                                                                                                                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **`.gitattributes`**                        | `* text=auto eol=lf` — avoids Windows CRLF breaking lint (TECHSPEC §2.3).                                                                                                      |
-| **`.planning/phase-00-ROADMAP.md`**         | Phase index — maps phase numbers to goals, scope, and key TECHSPEC sections. Generated from the TECHSPEC during bootstrap (see §2).                                            |
-| **`.cursor/gsd/`**                          | Subagent definitions: generic phase runner (any Phase NN), bootstrap, audit. Phase scope comes from the project's ROADMAP + TECHSPEC. Optional; use with Cursor’s subagent (MCP task) to scale. See `.cursor/gsd/README.md`. |
-| **`.cursor/rules/gsd-subagent-router.mdc`** | Rule that tells the agent when to delegate to a subagent; copy if you use `.cursor/gsd/`.                                                                                      |
+
+| File or folder                              | Purpose                                                                                                                                                                                                                      |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `**.gitattributes**`                        | `* text=auto eol=lf` — avoids Windows CRLF breaking lint (TECHSPEC §2.3).                                                                                                                                                    |
+| `**.planning/phase-00-ROADMAP.md**`         | Phase index — maps phase numbers to goals, scope, and key TECHSPEC sections. Generated from the TECHSPEC during bootstrap (see §2).                                                                                          |
+| `**.cursor/gsd/**`                          | Subagent definitions: generic phase runner (any Phase NN), bootstrap, audit. Phase scope comes from the project's ROADMAP + TECHSPEC. Optional; use with Cursor’s subagent (MCP task) to scale. See `.cursor/gsd/README.md`. |
+| `**.cursor/rules/gsd-subagent-router.mdc**` | Rule that tells the agent when to delegate to a subagent; copy if you use `.cursor/gsd/`.                                                                                                                                    |
+
 
 ### Do not copy (project-specific)
 
 - `package.json`, `app/`, `src/`, `store/`, `services/`, etc. — the new project will generate these from the TECHSPEC and phase specs.
-- Existing `.planning/phase-*-SPEC.md` and `phase-*-SUMMARY.md` — those are for _this_ product; the new project will write its own.
+- Existing `.planning/phase-*-SPEC.md` and `phase-*-SUMMARY.md` — those are for *this* product; the new project will write its own.
 - Existing `.planning/phase-00-ROADMAP.md` — the new project will generate its own from the adapted TECHSPEC.
 
 ### phase-00-ROADMAP.md template
@@ -98,8 +102,8 @@ Before the first phase, the repo should have:
 
 1. **TECHSPEC.md** — Adapted for the new product (at least §1 rewritten; §2–§8 can stay if stack is the same).
 2. **FRAMEWORK.md** — This file, copied as-is.
-3. **`.cursor/rules/`** — Both GSD rule files in place.
-4. **`.gitattributes`** — `* text=auto eol=lf` for lint-safe line endings from day one.
+3. `**.cursor/rules/`** — Both GSD rule files in place.
+4. `**.gitattributes**` — `* text=auto eol=lf` for lint-safe line endings from day one.
 
 Then run the bootstrap prompt below — the agent will create STATE.md, `.planning/`, and **phase-00-ROADMAP.md** by breaking the TECHSPEC into phases. The number and names of phases are determined by the TECHSPEC and the agent (e.g. 01–06, 01–05, 01–08).
 
@@ -152,7 +156,7 @@ The table in §1 (ROADMAP template) shows one possible layout: 01 Foundation, 02
 ## 4. When to Start a New Chat
 
 - **Between phases:** Start a new chat for each new phase. STATE.md and the phase SUMMARYs carry context; the prompt is just "GSD session start — Phase NN."
-- **Within a phase:** Stay in the same chat until the phase is merged. If the chat gets too long or context is lost, start a new chat and say: "Read STATE.md and resume. We are in the middle of Phase NN; last completed was <task>. Continue from here."
+- **Within a phase:** Stay in the same chat until the phase is merged. If the chat gets too long or context is lost, start a new chat and say: "Read STATE.md and resume. We are in the middle of Phase NN; last completed was . Continue from here."
 
 ---
 
@@ -179,9 +183,7 @@ Continue the phase numbering from where you left off. If the last initial phase 
 **Step-by-step:**
 
 1. **Update the TECHSPEC first.** Before any code, open a chat and ask the agent to add the new feature to the relevant TECHSPEC sections (§1.3 for test cases, §3.4 for screens/navigation, §4 for new data/APIs, etc.). Commit the TECHSPEC update to `main`. This keeps the spec as the single source of truth — the same spec-first principle from the initial build.
-
 2. **Update STATE.md.** Set current phase to the new phase number and describe the next task.
-
 3. **Start a new chat with the standard prompt:**
 
 ```
@@ -190,15 +192,17 @@ GSD session start — Phase 07.
 
 The agent will read STATE.md, print the pre-flight checklist, create a branch (`feature/phase-07-<slug>`), write `.planning/phase-07-SPEC.md`, and proceed as usual. Same rules apply: spec committed before code, atomic commits, gate before every commit, SUMMARY before merge.
 
-4. **Merge and audit.** After the phase is complete and merged, optionally run the audit prompt from §5 to verify the project still fully complies with the updated TECHSPEC.
+1. **Merge and audit.** After the phase is complete and merged, optionally run the audit prompt from §5 to verify the project still fully complies with the updated TECHSPEC.
 
 ### 6.2 Small changes vs. multi-phase features
+
 
 | Size                                                       | Approach                                                                                                                                                    |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Small** (1–3 tasks, e.g. add a filter, tweak validation) | One phase. Single branch, a few commits, merge.                                                                                                             |
 | **Medium** (new screen + API + tests)                      | One phase, but write a detailed phase-SPEC so nothing is missed.                                                                                            |
 | **Large** (new module, multiple screens, new data model)   | Split into multiple phases (e.g. Phase 07 = data + services, Phase 08 = UI + orchestration, Phase 09 = tests). Each gets its own branch, spec, and summary. |
+
 
 ### 6.3 Bug fixes
 
@@ -248,14 +252,14 @@ The agent picks up the updated TECHSPEC, reads STATE.md, creates the branch, wri
 1. Copy **TECHSPEC.md** (adapt §1 and product-specific bits), **FRAMEWORK.md**, **.cursor/rules/** (both mdc files), **STATE.md** (template), **.planning/** (with .gitkeep), and optionally **.gitattributes** and **.planning/phase-00-ROADMAP.md**.
 2. Commit them to `main` (no app code yet).
 3. Run **bootstrap** (§2) so the agent creates STATE.md and **.planning/phase-00-ROADMAP.md** from the TECHSPEC. Your phase structure (number and names of phases) is defined there.
-4. For **each phase in your ROADMAP** (e.g. 01, 02, … through your last initial phase), open a **new chat** and send: **`GSD session start — Phase NN.`** The agent reads the ROADMAP and TECHSPEC to know what Phase NN is. For the final phase (often tests/verification), optionally attach @TECHSPEC.md and @STATE.md and the audit file if you have one.
+4. For **each phase in your ROADMAP** (e.g. 01, 02, … through your last initial phase), open a **new chat** and send: `**GSD session start — Phase NN.`** The agent reads the ROADMAP and TECHSPEC to know what Phase NN is. For the final phase (often tests/verification), optionally attach @TECHSPEC.md and @STATE.md and the audit file if you have one.
 5. Confirm when the agent shows the pre-flight checklist; then let it implement, commit per task, and merge when DoD is met.
 6. Optionally run the audit prompt (§5) after the last initial phase and fix any gaps before calling the project done.
 7. For new features after the initial build, follow §6 — same pipeline, continue phase numbering from your last ROADMAP phase.
 
 ### 7.1 Scaling with Cursor subagents (optional)
 
-If you use **Cursor** and copy **`.cursor/gsd/`** and **`gsd-subagent-router.mdc`**: the router delegates "GSD session start — Phase NN", "Run bootstrap", or "Run audit" to a subagent. Phase scope is **generic** — the subagent reads **this project's** `.planning/phase-00-ROADMAP.md` and TECHSPEC to know what Phase NN means, so the same setup works for any phase structure (e.g. 01–06, 01–05, 01–10). See **.cursor/gsd/README.md**.
+If you use **Cursor** and copy `**.cursor/gsd/`** and `**gsd-subagent-router.mdc**`: the router delegates "GSD session start — Phase NN", "Run bootstrap", or "Run audit" to a subagent. Phase scope is **generic** — the subagent reads **this project's** `.planning/phase-00-ROADMAP.md` and TECHSPEC to know what Phase NN means, so the same setup works for any phase structure (e.g. 01–06, 01–05, 01–10). See **.cursor/gsd/README.md**.
 
 ---
 
@@ -277,13 +281,13 @@ Write 1–3 sentences describing the look and feel you want. The agent uses this
 
 **Examples:**
 
-- _"Clean, professional CRM feel — light backgrounds, soft card shadows, rounded corners, blue primary actions, green/red/amber for success/error/warning. Addi Sales Pipeline style."_
-- _"Dark-mode fintech dashboard — near-black backgrounds, high-contrast text, neon-green accents, minimal shadows, sharp corners."_
-- _"Playful consumer app — warm pastels, large rounded elements, friendly illustrations, bouncy press animations."_
+- *"Clean, professional CRM feel — light backgrounds, soft card shadows, rounded corners, blue primary actions, green/red/amber for success/error/warning. Addi Sales Pipeline style."*
+- *"Dark-mode fintech dashboard — near-black backgrounds, high-contrast text, neon-green accents, minimal shadows, sharp corners."*
+- *"Playful consumer app — warm pastels, large rounded elements, friendly illustrations, bouncy press animations."*
 
 ### 8.2 General principles (copy into every TECHSPEC §3.7)
 
-These principles tell the agent _how_ to structure the visual layer regardless of style. Copy them as-is under the style reference.
+These principles tell the agent *how* to structure the visual layer regardless of style. Copy them as-is under the style reference.
 
 ---
 
@@ -292,6 +296,7 @@ These principles tell the agent _how_ to structure the visual layer regardless o
 All colors, spacing values, radii, shadows, and typography sizes must live in a **single file** (e.g. `src/theme.ts` or a `COLORS` / `SPACING` object in `src/constants.ts`). Screens import from this file — never hardcode hex values or pixel sizes inline. This makes the visual language easy to audit and change globally.
 
 Required token categories (names and values derived from the style reference):
+
 
 | Category                        | Purpose                                                                                                            |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -303,6 +308,7 @@ Required token categories (names and values derived from the style reference):
 | Border                          | Dividers, input borders, separators                                                                                |
 | Disabled                        | Inactive buttons, placeholder text                                                                                 |
 | Status-specific (if applicable) | e.g. stage badges, category pills — distinct bg+text pair per status                                               |
+
 
 **2. Spacing and layout system**
 
@@ -319,6 +325,7 @@ Avoid arbitrary pixel values; pick from the spacing scale.
 
 Every project reuses a common set of UI building blocks. The agent should implement these as reusable patterns (or extract as components when used in multiple screens):
 
+
 | Pattern                        | What it solves                             | Key requirements                                                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **List card**                  | Tappable item in a list                    | Title + metadata on one side; status indicator + navigation affordance (e.g. chevron) on the other. Must have **press feedback** (opacity change, scale, or highlight).                                  |
@@ -332,6 +339,7 @@ Every project reuses a common set of UI building blocks. The agent should implem
 | **Result banner**              | Final outcome of a process                 | Full-width block with icon + title (bold) + subtitle. Background color matches the outcome (success / error / warning muted). Error banners must include a **retry CTA**.                                |
 | **Form field**                 | User input                                 | Label above input; border changes on **focus** (primary) and **error** (error color); inline error message below field.                                                                                  |
 | **Completed / locked state**   | Item that can't be actioned again          | Replace CTA with a short confirmation message (e.g. "Already completed") in a success-tinted container. No actionable button.                                                                            |
+
 
 **4. Interaction and feedback**
 
@@ -364,6 +372,7 @@ See the current `TECHSPEC.md` §3.7 for a complete example of what a filled-in s
 
 ## 9. Reference: TECHSPEC Section Map
 
+
 | Section | Content                                                                                                                                                                                                                                                                         |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | §1      | Problem, goals, success criteria, test cases, out of scope                                                                                                                                                                                                                      |
@@ -374,5 +383,6 @@ See the current `TECHSPEC.md` §3.7 for a complete example of what a filled-in s
 | §6      | Test pyramid, coverage gates, verification, **§6.4 Jest+Expo setup**                                                                                                                                                                                                            |
 | §7      | Deployment, env, build                                                                                                                                                                                                                                                          |
 | §8      | Phase↔TECHSPEC mapping, **plan constraints** (spec-first, pre-flight, MSW test-only), **Definition of Done** (lint per commit, §1.3 table, SUMMARY required)                                                                                                                    |
+
 
 Keeping this map in mind helps when adapting TECHSPEC for a different product: change §1 and any domain sections; keep §2, §5–§8 and the structural parts of §3–§4 to preserve the pipeline.
