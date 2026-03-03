@@ -2,13 +2,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import {
-  AppBar,
-  Box,
-  Button,
-  Toolbar,
-  Typography,
-} from '@mui/material';
+import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { routes } from '../../routes';
@@ -90,7 +84,9 @@ export function Layout({ children }: Props) {
           <Box sx={{ flexGrow: 1 }} />
           <Button
             startIcon={<LogoutRoundedIcon />}
-            onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+            onClick={() =>
+              logout({ logoutParams: { returnTo: window.location.origin } })
+            }
             sx={{
               color: themeTokens.textSecondary,
               '&:hover': {

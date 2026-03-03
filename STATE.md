@@ -3,15 +3,15 @@
 
 ## Current Phase
 
-Phase 02 — Layout & Protected Routes (complete)
+Phase 03 — Categories Data & Store (complete)
 
 ## Last Task Completed
 
-Phase 02: Layout shell with AppBar, Home/Categories nav links (routes.*, MUI Icons), theme tokens, and Log out; phase spec and summary added.
+Phase 03: Categories service (types, constants, fetchCategories via callbackApi), Zustand store (items, loading, error, fetch/retry), Categories screen with loading/error/empty/success and Retry CTA; phase spec and summary added.
 
 ## Next Task
 
-Start Phase 03 — Categories Data & Store (categories service, types, Axios client, Zustand store with loading/error/empty).
+Start Phase 04 — Categories Table & UX (virtualized table with MUI+Tailwind, income/expense chips, loading/error/empty + retry).
 
 ## Key Decisions
 
