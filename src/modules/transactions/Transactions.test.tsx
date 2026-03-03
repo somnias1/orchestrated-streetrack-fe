@@ -4,16 +4,16 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { config } from '../../config';
-import { Subcategories } from './index';
-import { useSubcategoriesStore } from './store';
+import { Transactions } from './index';
+import { useTransactionsStore } from './store';
 
 const API_URL = config.apiUrl;
-const subcategoriesUrl = `${API_URL}/subcategories`;
+const transactionsUrl = `${API_URL}/transactions`;
 
 const server = setupServer();
 
 function resetStore() {
-  useSubcategoriesStore.setState({
+  useTransactionsStore.setState({
     items: [],
     loading: false,
     error: null,
@@ -27,62 +27,64 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-describe('Subcategories screen', () => {
+describe('Transactions screen', () => {
   it('shows loading spinner while fetching', async () => {
     server.use(
-      http.get(subcategoriesUrl, () => {
+      http.get(transactionsUrl, () => {
         return new Promise((resolve) =>
           setTimeout(() => resolve(HttpResponse.json([])), 500),
         );
       }),
     );
 
-    render(<Subcategories />);
+    render(<Transactions />);
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
     });
   });
 
-  it('shows virtualized rows when API returns subcategories', async () => {
+  it('shows virtualized rows when API returns transactions', async () => {
     const items = [
       {
         id: '1',
-        category_id: 'cat-a',
-        name: 'Groceries',
-        description: 'Food shopping',
-        belongs_to_income: false,
+        subcategory_id: 'sub-a',
+        value: 1000,
+        description: 'Coffee',
+        date: '2026-03-01',
+        hangout_id: null,
         user_id: 'u1',
       },
       {
         id: '2',
-        category_id: 'cat-b',
-        name: 'Salary',
-        description: null,
-        belongs_to_income: true,
+        subcategory_id: 'sub-b',
+        value: -500,
+        description: 'Lunch',
+        date: '2026-03-02',
+        hangout_id: 'hang-1',
         user_id: 'u1',
       },
     ];
-    server.use(http.get(subcategoriesUrl, () => HttpResponse.json(items)));
+    server.use(http.get(transactionsUrl, () => HttpResponse.json(items)));
 
-    render(<Subcategories />);
+    render(<Transactions />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Subcategories\s+\(2\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Transactions\s+\(2\)/)).toBeInTheDocument();
     });
     expect(
-      screen.queryByText('No subcategories found.'),
+      screen.queryByText('No transactions found.'),
     ).not.toBeInTheDocument();
   });
 
   it('shows error and Retry button on API failure', async () => {
     server.use(
-      http.get(subcategoriesUrl, () =>
+      http.get(transactionsUrl, () =>
         HttpResponse.json({ detail: 'Server error' }, { status: 500 }),
       ),
     );
 
-    render(<Subcategories />);
+    render(<Transactions />);
 
     await waitFor(() => {
       expect(
@@ -95,7 +97,7 @@ describe('Subcategories screen', () => {
     let callCount = 0;
     server.use(
       http.get(
-        ({ request }) => new URL(request.url).pathname === '/subcategories',
+        ({ request }) => new URL(request.url).pathname === '/transactions',
         () => {
           callCount += 1;
           if (callCount === 1) {
@@ -104,10 +106,11 @@ describe('Subcategories screen', () => {
           return HttpResponse.json([
             {
               id: '1',
-              category_id: 'cat-1',
-              name: 'Groceries',
-              description: null,
-              belongs_to_income: false,
+              subcategory_id: 'sub-1',
+              value: 100,
+              description: 'Snack',
+              date: '2026-03-01',
+              hangout_id: null,
               user_id: 'u1',
             },
           ]);
@@ -115,7 +118,7 @@ describe('Subcategories screen', () => {
       ),
     );
 
-    render(<Subcategories />);
+    render(<Transactions />);
 
     await waitFor(() => {
       expect(
@@ -126,18 +129,18 @@ describe('Subcategories screen', () => {
     await userEvent.click(screen.getByRole('button', { name: /retry/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Subcategories\s+\(1\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Transactions\s+\(1\)/)).toBeInTheDocument();
     });
     expect(callCount).toBe(2);
   });
 
   it('shows empty state when API returns empty array', async () => {
-    server.use(http.get(subcategoriesUrl, () => HttpResponse.json([])));
+    server.use(http.get(transactionsUrl, () => HttpResponse.json([])));
 
-    render(<Subcategories />);
+    render(<Transactions />);
 
     await waitFor(() => {
-      expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
+      expect(screen.getByText('No transactions found.')).toBeInTheDocument();
     });
   });
 });
