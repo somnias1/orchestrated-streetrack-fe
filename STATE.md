@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 06 — Subcategories List & Virtual (complete). **Next:** Phase 07 — Transactions List & Virtual.
+Phase 07 — Transactions List & Virtual (complete). **Next:** Phase 08 — Hangouts List & Virtual.
 
 ## Last Task Completed
 
-Phase 06: Subcategories service (types, constants, fetchSubcategories), Zustand store, Subcategories screen with virtualized table (Name, Description, Type chip, Category ID); route and layout nav (Subcategories link); unit tests (service, store), integration tests (Subcategories screen loading/success/error/empty/retry), Layout test updated for Subcategories link; coverage gate and phase summary.
+Phase 07: Transactions service (types, constants, fetchTransactions), Zustand store, Transactions screen with virtualized table (Description, Value, Date, Subcategory ID, Hangout ID); route and layout nav (Transactions link); unit tests (service, store), integration tests (Transactions screen loading/success/error/empty/retry), Layout test updated for Transactions link; coverage gate and phase summary. Retry tests in Subcategories and Transactions updated to use pathname-based MSW matcher for robustness.
 
 ## Next Task
 
-1. **If not done:** Merge `feature/phase-06-subcategories-list` into `main` (--no-ff).
-2. **Then:** GSD session start — Phase 07. Create branch `feature/phase-07-transactions-list`, write `.planning/phase-07-SPEC.md`, implement transactions service + store + list screen with virtualized table; add Transactions to layout nav (see `.planning/phase-00-ROADMAP.md` Phase 07).
+1. **If not done:** Merge `feature/phase-07-transactions-list` into `main` (--no-ff).
+2. **Then:** GSD session start — Phase 08. Create branch `feature/phase-08-hangouts-list`, write `.planning/phase-08-SPEC.md`, implement hangouts service + store + list screen with virtualized table; add Hangouts to layout nav (see `.planning/phase-00-ROADMAP.md` Phase 08).
 
 ## Key Decisions
 

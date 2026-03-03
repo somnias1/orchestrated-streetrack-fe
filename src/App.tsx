@@ -11,6 +11,7 @@ import { Categories } from './modules/categories';
 import { Home } from './modules/home';
 import { Layout } from './modules/layout';
 import { Subcategories } from './modules/subcategories';
+import { Transactions } from './modules/transactions';
 import { routes } from './routes';
 import { useGetToken } from './utils/auth/useGetToken';
 import { setTokenGetter } from './utils/callbackApi';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path={routes.home} element={<Home />} />
           <Route path={routes.categories} element={<Categories />} />
           <Route path={routes.subcategories} element={<Subcategories />} />
+          <Route path={routes.transactions} element={<Transactions />} />
         </Route>
         <Route path="*" element={<Navigate to={routes.home} replace />} />
       </Routes>

@@ -10,4 +10,5 @@ export const routes = {
   home: '/',
   categories: '/categories',
   subcategories: '/subcategories',
+  transactions: '/transactions',
 } as const;

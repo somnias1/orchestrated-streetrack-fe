@@ -3,6 +3,7 @@ import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -90,6 +91,17 @@ export function Layout({ children }: Props) {
                 sx={{ ...navLinkBase, ...(isActive ? navLinkActive : {}) }}
               >
                 Subcategories
+              </Button>
+            )}
+          </NavLink>
+          <NavLink to={routes.transactions} style={{ textDecoration: 'none' }}>
+            {({ isActive }) => (
+              <Button
+                component="span"
+                startIcon={<ReceiptLongRoundedIcon />}
+                sx={{ ...navLinkBase, ...(isActive ? navLinkActive : {}) }}
+              >
+                Transactions
               </Button>
             )}
           </NavLink>

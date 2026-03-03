@@ -32,6 +32,7 @@ export default defineConfig({
         'src/modules/categories/categoriesTable/CategoryTypeChip.tsx',
         'src/modules/categories/categoriesTable/index.tsx',
         'src/modules/subcategories/subcategoriesTable/index.tsx',
+        'src/modules/transactions/transactionsTable/index.tsx',
       ],
       thresholds: {
         lines: 80,
