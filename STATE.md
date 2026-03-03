@@ -3,15 +3,15 @@
 
 ## Current Phase
 
-Phase 03 — Categories Data & Store (complete)
+Phase 04 — Categories Table & UX (complete)
 
 ## Last Task Completed
 
-Phase 03: Categories service (types, constants, fetchCategories via callbackApi), Zustand store (items, loading, error, fetch/retry), Categories screen with loading/error/empty/success and Retry CTA; phase spec and summary added.
+Phase 04: Virtualized categories table (TanStack Table + TanStack Virtual) with columns Name, Description, Type, Actions; income/expense chips with theme tokens; table body states (loading, error with retry, empty, virtualized rows); Categories screen always renders table; phase spec and summary added.
 
 ## Next Task
 
-Start Phase 04 — Categories Table & UX (virtualized table with MUI+Tailwind, income/expense chips, loading/error/empty + retry).
+Start Phase 05 — Tests & Verification (test tooling, unit/integration tests for auth, categories list, API client, coverage gate).
 
 ## Key Decisions
 
