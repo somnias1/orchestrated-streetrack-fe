@@ -5,4 +5,6 @@ export type CategoriesTableProps = Readonly<{
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  onEdit: (category: CategoryRead) => void;
+  onDelete: (category: CategoryRead) => void;
 }>;

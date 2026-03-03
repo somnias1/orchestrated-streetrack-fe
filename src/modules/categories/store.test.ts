@@ -4,13 +4,24 @@ import { useCategoriesStore } from './store';
 
 vi.mock('../../services/categories', () => ({
   fetchCategories: vi.fn(),
+  createCategory: vi.fn(),
+  updateCategory: vi.fn(),
+  deleteCategory: vi.fn(),
 }));
 
-import { fetchCategories as fetchCategoriesApi } from '../../services/categories';
+import {
+  createCategory as createCategoryApi,
+  deleteCategory as deleteCategoryApi,
+  fetchCategories as fetchCategoriesApi,
+  updateCategory as updateCategoryApi,
+} from '../../services/categories';
 
 describe('useCategoriesStore', () => {
   beforeEach(() => {
     vi.mocked(fetchCategoriesApi).mockReset();
+    vi.mocked(createCategoryApi).mockReset();
+    vi.mocked(updateCategoryApi).mockReset();
+    vi.mocked(deleteCategoryApi).mockReset();
     useCategoriesStore.setState({
       items: [],
       loading: false,
@@ -75,5 +86,74 @@ describe('useCategoriesStore', () => {
     });
 
     expect(fetchCategoriesApi).toHaveBeenCalledWith({ skip: 10, limit: 20 });
+  });
+
+  it('createCategory calls API then fetchCategories on success', async () => {
+    vi.mocked(createCategoryApi).mockResolvedValue({
+      id: 'new-1',
+      name: 'New',
+      description: null,
+      is_income: false,
+      user_id: 'u1',
+    });
+    vi.mocked(fetchCategoriesApi).mockResolvedValue([]);
+
+    await useCategoriesStore.getState().createCategory({
+      name: 'New',
+      description: null,
+      is_income: false,
+    });
+
+    expect(createCategoryApi).toHaveBeenCalledWith({
+      name: 'New',
+      description: null,
+      is_income: false,
+    });
+    expect(fetchCategoriesApi).toHaveBeenCalled();
+  });
+
+  it('createCategory sets error and rethrows on API failure', async () => {
+    vi.mocked(createCategoryApi).mockRejectedValue(new Error('Conflict'));
+
+    await expect(
+      useCategoriesStore.getState().createCategory({
+        name: 'New',
+        description: null,
+        is_income: false,
+      }),
+    ).rejects.toThrow('Conflict');
+    expect(useCategoriesStore.getState().error).toBe('Conflict');
+  });
+
+  it('updateCategory calls API then fetchCategories on success', async () => {
+    vi.mocked(updateCategoryApi).mockResolvedValue({
+      id: '1',
+      name: 'Updated',
+      description: null,
+      is_income: true,
+      user_id: 'u1',
+    });
+    vi.mocked(fetchCategoriesApi).mockResolvedValue([]);
+
+    await useCategoriesStore.getState().updateCategory('1', {
+      name: 'Updated',
+      is_income: true,
+    });
+
+    expect(updateCategoryApi).toHaveBeenCalledWith('1', {
+      name: 'Updated',
+      is_income: true,
+    });
+    expect(fetchCategoriesApi).toHaveBeenCalled();
+  });
+
+  it('deleteCategory calls API then fetchCategories on success', async () => {
+    vi.mocked(deleteCategoryApi).mockResolvedValue(undefined);
+    vi.mocked(fetchCategoriesApi).mockResolvedValue([]);
+
+    await useCategoriesStore.getState().deleteCategory('1');
+
+    expect(deleteCategoryApi).toHaveBeenCalledWith('1');
+    expect(fetchCategoriesApi).toHaveBeenCalled();
   });
 });

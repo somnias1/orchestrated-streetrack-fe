@@ -1,7 +1,10 @@
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import EditRounded from '@mui/icons-material/EditRounded';
 import {
   Box,
   Button,
   CircularProgress,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -25,76 +28,106 @@ import type { CategoriesTableProps } from './types';
 
 const ROW_HEIGHT = 48;
 const TABLE_MIN_HEIGHT = 400;
-const COLUMN_SIZES = [180, 280, 120, 100] as const;
+const COLUMN_SIZES = [180, 280, 120, 120] as const;
 const GRID_TEMPLATE = COLUMN_SIZES.map((s) => `${s}px`).join(' ');
 
-const columns: ColumnDef<CategoryRead>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-    size: COLUMN_SIZES[0],
-    cell: (info) => (
-      <Typography variant="body2" sx={{ color: themeTokens.textPrimary }}>
-        {info.getValue<string>()}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: 'description',
-    header: 'Description',
-    size: COLUMN_SIZES[1],
-    cell: (info) => {
-      const value = info.getValue<string | null>();
-      const text = value ?? '—';
-      const truncated = text.length > 60 ? `${text.slice(0, 60)}…` : text;
-      const cell = (
-        <Typography
-          variant="body2"
-          sx={{
-            color: themeTokens.textSecondary,
-            maxWidth: 260,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {truncated}
+function createColumns(
+  onEdit: (category: CategoryRead) => void,
+  onDelete: (category: CategoryRead) => void,
+): ColumnDef<CategoryRead>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      size: COLUMN_SIZES[0],
+      cell: (info) => (
+        <Typography variant="body2" sx={{ color: themeTokens.textPrimary }}>
+          {info.getValue<string>()}
         </Typography>
-      );
-      return text.length > 60 ? (
-        <Tooltip title={text} placement="top-start">
-          {cell}
-        </Tooltip>
-      ) : (
-        cell
-      );
+      ),
     },
-  },
-  {
-    accessorKey: 'is_income',
-    header: 'Type',
-    size: COLUMN_SIZES[2],
-    cell: (info) => <CategoryTypeChip isIncome={info.getValue<boolean>()} />,
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    size: COLUMN_SIZES[3],
-    cell: () => (
-      <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-        —
-      </Typography>
-    ),
-  },
-];
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      size: COLUMN_SIZES[1],
+      cell: (info) => {
+        const value = info.getValue<string | null>();
+        const text = value ?? '—';
+        const truncated = text.length > 60 ? `${text.slice(0, 60)}…` : text;
+        const cell = (
+          <Typography
+            variant="body2"
+            sx={{
+              color: themeTokens.textSecondary,
+              maxWidth: 260,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {truncated}
+          </Typography>
+        );
+        return text.length > 60 ? (
+          <Tooltip title={text} placement="top-start">
+            {cell}
+          </Tooltip>
+        ) : (
+          cell
+        );
+      },
+    },
+    {
+      accessorKey: 'is_income',
+      header: 'Type',
+      size: COLUMN_SIZES[2],
+      cell: (info) => <CategoryTypeChip isIncome={info.getValue<boolean>()} />,
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      size: COLUMN_SIZES[3],
+      cell: (info) => {
+        const category = info.row.original;
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Edit">
+              <IconButton
+                size="small"
+                onClick={() => onEdit(category)}
+                aria-label={`Edit ${category.name}`}
+                sx={{ color: themeTokens.primary }}
+              >
+                <EditRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                onClick={() => onDelete(category)}
+                aria-label={`Delete ${category.name}`}
+                sx={{ color: themeTokens.error }}
+              >
+                <DeleteOutlineRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        );
+      },
+    },
+  ];
+}
 
 export function CategoriesTable({
   items,
   loading,
   error,
   onRetry,
+  onEdit,
+  onDelete,
 }: CategoriesTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const columns = createColumns(onEdit, onDelete);
 
   const table = useReactTable({
     data: items,
