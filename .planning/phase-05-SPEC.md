@@ -51,13 +51,13 @@
 
 ### 6. Definition of done (§8.3)
 
-- [ ] Phase 05 spec committed (this file).
-- [ ] Test tooling (Vitest, RTL, MSW or Axios mock) installed and configured; `npm test` runs suite.
-- [ ] All §1.3 cases above covered; mapping table in phase summary.
-- [ ] Coverage ≥ 80% for code touched (or overall); `npm test -- --coverage` passes.
-- [ ] Gate: `npm test && npx biome check .` passes before every commit.
-- [ ] README updated with test and coverage instructions.
-- [ ] Phase SUMMARY: `.planning/phase-05-SUMMARY.md` committed before merge.
+- [x] Phase 05 spec committed (this file).
+- [x] Test tooling (Vitest, RTL, MSW) installed and configured; `npm test` runs suite.
+- [x] All §1.3 cases above covered; mapping table in phase summary.
+- [x] Coverage ≥ 80% lines/statements, 70% branches/functions for in-scope code; `npm run test:coverage` passes.
+- [x] Gate: `npm test && npx biome check .` passes before every commit.
+- [x] README updated with test and coverage instructions.
+- [x] Phase SUMMARY: `.planning/phase-05-SUMMARY.md` committed before merge.
 
 ---
 

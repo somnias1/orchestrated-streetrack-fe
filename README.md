@@ -1,4 +1,6 @@
-# Rsbuild project
+# Streetrack Frontend
+
+Personal finance / expense-tracking web app (React, Rsbuild, Auth0, streetrack-be API). See TECHSPEC.md for full technical spec.
 
 ## Setup
 
@@ -10,7 +12,7 @@ npm install
 
 ## Get started
 
-Start the dev server, and the app will be available at [http://localhost:3000](http://localhost:3000).
+Start the dev server; the app will be available at [http://localhost:3000](http://localhost:3000).
 
 ```bash
 npm run dev
@@ -28,9 +30,23 @@ Preview the production build locally:
 npm run preview
 ```
 
+## Tests
+
+Run the test suite (Vitest + React Testing Library + MSW):
+
+```bash
+npm test
+```
+
+Run tests with coverage (gate: 80% lines/statements, 70% branches/functions on in-scope code):
+
+```bash
+npm run test:coverage
+```
+
+**Gate (before every commit on a phase branch):** `npm test && npx biome check .` must pass.
+
 ## Learn more
 
-To learn more about Rsbuild, check out the following resources:
-
-- [Rsbuild documentation](https://rsbuild.rs) - explore Rsbuild features and APIs.
-- [Rsbuild GitHub repository](https://github.com/web-infra-dev/rsbuild) - your feedback and contributions are welcome!
+- [Rsbuild documentation](https://rsbuild.rs)
+- [TECHSPEC.md](./TECHSPEC.md) — technical specification and phase roadmap
