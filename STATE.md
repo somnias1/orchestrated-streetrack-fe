@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 10 — Subcategories Full CRUD UI (complete). **Next:** Phase 11 — Transactions Full CRUD UI.
+Phase 11 — Transactions Full CRUD UI (complete). **Next:** Phase 12 — Hangouts Full CRUD UI.
 
 ## Last Task Completed
 
-Phase 10: Subcategories service CRUD (create, get, update, delete), store create/update/delete actions, subcategory form dialog (Zod, category picker), delete confirmation dialog, Subcategories screen Create button and table Edit/Delete actions; service/store/screen tests and CRUD flow integration tests; gate and phase summary.
+Phase 11: Transactions service CRUD (create, get, update, delete), store create/update/delete actions, transaction form dialog (Zod, subcategory/hangout pickers), delete confirmation dialog, Transactions screen Create button and table Edit/Delete actions; service/store/screen tests and CRUD flow integration tests; gate and phase summary.
 
 ## Next Task
 
-1. **If not done:** Merge `feature/phase-10-subcategories-crud` into `main` (--no-ff).
-2. **Then:** GSD session start — Phase 11. Create branch `feature/phase-11-transactions-crud`, write `.planning/phase-11-SPEC.md`, implement Transactions create/edit/delete UI (subcategory/hangout pickers, forms); see `.planning/phase-00-ROADMAP.md` Phase 11.
+1. Merge `feature/phase-11-transactions-crud` into `main` (--no-ff).
+2. GSD session start — Phase 12. Create branch `feature/phase-12-hangouts-crud`, write `.planning/phase-12-SPEC.md`, implement Hangouts create/edit/delete UI; see `.planning/phase-00-ROADMAP.md` Phase 12.
 
 ## Key Decisions
 

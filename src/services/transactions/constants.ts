@@ -3,4 +3,7 @@
  */
 export const transactionsPaths = {
   list: 'transactions',
+  get: (id: string) => `transactions/${id}`,
+  update: (id: string) => `transactions/${id}`,
+  delete: (id: string) => `transactions/${id}`,
 } as const;

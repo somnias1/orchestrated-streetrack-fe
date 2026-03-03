@@ -5,4 +5,6 @@ export type TransactionsTableProps = Readonly<{
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  onEdit: (transaction: TransactionRead) => void;
+  onDelete: (transaction: TransactionRead) => void;
 }>;
