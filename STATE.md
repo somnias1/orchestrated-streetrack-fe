@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 08 — Hangouts List & Virtual (complete). **Next:** Phase 09 — Categories Full CRUD UI.
+Phase 10 — Subcategories Full CRUD UI (complete). **Next:** Phase 11 — Transactions Full CRUD UI.
 
 ## Last Task Completed
 
-Phase 08: Hangouts service (types, constants, fetchHangouts), Zustand store, Hangouts screen with virtualized table (Name, Description, Date); route and layout nav (Hangouts link); unit tests (service, store), integration tests (Hangouts screen loading/success/error/empty/retry), Layout test updated for Hangouts link; coverage gate and phase summary. Test script updated with `--no-file-parallelism` for stable MSW list/retry tests.
+Phase 10: Subcategories service CRUD (create, get, update, delete), store create/update/delete actions, subcategory form dialog (Zod, category picker), delete confirmation dialog, Subcategories screen Create button and table Edit/Delete actions; service/store/screen tests and CRUD flow integration tests; gate and phase summary.
 
 ## Next Task
 
-1. **If not done:** Merge `feature/phase-08-hangouts-list` into `main` (--no-ff).
-2. **Then:** GSD session start — Phase 09. Create branch `feature/phase-09-categories-crud`, write `.planning/phase-09-SPEC.md`, implement Categories create/edit/delete UI (forms, Zod, POST/PATCH/DELETE); see `.planning/phase-00-ROADMAP.md` Phase 09.
+1. **If not done:** Merge `feature/phase-10-subcategories-crud` into `main` (--no-ff).
+2. **Then:** GSD session start — Phase 11. Create branch `feature/phase-11-transactions-crud`, write `.planning/phase-11-SPEC.md`, implement Transactions create/edit/delete UI (subcategory/hangout pickers, forms); see `.planning/phase-00-ROADMAP.md` Phase 11.
 
 ## Key Decisions
 
