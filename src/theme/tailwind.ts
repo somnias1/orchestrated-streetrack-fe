@@ -18,14 +18,16 @@ export function twColor(color: string, shade: Shade): string {
   return `var(--color-${color}-${shade})`;
 }
 
+/** Semantic tokens (tweakcn-style); values switch with [data-theme] in theme.css */
 export const themeTokens = {
-  background: 'var(--color-gray-900)',
-  surface: 'var(--color-gray-800)',
-  primary: 'var(--color-indigo-500)',
-  border: 'var(--color-gray-600)',
-  textPrimary: 'var(--color-gray-100)',
-  textSecondary: 'var(--color-gray-400)',
-  success: 'var(--color-green-600)',
-  error: 'var(--color-red-600)',
-  warning: 'var(--color-amber-600)',
+  background: 'var(--background)',
+  surface: 'var(--card)',
+  primary: 'var(--primary)',
+  border: 'var(--border)',
+  textPrimary: 'var(--foreground)',
+  textSecondary: 'var(--muted)',
+  success: 'var(--success)',
+  error: 'var(--destructive)',
+  warning: 'var(--warning)',
+  disabled: 'var(--disabled)',
 } as const;

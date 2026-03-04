@@ -1,0 +1,35 @@
+/**
+ * Tweakcn-style semantic theme variables.
+ * One set of names; values switch via [data-theme] on root.
+ * Default is dark (TECHSPEC §3.7). Tailwind color vars come from @import below.
+ */
+@import "tailwindcss";
+
+/* Dark (default): clean dark personal-finance style */
+:root,
+[data-theme="dark"] {
+  --background: var(--color-gray-900);
+  --foreground: var(--color-gray-100);
+  --card: var(--color-gray-800);
+  --primary: var(--color-indigo-500);
+  --border: var(--color-gray-600);
+  --muted: var(--color-gray-400);
+  --success: var(--color-green-600);
+  --destructive: var(--color-red-600);
+  --warning: var(--color-amber-600);
+  --disabled: var(--color-gray-500);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --background: var(--color-gray-50);
+  --foreground: var(--color-gray-900);
+  --card: var(--color-gray-100);
+  --primary: var(--color-indigo-600);
+  --border: var(--color-gray-200);
+  --muted: var(--color-gray-500);
+  --success: var(--color-green-600);
+  --destructive: var(--color-red-600);
+  --warning: var(--color-amber-600);
+  --disabled: var(--color-gray-400);
+}

@@ -1,15 +1,26 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
+import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import EventRoundedIcon from '@mui/icons-material/EventRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
+import {
+  AppBar,
+  Box,
+  Button,
+  IconButton,
+  Toolbar,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { routes } from '../../routes';
 import { themeTokens } from '../../theme/tailwind';
+import { useThemeStore } from '../theme/store';
 
 type Props = Readonly<{
   children: ReactNode;
@@ -37,6 +48,7 @@ const navLinkActive = {
 
 export function Layout({ children }: Props) {
   const { logout } = useAuth0();
+  const { mode, toggle } = useThemeStore();
 
   return (
     <Box
@@ -118,6 +130,25 @@ export function Layout({ children }: Props) {
             )}
           </NavLink>
           <Box sx={{ flexGrow: 1 }} />
+          <Tooltip
+            title={
+              mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            }
+          >
+            <IconButton
+              onClick={toggle}
+              aria-label={
+                mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+              }
+              sx={{ color: themeTokens.textSecondary }}
+            >
+              {mode === 'dark' ? (
+                <LightModeRoundedIcon />
+              ) : (
+                <DarkModeRoundedIcon />
+              )}
+            </IconButton>
+          </Tooltip>
           <Button
             startIcon={<LogoutRoundedIcon />}
             onClick={() =>
