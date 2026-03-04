@@ -27,6 +27,8 @@ import type { HangoutsTableProps } from './types';
 
 const ROW_HEIGHT = 48;
 const TABLE_MIN_HEIGHT = 400;
+/** Min height for loading/error/empty state row so body area is consistent (§5.1) */
+const STATE_ROW_MIN_HEIGHT = TABLE_MIN_HEIGHT - ROW_HEIGHT;
 const COLUMN_SIZES = [200, 280, 120, 80] as const;
 const GRID_TEMPLATE = COLUMN_SIZES.map((s) => `${s}px`).join(' ');
 
@@ -242,6 +244,8 @@ export function HangoutsTable({
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 6,
                     textAlign: 'center',
+                    minHeight: STATE_ROW_MIN_HEIGHT,
+                    verticalAlign: 'middle',
                   }}
                 >
                   <CircularProgress sx={{ color: themeTokens.primary }} />
@@ -256,6 +260,8 @@ export function HangoutsTable({
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 3,
                     textAlign: 'center',
+                    minHeight: STATE_ROW_MIN_HEIGHT,
+                    verticalAlign: 'middle',
                   }}
                 >
                   <Typography sx={{ color: themeTokens.error, mb: 2 }}>
@@ -279,6 +285,8 @@ export function HangoutsTable({
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 3,
                     color: themeTokens.textSecondary,
+                    minHeight: STATE_ROW_MIN_HEIGHT,
+                    verticalAlign: 'middle',
                   }}
                 >
                   No hangouts found.
