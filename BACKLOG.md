@@ -23,12 +23,15 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 - [x] Auth0: login, callback, logout, protected routes, token in API client
 - [x] Session persistence (localStorage cache), no login flash on refresh
-- [x] Layout with navigation (Home, Categories)
-- [x] Home and basic routing
-- [x] Categories: list view, API service, store (Zustand), “About” dialog
-- [x] Categories list: virtualized table (@tanstack/react-virtual), grid layout, loading/error/empty states
-- [x] API client with Bearer token (callbackApi)
+- [x] Layout with navigation (Home, Categories, Subcategories, Transactions, Hangouts)
+- [x] Home and basic routing; centralized routes (`src/routes.ts`)
+- [x] Categories: full CRUD UI (create, edit, delete; form dialog with Zod, delete confirmation)
+- [x] Subcategories: list (virtualized table), service, store, full CRUD UI (category picker, forms)
+- [x] Transactions: list (virtualized table), service, store, full CRUD UI (subcategory/hangout pickers)
+- [x] Hangouts: list (virtualized table), service, store, full CRUD UI (form + delete dialogs)
+- [x] API client with Bearer token (callbackApi); all list endpoints use `skip`/`limit`
 - [x] Tailwind + MUI, theme helper for Tailwind colors in `sx`
+- [x] Unit/integration tests: Vitest, RTL, MSW — auth, API client, all four resources (services, stores, screens, CRUD flows); coverage gate (80% lines/statements, 70% branches/functions)
 
 ---
 
@@ -47,15 +50,8 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 ### Frontend
 
-- [ ] **Virtualization (performance for large lists)**
-  - [ ] **Subcategories list**: virtual list wherever many subcategories are shown (per category or global).
-  - [ ] **Transactions list**: virtual list for main transactions view (likely largest dataset).
-  - [ ] Optional: use backend `skip`/`limit` for cursor- or page-based “load more” (or total count) if you prefer windowed fetch over “fetch all + virtualize DOM”.
-  - [ ] Keep scroll position and focus (keyboard, a11y) usable.
-- [ ] **Unit tests**
-  - [ ] Components (e.g. category list, transaction form when it exists)
-  - [ ] API client / hooks (mocked backend)
-  - [ ] Auth flow (login, token, logout) if applicable
+- [ ] Branch coverage: raise to ≥70% if it drops (see TECHSPEC §6.2; gate currently enforces 70% branches)
+- [ ] Optional: layout/UX refinements; keyboard/a11y for virtualized tables and dialogs
 
 ---
 
@@ -70,12 +66,8 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 ### Frontend
 
-- [ ] Categories: create, edit, delete (full CRUD UI)
-- [ ] Subcategories: list (per category or global), create, edit, delete
-- [ ] Transactions: list, create, edit, delete (link to subcategory/hangout)
-- [ ] Hangouts: list, create, edit, delete
-- [ ] Loading and error states across screens
-- [ ] Basic navigation and layout refinements
+- [ ] Loading and error states refinements (e.g. per-action feedback in CRUD flows)
+- [ ] Optional: layout and navigation polish
 
 ---
 
@@ -106,10 +98,10 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 1. **Backend** repo: `streetrack-be`. **Frontend** repo: `streetrack-fe`. This same `BACKLOG.md` lives in both repos—keep them in sync when you update.
 2. Move tasks from High / Medium / Later into **Done** as you complete them.
-3. **Virtualization**: do early so categories, subcategories, and transactions stay smooth with large data. Backend already supports `?skip=` and `?limit=` on list endpoints.
-4. **Unit tests**: add as you build (or right after). Keep “Unit tests” in High until both backend and frontend have a solid test set.
+3. **Virtualization**: Frontend has virtualized lists for categories, subcategories, transactions, and hangouts. Backend supports `?skip=` and `?limit=` on list endpoints.
+4. **Unit tests**: Frontend has Vitest/RTL/MSW tests and coverage gate. Backend unit tests remain High priority.
 5. **Import/export**: do after core CRUD and tests. Define the format once; implement backend first, then frontend clipboard/UI.
 
 ---
 
-_Last updated: virtualized categories table (staged). Copy to streetrack-be BACKLOG.md to keep repos in sync._
+_Last updated: Phase 12 complete (all four resources: list + virtualized table + full CRUD UI; tests and coverage gate). Copy to streetrack-be BACKLOG.md to keep repos in sync._
