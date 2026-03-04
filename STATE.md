@@ -10,8 +10,7 @@ Phase 15: Unified table state (STATE_ROW_MIN_HEIGHT, verticalAlign) on Subcatego
 
 ## Next Task
 
-1. Merge `feature/phase-15-remaining-screens-crud-shadcn` into `main` (--no-ff).
-2. Future phases (Phase 16: Tests & coverage gate) from `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6.
+1. Phase 16: Tests & coverage gate (see `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6).
 
 ## Key Decisions
 
