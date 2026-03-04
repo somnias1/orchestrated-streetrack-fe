@@ -50,7 +50,11 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 ### Frontend
 
-- [ ] Branch coverage: raise to ≥70% if it drops (see TECHSPEC §6.2; gate currently enforces 70% branches)
+- [ ] **Phase 13:** TanStack React Query for all list/CRUD services and hooks; modules use hooks; Zustand only for UI state if needed
+- [ ] **Phase 14:** Theme, layout & Categories table on shadcn; tweakcn-style theme; light/dark mode; table state alignment
+- [ ] **Phase 15:** Remaining screens & CRUD dialogs on shadcn; unify table state; reduce MUI
+- [ ] **Phase 16:** Tests & coverage gate — update/add tests for Phases 13–15; meet 80% lines/statements, 70% branches/functions; §1.3 mapping
+- [ ] Branch coverage: raise to ≥70% if it drops (see TECHSPEC §6.2; gate currently enforces 70% branches) — addressed in Phase 16
 - [ ] Optional: layout/UX refinements; keyboard/a11y for virtualized tables and dialogs
 
 ---
