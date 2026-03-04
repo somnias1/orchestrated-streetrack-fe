@@ -1,6 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useCategoriesQuery } from '../../services/categories/hooks';
 import {
   useCreateSubcategoryMutation,
@@ -10,7 +10,9 @@ import {
 } from '../../services/subcategories/hooks';
 import type { SubcategoryRead } from '../../services/subcategories/types';
 import { themeTokens } from '../../theme/tailwind';
+import { useCategoriesStore } from '../categories/store';
 import { DeleteSubcategoryDialog } from './deleteSubcategoryDialog';
+import { useSubcategoriesStore } from './store';
 import { SubcategoriesTable } from './subcategoriesTable';
 import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
@@ -23,6 +25,25 @@ export function Subcategories() {
     refetch,
   } = useSubcategoriesQuery();
   const { data: categories = [] } = useCategoriesQuery();
+  const setSubcategoriesFromQuery = useSubcategoriesStore(
+    (s) => s.setFromQuery,
+  );
+  const setCategoriesFromQuery = useCategoriesStore((s) => s.setFromQuery);
+
+  useEffect(() => {
+    const err =
+      isError && error instanceof Error
+        ? error.message
+        : isError
+          ? 'Failed to load subcategories'
+          : null;
+    setSubcategoriesFromQuery(items, isLoading, err);
+  }, [items, isLoading, isError, error, setSubcategoriesFromQuery]);
+
+  useEffect(() => {
+    setCategoriesFromQuery(categories, false, null);
+  }, [categories, setCategoriesFromQuery]);
+
   const createMutation = useCreateSubcategoryMutation();
   const updateMutation = useUpdateSubcategoryMutation();
   const deleteMutation = useDeleteSubcategoryMutation();

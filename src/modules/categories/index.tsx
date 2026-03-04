@@ -1,6 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
@@ -12,6 +12,7 @@ import { themeTokens } from '../../theme/tailwind';
 import { CategoriesTable } from './categoriesTable';
 import { CategoryFormDialog } from './categoryFormDialog';
 import { DeleteCategoryDialog } from './deleteCategoryDialog';
+import { useCategoriesStore } from './store';
 
 export function Categories() {
   const {
@@ -21,6 +22,17 @@ export function Categories() {
     error,
     refetch,
   } = useCategoriesQuery();
+  const setFromQuery = useCategoriesStore((s) => s.setFromQuery);
+
+  useEffect(() => {
+    const err =
+      isError && error instanceof Error
+        ? error.message
+        : isError
+          ? 'Failed to load categories'
+          : null;
+    setFromQuery(items, isLoading, err);
+  }, [items, isLoading, isError, error, setFromQuery]);
   const createMutation = useCreateCategoryMutation();
   const updateMutation = useUpdateCategoryMutation();
   const deleteMutation = useDeleteCategoryMutation();

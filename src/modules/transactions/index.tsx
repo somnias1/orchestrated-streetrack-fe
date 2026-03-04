@@ -1,6 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHangoutsQuery } from '../../services/hangouts/hooks';
 import { useSubcategoriesQuery } from '../../services/subcategories/hooks';
 import {
@@ -11,7 +11,10 @@ import {
 } from '../../services/transactions/hooks';
 import type { TransactionRead } from '../../services/transactions/types';
 import { themeTokens } from '../../theme/tailwind';
+import { useHangoutsStore } from '../hangouts/store';
+import { useSubcategoriesStore } from '../subcategories/store';
 import { DeleteTransactionDialog } from './deleteTransactionDialog';
+import { useTransactionsStore } from './store';
 import { TransactionFormDialog } from './transactionFormDialog';
 import { TransactionsTable } from './transactionsTable';
 
@@ -25,6 +28,30 @@ export function Transactions() {
   } = useTransactionsQuery();
   const { data: subcategories = [] } = useSubcategoriesQuery();
   const { data: hangouts = [] } = useHangoutsQuery();
+  const setTransactionsFromQuery = useTransactionsStore((s) => s.setFromQuery);
+  const setSubcategoriesFromQuery = useSubcategoriesStore(
+    (s) => s.setFromQuery,
+  );
+  const setHangoutsFromQuery = useHangoutsStore((s) => s.setFromQuery);
+
+  useEffect(() => {
+    const err =
+      isError && error instanceof Error
+        ? error.message
+        : isError
+          ? 'Failed to load transactions'
+          : null;
+    setTransactionsFromQuery(items, isLoading, err);
+  }, [items, isLoading, isError, error, setTransactionsFromQuery]);
+
+  useEffect(() => {
+    setSubcategoriesFromQuery(subcategories, false, null);
+  }, [subcategories, setSubcategoriesFromQuery]);
+
+  useEffect(() => {
+    setHangoutsFromQuery(hangouts, false, null);
+  }, [hangouts, setHangoutsFromQuery]);
+
   const createMutation = useCreateTransactionMutation();
   const updateMutation = useUpdateTransactionMutation();
   const deleteMutation = useDeleteTransactionMutation();

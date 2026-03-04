@@ -1,6 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   useCreateHangoutMutation,
   useDeleteHangoutMutation,
@@ -12,6 +12,7 @@ import { themeTokens } from '../../theme/tailwind';
 import { DeleteHangoutDialog } from './deleteHangoutDialog';
 import { HangoutFormDialog } from './hangoutFormDialog';
 import { HangoutsTable } from './hangoutsTable';
+import { useHangoutsStore } from './store';
 
 export function Hangouts() {
   const {
@@ -21,6 +22,18 @@ export function Hangouts() {
     error,
     refetch,
   } = useHangoutsQuery();
+  const setFromQuery = useHangoutsStore((s) => s.setFromQuery);
+
+  useEffect(() => {
+    const err =
+      isError && error instanceof Error
+        ? error.message
+        : isError
+          ? 'Failed to load hangouts'
+          : null;
+    setFromQuery(items, isLoading, err);
+  }, [items, isLoading, isError, error, setFromQuery]);
+
   const createMutation = useCreateHangoutMutation();
   const updateMutation = useUpdateHangoutMutation();
   const deleteMutation = useDeleteHangoutMutation();
