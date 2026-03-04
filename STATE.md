@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 15 — Remaining screens & CRUD on shadcn (complete). **Next:** Phase 16 (see ROADMAP / FRAMEWORK.md §6).
+Phase 16 — Tests & coverage gate (complete). **Next:** Phase 17+ per ROADMAP / FRAMEWORK.md §6.
 
 ## Last Task Completed
 
-Phase 15: Unified table state (STATE_ROW_MIN_HEIGHT, verticalAlign) on Subcategories, Transactions, and Hangouts tables; verified theme tokens used across list screens and CRUD dialogs; no new MUI patterns; shadcn/ui package not added (tweakcn-style alignment only).
+Phase 16: §1.3 → test mapping documented; coverage gate verified (80% lines/statements, 70% branches/functions); `npm test && npx biome check .` passing; no new tests required—existing suite covers Phases 13–15.
 
 ## Next Task
 
-1. Phase 16: Tests & coverage gate (see `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6).
+1. Phase 17+ (or backlog): New features (e.g. import/export UI, reports) per `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6.
 
 ## Key Decisions
 
