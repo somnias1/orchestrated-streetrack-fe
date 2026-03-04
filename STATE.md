@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 12 — Hangouts Full CRUD UI (complete). **Next:** Phase 13+ (see ROADMAP / FRAMEWORK.md §6).
+Phase 13 — React Query services (complete). **Next:** Phase 14+ (see ROADMAP / FRAMEWORK.md §6).
 
 ## Last Task Completed
 
-Phase 12: Hangouts service CRUD (create, get, update, delete), store create/update/delete actions, hangout form dialog (Zod), delete confirmation dialog, Hangouts screen Create button and table Edit/Delete actions; service/store/screen/table tests and CRUD flow integration tests; gate and phase summary.
+Phase 13: TanStack React Query for all resources; hooks in services (categories, subcategories, transactions, hangouts); modules refactored to use hooks; Zustand stores removed; screen tests wrapped with QueryClientProvider; service test path assertions aligned with constants; gate and phase summary.
 
 ## Next Task
 
-1. Merge `feature/phase-12-hangouts-crud` into `main` (--no-ff).
-2. Future phases (e.g. import/export UI, reports) from `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6.
+1. Merge `feature/phase-13-react-query-services` into `main` (--no-ff).
+2. Future phases (Phase 14: Theme, layout & Categories table alignment) from `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6.
 
 ## Key Decisions
 
