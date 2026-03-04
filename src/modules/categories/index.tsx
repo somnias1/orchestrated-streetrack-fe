@@ -1,6 +1,12 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
+import {
+  useCategoriesQuery,
+  useCreateCategoryMutation,
+  useDeleteCategoryMutation,
+  useUpdateCategoryMutation,
+} from '../../services/categories/hooks';
 import type { CategoryRead } from '../../services/categories/types';
 import { themeTokens } from '../../theme/tailwind';
 import { CategoriesTable } from './categoriesTable';
@@ -10,14 +16,26 @@ import { useCategoriesStore } from './store';
 
 export function Categories() {
   const {
-    items,
-    loading,
+    data: items = [],
+    isLoading,
+    isError,
     error,
-    fetchCategories,
-    createCategory,
-    updateCategory,
-    deleteCategory,
-  } = useCategoriesStore();
+    refetch,
+  } = useCategoriesQuery();
+  const setFromQuery = useCategoriesStore((s) => s.setFromQuery);
+
+  useEffect(() => {
+    const err =
+      isError && error instanceof Error
+        ? error.message
+        : isError
+          ? 'Failed to load categories'
+          : null;
+    setFromQuery(items, isLoading, err);
+  }, [items, isLoading, isError, error, setFromQuery]);
+  const createMutation = useCreateCategoryMutation();
+  const updateMutation = useUpdateCategoryMutation();
+  const deleteMutation = useDeleteCategoryMutation();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
@@ -34,9 +52,12 @@ export function Categories() {
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  const errorMessage =
+    isError && error instanceof Error
+      ? error.message
+      : isError
+        ? 'Failed to load categories'
+        : null;
 
   const openCreate = useCallback(() => {
     setEditingCategoryId(null);
@@ -70,9 +91,12 @@ export function Categories() {
       setSubmitError(null);
       try {
         if (editingCategoryId === null) {
-          await createCategory(data);
+          await createMutation.mutateAsync(data);
         } else {
-          await updateCategory(editingCategoryId, data);
+          await updateMutation.mutateAsync({
+            id: editingCategoryId,
+            body: data,
+          });
         }
         setFormOpen(false);
       } catch (err) {
@@ -82,16 +106,16 @@ export function Categories() {
         throw err;
       }
     },
-    [editingCategoryId, createCategory, updateCategory],
+    [editingCategoryId, createMutation, updateMutation],
   );
 
   const handleDeleteConfirm = useCallback(
     async (id: string) => {
-      await deleteCategory(id);
+      await deleteMutation.mutateAsync(id);
       setDeleteOpen(false);
       setCategoryToDelete(null);
     },
-    [deleteCategory],
+    [deleteMutation],
   );
 
   return (
@@ -121,9 +145,9 @@ export function Categories() {
       </Box>
       <CategoriesTable
         items={items}
-        loading={loading}
-        error={error}
-        onRetry={fetchCategories}
+        loading={isLoading}
+        error={errorMessage}
+        onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
       />

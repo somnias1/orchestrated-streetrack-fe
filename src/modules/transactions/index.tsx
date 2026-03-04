@@ -1,6 +1,14 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
+import { useHangoutsQuery } from '../../services/hangouts/hooks';
+import { useSubcategoriesQuery } from '../../services/subcategories/hooks';
+import {
+  useCreateTransactionMutation,
+  useDeleteTransactionMutation,
+  useTransactionsQuery,
+  useUpdateTransactionMutation,
+} from '../../services/transactions/hooks';
 import type { TransactionRead } from '../../services/transactions/types';
 import { themeTokens } from '../../theme/tailwind';
 import { useHangoutsStore } from '../hangouts/store';
@@ -12,16 +20,41 @@ import { TransactionsTable } from './transactionsTable';
 
 export function Transactions() {
   const {
-    items,
-    loading,
+    data: items = [],
+    isLoading,
+    isError,
     error,
-    fetchTransactions,
-    createTransaction,
-    updateTransaction,
-    deleteTransaction,
-  } = useTransactionsStore();
-  const { items: subcategories, fetchSubcategories } = useSubcategoriesStore();
-  const { items: hangouts, fetchHangouts } = useHangoutsStore();
+    refetch,
+  } = useTransactionsQuery();
+  const { data: subcategories = [] } = useSubcategoriesQuery();
+  const { data: hangouts = [] } = useHangoutsQuery();
+  const setTransactionsFromQuery = useTransactionsStore((s) => s.setFromQuery);
+  const setSubcategoriesFromQuery = useSubcategoriesStore(
+    (s) => s.setFromQuery,
+  );
+  const setHangoutsFromQuery = useHangoutsStore((s) => s.setFromQuery);
+
+  useEffect(() => {
+    const err =
+      isError && error instanceof Error
+        ? error.message
+        : isError
+          ? 'Failed to load transactions'
+          : null;
+    setTransactionsFromQuery(items, isLoading, err);
+  }, [items, isLoading, isError, error, setTransactionsFromQuery]);
+
+  useEffect(() => {
+    setSubcategoriesFromQuery(subcategories, false, null);
+  }, [subcategories, setSubcategoriesFromQuery]);
+
+  useEffect(() => {
+    setHangoutsFromQuery(hangouts, false, null);
+  }, [hangouts, setHangoutsFromQuery]);
+
+  const createMutation = useCreateTransactionMutation();
+  const updateMutation = useUpdateTransactionMutation();
+  const deleteMutation = useDeleteTransactionMutation();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingTransactionId, setEditingTransactionId] = useState<
@@ -39,17 +72,12 @@ export function Transactions() {
     useState<TransactionRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
-
-  useEffect(() => {
-    fetchSubcategories();
-  }, [fetchSubcategories]);
-
-  useEffect(() => {
-    fetchHangouts();
-  }, [fetchHangouts]);
+  const errorMessage =
+    isError && error instanceof Error
+      ? error.message
+      : isError
+        ? 'Failed to load transactions'
+        : null;
 
   const openCreate = useCallback(() => {
     setEditingTransactionId(null);
@@ -87,9 +115,12 @@ export function Transactions() {
       setSubmitError(null);
       try {
         if (editingTransactionId === null) {
-          await createTransaction(data);
+          await createMutation.mutateAsync(data);
         } else {
-          await updateTransaction(editingTransactionId, data);
+          await updateMutation.mutateAsync({
+            id: editingTransactionId,
+            body: data,
+          });
         }
         setFormOpen(false);
       } catch (err) {
@@ -99,16 +130,16 @@ export function Transactions() {
         throw err;
       }
     },
-    [editingTransactionId, createTransaction, updateTransaction],
+    [editingTransactionId, createMutation, updateMutation],
   );
 
   const handleDeleteConfirm = useCallback(
     async (id: string) => {
-      await deleteTransaction(id);
+      await deleteMutation.mutateAsync(id);
       setDeleteOpen(false);
       setTransactionToDelete(null);
     },
-    [deleteTransaction],
+    [deleteMutation],
   );
 
   const subcategoryOptions = subcategories.map((s) => ({
@@ -144,9 +175,9 @@ export function Transactions() {
       </Box>
       <TransactionsTable
         items={items}
-        loading={loading}
-        error={error}
-        onRetry={fetchTransactions}
+        loading={isLoading}
+        error={errorMessage}
+        onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
       />

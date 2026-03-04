@@ -76,7 +76,7 @@ Pin **exact** versions in `package.json` (no `^` or `~`). Reference values from 
 | react-dom                   | 19.2.3  | DOM render                           |
 | react-router-dom            | 7.13.0  | Routing                              |
 | @auth0/auth0-react          | 2.15.0  | Auth (login, callback, logout)       |
-| zustand                     | 5.0.11  | Module-level state (UI-only after Phase 13) |
+| zustand                     | 5.0.11  | Global read store per resource (synced from React Query); UI-only state (Phase 13+) |
 | @tanstack/react-query       | (Phase 13) | Server state: queries, mutations, cache, refetch (see §3.3, §4.2) |
 | axios                       | 1.13.5  | HTTP client (via callbackApi)        |
 | @tanstack/react-table       | 8.21.3  | Table model for categories           |
@@ -100,7 +100,7 @@ Pin **exact** versions in `package.json` (no `^` or `~`). Reference values from 
 
 ### 2.4 Preferences (soft)
 
-- State: Phase 13+ uses TanStack React Query for server state (list/CRUD); Zustand only for UI-only state (e.g. dialog open). API: Axios with Bearer token from Auth0; single callbackApi / client entry point.
+- State: Phase 13+ uses TanStack React Query for server state (list/CRUD); Zustand stores hold a global read mirror (items, loading, error) synced from the query in screens, plus UI-only state (e.g. dialog open). API: Axios with Bearer token from Auth0; single callbackApi / client entry point.
 - Prefer minimal dependencies; add libraries only when they clearly improve quality or performance.
 - Virtualization for large lists (categories done; subcategories and transactions when those screens exist).
 
@@ -113,7 +113,7 @@ Pin **exact** versions in `package.json` (no `^` or `~`). Reference values from 
 - **Web SPA** talking to **streetrack-be** (FastAPI). Single process: browser → React app → Axios (Bearer token) → backend API.
 - **Screen flow**: (1) **Login** (Auth0) → **Callback** → (2) **Home** (placeholder) and **Categories** (list in virtualized table). Layout provides navigation (Home, Categories). Future: Subcategories, Transactions, Hangouts.
 - **Auth**: Auth0 React SDK; token obtained via `useAuth0()` and passed to the API client so every request includes the JWT. Session persisted (e.g. localStorage) to avoid login flash on refresh.
-- **Categories**: Fetched from backend; stored in Zustand (categories store); table uses TanStack Table + TanStack Virtual; loading/error/empty handled in the table body with retry on error.
+- **Categories**: Fetched from backend via React Query; result mirrored in Zustand (categories store) for global read access; table uses TanStack Table + TanStack Virtual; loading/error/empty handled in the table body with retry on error.
 
 ### 3.2 Project Structure
 
@@ -159,7 +159,7 @@ All application source under **`src/`**. Root holds config, docs, tooling.
 
 - **HTTP client**: All API calls go through a **single callbackApi** (Axios) that attaches the Auth0 Bearer token. No raw Axios calls from screens or stores; go through the shared client.
 - **Auth**: Auth0 React SDK for login/callback/logout; token is read (e.g. `useGetToken`) and set on the API client so authenticated requests succeed.
-- **State**: Phase 13+: Server state (list, loading, error, refetch) via **TanStack React Query** (hooks from services); Zustand only for local UI state (e.g. dialog open, selected id). Pre-Phase 13: Zustand stores per feature hold list, loading, error, refetch.
+- **State**: Phase 13+: Server state (list, loading, error, refetch) via **TanStack React Query** (hooks from services); Zustand stores per resource hold a read-only mirror (items, loading, error) synced from the query in screens, so any component can read from the store; plus local UI state (e.g. dialog open, selected id). Pre-Phase 13: Zustand stores per feature held list, loading, error, refetch.
 - **Centralized routes**: All paths in `src/routes.ts`. Navigation and `<Link>` use `routes.*` — never inline path strings.
 - **TypeScript**: Prefer `type`; component props as `Readonly<{ … }>` in `types.ts`.
 - **Error + retry**: Every user-facing error state must include a **retry CTA** that calls refetch (query client or store) or re-invokes the request.
@@ -292,7 +292,7 @@ Frontend types live in `src/services/<resource>/types.ts` (e.g. `categories/type
 
 | Concern           | Choice      | Notes                                      |
 | ----------------- | ----------- | ------------------------------------------ |
-| **Feature state** | **Zustand** (Phase 13+: UI-only) | Per-module; after Phase 13, server state moves to React Query; Zustand only for dialog open, selection, etc. |
+| **Feature state** | **Zustand** (Phase 13+: global read mirror + UI) | Per-module; after Phase 13, server state in React Query; Zustand holds mirror (items, loading, error) synced from query for global read access, plus dialog open, selection, etc. |
 | **Server state**  | Backend + **React Query** (Phase 13+) | No offline DB in frontend; React Query caches and refetches; refetch on load/retry. |
 | **Session**       | Auth0 + localStorage | Persist auth so refresh doesn’t flash login. |
 
@@ -464,5 +464,6 @@ Frontend service layout per resource: `src/services/<resource>/index.ts` (client
 | Date       | Change |
 | ---------- | ------ |
 | 2026-02-26 | TECHSPEC rewritten for Streetrack (frontend): §1 Problem & Context (personal finance, categories, Auth0, virtualized list). §2 Web stack (React, Rsbuild, Auth0, Zustand, TanStack Table/Virtual, MUI, Tailwind, Biome). §3 Architecture (SPA, modules, services, theme, routes). §3.7 UI/UX (dark fintech style, tokens, table patterns, retry CTA). §4 Data & APIs (Category, backend, Auth0). §5–§8 NFRs, testing, deployment, GSD integration. Aligned with FRAMEWORK.md and BACKLOG.md. |
-| 2026-03-03 | **Phases 13–16**: §2.2 added @tanstack/react-query (Phase 13). §2.4, §3.3, §4.2 updated for React Query as server state (Phase 13+), Zustand UI-only; retry CTA may call query client refetch. ROADMAP and BACKLOG extended with Phase 13 (React Query services), 14 (Theme, layout & Categories table), 15 (Remaining screens & CRUD on shadcn), 16 (Tests & coverage gate). |
+| 2026-03-03 | **Phases 13–16**: §2.2 added @tanstack/react-query (Phase 13). §2.4, §3.3, §4.2 updated for React Query as server state (Phase 13+), Zustand as global read mirror synced from query + UI state; retry CTA may call query client refetch. ROADMAP and BACKLOG extended with Phase 13 (React Query services), 14 (Theme, layout & Categories table), 15 (Remaining screens & CRUD on shadcn), 16 (Tests & coverage gate). |
+| 2026-03-03 | **Phase 13 follow-up**: Zustand stores re-added as global read layer; §2.2, §2.4, §3.1, §3.3, §4.2 updated to describe mirror (items, loading, error) synced from React Query in screens. Phase 13 SPEC and SUMMARY updated accordingly. |
 | 2026-02-26 | **§1.6 BACKLOG alignment**: Added subsection summarizing BACKLOG.md (Done / High / Medium / Later) and mapping to TECHSPEC sections and phases; noted skip/limit support for list endpoints. **§4 expanded from OpenAPI**: §4.1 full data model for Category, Subcategory, Transaction, Hangout (Read/Create/Update schemas) and HTTPValidationError/ValidationError; §4.3 full endpoint table (method, path, request, response, errors) for all four resources; OpenAPI source of truth at `GET {BASE_URL}/openapi.json`. |

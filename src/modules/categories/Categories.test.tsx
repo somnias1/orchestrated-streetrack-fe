@@ -1,7 +1,9 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
+import type React from 'react';
 import {
   afterAll,
   afterEach,
@@ -13,7 +15,6 @@ import {
 } from 'vitest';
 import { config } from '../../config';
 import { Categories } from './index';
-import { useCategoriesStore } from './store';
 
 // So virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
 vi.mock('@tanstack/react-virtual', () => ({
@@ -34,19 +35,24 @@ const categoriesUrl = `${API_URL}/categories`;
 
 const server = setupServer();
 
-function resetStore() {
-  useCategoriesStore.setState({
-    items: [],
-    loading: false,
-    error: null,
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
   });
 }
 
+function renderWithQueryClient(ui: React.ReactElement) {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+}
+
 beforeAll(() => server.listen());
-afterEach(() => {
-  server.resetHandlers();
-  resetStore();
-});
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('Categories screen', () => {
@@ -59,7 +65,7 @@ describe('Categories screen', () => {
       }),
     );
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -85,7 +91,7 @@ describe('Categories screen', () => {
     ];
     server.use(http.get(categoriesUrl, () => HttpResponse.json(items)));
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(screen.getByText(/Categories\s+\(2\)/)).toBeInTheDocument();
@@ -100,7 +106,7 @@ describe('Categories screen', () => {
       ),
     );
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(
@@ -131,7 +137,7 @@ describe('Categories screen', () => {
       }),
     );
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(
@@ -150,7 +156,7 @@ describe('Categories screen', () => {
   it('shows empty state when API returns empty array', async () => {
     server.use(http.get(categoriesUrl, () => HttpResponse.json([])));
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(screen.getByText('No categories found.')).toBeInTheDocument();
@@ -194,7 +200,7 @@ describe('Categories screen', () => {
       }),
     );
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(screen.getByText('No categories found.')).toBeInTheDocument();
@@ -246,7 +252,7 @@ describe('Categories screen', () => {
       }),
     );
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(screen.getByText('Food')).toBeInTheDocument();
@@ -292,7 +298,7 @@ describe('Categories screen', () => {
       ),
     );
 
-    render(<Categories />);
+    renderWithQueryClient(<Categories />);
 
     await waitFor(() => {
       expect(screen.getByText('ToDelete')).toBeInTheDocument();

@@ -1,7 +1,9 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
+import type React from 'react';
 import {
   afterAll,
   afterEach,
@@ -13,7 +15,6 @@ import {
 } from 'vitest';
 import { config } from '../../config';
 import { Subcategories } from './index';
-import { useSubcategoriesStore } from './store';
 
 // So virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
 vi.mock('@tanstack/react-virtual', () => ({
@@ -35,19 +36,24 @@ const categoriesUrl = `${API_URL}/categories`;
 
 const server = setupServer();
 
-function resetStore() {
-  useSubcategoriesStore.setState({
-    items: [],
-    loading: false,
-    error: null,
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
   });
 }
 
+function renderWithQueryClient(ui: React.ReactElement) {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+}
+
 beforeAll(() => server.listen());
-afterEach(() => {
-  server.resetHandlers();
-  resetStore();
-});
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('Subcategories screen', () => {
@@ -61,7 +67,7 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -92,7 +98,7 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(screen.getByText(/Subcategories\s+\(2\)/)).toBeInTheDocument();
@@ -110,7 +116,7 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(
@@ -141,7 +147,7 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(
@@ -163,7 +169,7 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json([])),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
@@ -219,7 +225,7 @@ describe('Subcategories screen', () => {
       }),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
@@ -292,7 +298,7 @@ describe('Subcategories screen', () => {
       }),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(screen.getByText('Groceries')).toBeInTheDocument();
@@ -349,7 +355,7 @@ describe('Subcategories screen', () => {
       ),
     );
 
-    render(<Subcategories />);
+    renderWithQueryClient(<Subcategories />);
 
     await waitFor(() => {
       expect(screen.getByText('ToDelete')).toBeInTheDocument();

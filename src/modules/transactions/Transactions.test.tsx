@@ -1,7 +1,9 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
+import type React from 'react';
 import {
   afterAll,
   afterEach,
@@ -13,7 +15,6 @@ import {
 } from 'vitest';
 import { config } from '../../config';
 import { Transactions } from './index';
-import { useTransactionsStore } from './store';
 
 // Virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
 vi.mock('@tanstack/react-virtual', () => ({
@@ -41,19 +42,24 @@ const defaultHandlers = [
 
 const server = setupServer(...defaultHandlers);
 
-function resetStore() {
-  useTransactionsStore.setState({
-    items: [],
-    loading: false,
-    error: null,
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
   });
 }
 
+function renderWithQueryClient(ui: React.ReactElement) {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+}
+
 beforeAll(() => server.listen());
-afterEach(() => {
-  server.resetHandlers();
-  resetStore();
-});
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('Transactions screen', () => {
@@ -67,7 +73,7 @@ describe('Transactions screen', () => {
       }),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -100,7 +106,7 @@ describe('Transactions screen', () => {
       http.get(transactionsUrl, () => HttpResponse.json(items)),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(screen.getByText(/Transactions\s+\(2\)/)).toBeInTheDocument();
@@ -118,7 +124,7 @@ describe('Transactions screen', () => {
       ),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(
@@ -150,7 +156,7 @@ describe('Transactions screen', () => {
       }),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(
@@ -172,7 +178,7 @@ describe('Transactions screen', () => {
       http.get(transactionsUrl, () => HttpResponse.json([])),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(screen.getByText('No transactions found.')).toBeInTheDocument();
@@ -185,7 +191,7 @@ describe('Transactions screen', () => {
       http.get(transactionsUrl, () => HttpResponse.json([])),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(
@@ -232,7 +238,7 @@ describe('Transactions screen', () => {
       }),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(
@@ -303,7 +309,7 @@ describe('Transactions screen', () => {
       }),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(screen.getByText(/Transactions\s+\(1\)/)).toBeInTheDocument();
@@ -346,7 +352,7 @@ describe('Transactions screen', () => {
       ),
     );
 
-    render(<Transactions />);
+    renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
       expect(screen.getByText(/Transactions\s+\(1\)/)).toBeInTheDocument();

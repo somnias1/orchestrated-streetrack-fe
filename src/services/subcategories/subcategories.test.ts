@@ -35,7 +35,7 @@ describe('fetchSubcategories', () => {
 
     await fetchSubcategories();
 
-    expect(callbackApi.get).toHaveBeenCalledWith('subcategories', {
+    expect(callbackApi.get).toHaveBeenCalledWith('subcategories/', {
       params: { skip: 0, limit: 50 },
     });
   });
@@ -45,7 +45,7 @@ describe('fetchSubcategories', () => {
 
     await fetchSubcategories({ skip: 10, limit: 20 });
 
-    expect(callbackApi.get).toHaveBeenCalledWith('subcategories', {
+    expect(callbackApi.get).toHaveBeenCalledWith('subcategories/', {
       params: { skip: 10, limit: 20 },
     });
   });
@@ -92,7 +92,7 @@ describe('createSubcategory', () => {
       belongs_to_income: false,
     });
 
-    expect(callbackApi.post).toHaveBeenCalledWith('subcategories', {
+    expect(callbackApi.post).toHaveBeenCalledWith('subcategories/', {
       category_id: 'cat-1',
       name: 'New',
       description: null,
@@ -120,7 +120,7 @@ describe('getSubcategory', () => {
 
     const result = await getSubcategory('1');
 
-    expect(callbackApi.get).toHaveBeenCalledWith('subcategories/1');
+    expect(callbackApi.get).toHaveBeenCalledWith('subcategories/1/');
     expect(result).toEqual(subcategory);
   });
 });
@@ -147,7 +147,7 @@ describe('updateSubcategory', () => {
       belongs_to_income: true,
     });
 
-    expect(callbackApi.patch).toHaveBeenCalledWith('subcategories/1', {
+    expect(callbackApi.patch).toHaveBeenCalledWith('subcategories/1/', {
       name: 'Updated',
       description: 'Desc',
       belongs_to_income: true,
@@ -172,6 +172,6 @@ describe('deleteSubcategory', () => {
 
     await deleteSubcategory('1');
 
-    expect(callbackApi.delete).toHaveBeenCalledWith('subcategories/1');
+    expect(callbackApi.delete).toHaveBeenCalledWith('subcategories/1/');
   });
 });
