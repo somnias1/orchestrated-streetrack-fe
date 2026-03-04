@@ -19,13 +19,16 @@ Produce a mapping table: each §1.3 success criterion → test file(s) and descr
 
 | §1.3 criterion | Test location |
 |----------------|---------------|
-| Auth: protected route redirect when not logged in | ProtectedRoute.test.tsx |
-| Auth: after login, user can reach protected pages | (integration or ProtectedRoute) |
-| Categories list: loading, success (rows), error (retry), empty | Categories.test.tsx |
-| API client: Bearer token attached when authenticated | callbackApi.test.ts |
-| Navigation: Layout shows Home and Categories links; routing matches routes.ts | Layout.test.tsx |
+| Auth: protected route redirect when not logged in | `ProtectedRoute.test.tsx` — "redirects to login when not authenticated" |
+| Auth: after login, user can reach protected pages | `ProtectedRoute.test.tsx` — "renders children when authenticated" |
+| Categories list: loading, success (rows), error (retry), empty | `Categories.test.tsx` — "shows loading spinner…", "shows virtualized rows…", "shows error and Retry button…", "Retry button triggers refetch", "shows empty state…" |
+| API client: Bearer token attached when authenticated | `callbackApi.test.ts` — "attaches Bearer token when token getter returns a token" |
+| Navigation: Layout shows Home and Categories links; routing matches routes.ts | `Layout.test.tsx` — "shows Home, Categories, Subcategories, Transactions, and Hangouts links with routes from routes.ts" |
+| Subcategories list: loading, success, error (retry), empty | `Subcategories.test.tsx` — same pattern as Categories |
+| Transactions list: loading, success, error (retry), empty | `Transactions.test.tsx` — same pattern |
+| Hangouts list: loading, success, error (retry), empty | `Hangouts.test.tsx` — same pattern |
 
-Extend the table for Subcategories, Transactions, Hangouts list behavior (loading/error/empty/retry) where tests exist or are added. Document the final mapping in this spec or in phase-16-SUMMARY.md.
+Final mapping documented in phase-16-SUMMARY.md.
 
 ## 3. Coverage gate (§6.2)
 
