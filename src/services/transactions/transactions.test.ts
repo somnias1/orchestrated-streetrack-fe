@@ -35,7 +35,7 @@ describe('fetchTransactions', () => {
 
     await fetchTransactions();
 
-    expect(callbackApi.get).toHaveBeenCalledWith('transactions', {
+    expect(callbackApi.get).toHaveBeenCalledWith('transactions/', {
       params: { skip: 0, limit: 50 },
     });
   });
@@ -45,7 +45,7 @@ describe('fetchTransactions', () => {
 
     await fetchTransactions({ skip: 10, limit: 20 });
 
-    expect(callbackApi.get).toHaveBeenCalledWith('transactions', {
+    expect(callbackApi.get).toHaveBeenCalledWith('transactions/', {
       params: { skip: 10, limit: 20 },
     });
   });
@@ -94,7 +94,7 @@ describe('createTransaction', () => {
       date: '2026-03-01',
     });
 
-    expect(callbackApi.post).toHaveBeenCalledWith('transactions', {
+    expect(callbackApi.post).toHaveBeenCalledWith('transactions/', {
       subcategory_id: 'sub-1',
       value: 500,
       description: 'Lunch',
@@ -123,7 +123,7 @@ describe('getTransaction', () => {
 
     const result = await getTransaction('1');
 
-    expect(callbackApi.get).toHaveBeenCalledWith('transactions/1');
+    expect(callbackApi.get).toHaveBeenCalledWith('transactions/1/');
     expect(result).toEqual(transaction);
   });
 });
@@ -151,7 +151,7 @@ describe('updateTransaction', () => {
       date: '2026-03-02',
     });
 
-    expect(callbackApi.patch).toHaveBeenCalledWith('transactions/1', {
+    expect(callbackApi.patch).toHaveBeenCalledWith('transactions/1/', {
       value: 600,
       description: 'Updated',
       date: '2026-03-02',
@@ -176,6 +176,6 @@ describe('deleteTransaction', () => {
 
     await deleteTransaction('1');
 
-    expect(callbackApi.delete).toHaveBeenCalledWith('transactions/1');
+    expect(callbackApi.delete).toHaveBeenCalledWith('transactions/1/');
   });
 });

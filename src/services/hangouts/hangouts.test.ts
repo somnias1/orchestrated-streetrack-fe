@@ -40,7 +40,7 @@ describe('fetchHangouts', () => {
     await fetchHangouts();
 
     expect(callbackApi.get).toHaveBeenCalledTimes(1);
-    expect(callbackApi.get).toHaveBeenCalledWith('hangouts', {
+    expect(callbackApi.get).toHaveBeenCalledWith('hangouts/', {
       params: { skip: 0, limit: 50 },
     });
   });
@@ -50,7 +50,7 @@ describe('fetchHangouts', () => {
 
     await fetchHangouts({ skip: 10, limit: 20 });
 
-    expect(callbackApi.get).toHaveBeenCalledWith('hangouts', {
+    expect(callbackApi.get).toHaveBeenCalledWith('hangouts/', {
       params: { skip: 10, limit: 20 },
     });
   });
@@ -94,7 +94,7 @@ describe('createHangout', () => {
       description: 'Weekend brunch',
     });
 
-    expect(callbackApi.post).toHaveBeenCalledWith('hangouts', {
+    expect(callbackApi.post).toHaveBeenCalledWith('hangouts/', {
       name: 'Brunch',
       date: '2026-03-01',
       description: 'Weekend brunch',
@@ -120,7 +120,7 @@ describe('getHangout', () => {
 
     const result = await getHangout('1');
 
-    expect(callbackApi.get).toHaveBeenCalledWith('hangouts/1');
+    expect(callbackApi.get).toHaveBeenCalledWith('hangouts/1/');
     expect(result).toEqual(hangout);
   });
 });
@@ -145,7 +145,7 @@ describe('updateHangout', () => {
       date: '2026-03-02',
     });
 
-    expect(callbackApi.patch).toHaveBeenCalledWith('hangouts/1', {
+    expect(callbackApi.patch).toHaveBeenCalledWith('hangouts/1/', {
       name: 'Updated brunch',
       date: '2026-03-02',
     });
@@ -169,6 +169,6 @@ describe('deleteHangout', () => {
 
     await deleteHangout('1');
 
-    expect(callbackApi.delete).toHaveBeenCalledWith('hangouts/1');
+    expect(callbackApi.delete).toHaveBeenCalledWith('hangouts/1/');
   });
 });

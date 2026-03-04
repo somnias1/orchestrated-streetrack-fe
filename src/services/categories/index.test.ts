@@ -35,7 +35,7 @@ describe('fetchCategories', () => {
 
     await fetchCategories();
 
-    expect(callbackApi.get).toHaveBeenCalledWith('categories', {
+    expect(callbackApi.get).toHaveBeenCalledWith('categories/', {
       params: { skip: 0, limit: 50 },
     });
   });
@@ -45,7 +45,7 @@ describe('fetchCategories', () => {
 
     await fetchCategories({ skip: 10, limit: 20 });
 
-    expect(callbackApi.get).toHaveBeenCalledWith('categories', {
+    expect(callbackApi.get).toHaveBeenCalledWith('categories/', {
       params: { skip: 10, limit: 20 },
     });
   });
@@ -89,7 +89,7 @@ describe('createCategory', () => {
       is_income: false,
     });
 
-    expect(callbackApi.post).toHaveBeenCalledWith('categories', {
+    expect(callbackApi.post).toHaveBeenCalledWith('categories/', {
       name: 'New',
       description: null,
       is_income: false,
@@ -115,7 +115,7 @@ describe('getCategory', () => {
 
     const result = await getCategory('1');
 
-    expect(callbackApi.get).toHaveBeenCalledWith('categories/1');
+    expect(callbackApi.get).toHaveBeenCalledWith('categories/1/');
     expect(result).toEqual(category);
   });
 });
@@ -141,7 +141,7 @@ describe('updateCategory', () => {
       is_income: true,
     });
 
-    expect(callbackApi.patch).toHaveBeenCalledWith('categories/1', {
+    expect(callbackApi.patch).toHaveBeenCalledWith('categories/1/', {
       name: 'Updated',
       description: 'Desc',
       is_income: true,
@@ -166,6 +166,6 @@ describe('deleteCategory', () => {
 
     await deleteCategory('1');
 
-    expect(callbackApi.delete).toHaveBeenCalledWith('categories/1');
+    expect(callbackApi.delete).toHaveBeenCalledWith('categories/1/');
   });
 });

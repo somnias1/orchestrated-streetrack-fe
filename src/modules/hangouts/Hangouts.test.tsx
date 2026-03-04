@@ -1,7 +1,9 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
+import type React from 'react';
 import {
   afterAll,
   afterEach,
@@ -13,7 +15,6 @@ import {
 } from 'vitest';
 import { config } from '../../config';
 import { Hangouts } from './index';
-import { useHangoutsStore } from './store';
 
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: (opts: { count: number }) => ({
@@ -33,19 +34,24 @@ const hangoutsUrl = `${API_URL}/hangouts`;
 
 const server = setupServer();
 
-function resetStore() {
-  useHangoutsStore.setState({
-    items: [],
-    loading: false,
-    error: null,
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
   });
 }
 
+function renderWithQueryClient(ui: React.ReactElement) {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+}
+
 beforeAll(() => server.listen());
-afterEach(() => {
-  server.resetHandlers();
-  resetStore();
-});
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('Hangouts screen', () => {
@@ -58,7 +64,7 @@ describe('Hangouts screen', () => {
       }),
     );
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -84,7 +90,7 @@ describe('Hangouts screen', () => {
     ];
     server.use(http.get(hangoutsUrl, () => HttpResponse.json(items)));
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(screen.getByText(/Hangouts\s+\(2\)/)).toBeInTheDocument();
@@ -99,7 +105,7 @@ describe('Hangouts screen', () => {
       ),
     );
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(
@@ -112,7 +118,9 @@ describe('Hangouts screen', () => {
     let callCount = 0;
     server.use(
       http.get(
-        ({ request }) => new URL(request.url).pathname === '/hangouts',
+        ({ request }) =>
+          new URL(request.url).pathname === '/hangouts/' ||
+          new URL(request.url).pathname === '/hangouts',
         () => {
           callCount += 1;
           if (callCount === 1) {
@@ -131,7 +139,7 @@ describe('Hangouts screen', () => {
       ),
     );
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(
@@ -150,7 +158,7 @@ describe('Hangouts screen', () => {
   it('shows empty state when API returns empty array', async () => {
     server.use(http.get(hangoutsUrl, () => HttpResponse.json([])));
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(screen.getByText('No hangouts found.')).toBeInTheDocument();
@@ -160,7 +168,7 @@ describe('Hangouts screen', () => {
   it('has Create hangout button', async () => {
     server.use(http.get(hangoutsUrl, () => HttpResponse.json([])));
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(
@@ -192,7 +200,7 @@ describe('Hangouts screen', () => {
       }),
     );
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(
@@ -252,7 +260,7 @@ describe('Hangouts screen', () => {
       }),
     );
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
@@ -292,7 +300,7 @@ describe('Hangouts screen', () => {
       ),
     );
 
-    render(<Hangouts />);
+    renderWithQueryClient(<Hangouts />);
 
     await waitFor(() => {
       expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
