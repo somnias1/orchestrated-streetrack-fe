@@ -1,23 +1,29 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import {
+  useCreateHangoutMutation,
+  useDeleteHangoutMutation,
+  useHangoutsQuery,
+  useUpdateHangoutMutation,
+} from '../../services/hangouts/hooks';
 import type { HangoutRead } from '../../services/hangouts/types';
 import { themeTokens } from '../../theme/tailwind';
 import { DeleteHangoutDialog } from './deleteHangoutDialog';
 import { HangoutFormDialog } from './hangoutFormDialog';
 import { HangoutsTable } from './hangoutsTable';
-import { useHangoutsStore } from './store';
 
 export function Hangouts() {
   const {
-    items,
-    loading,
+    data: items = [],
+    isLoading,
+    isError,
     error,
-    fetchHangouts,
-    createHangout,
-    updateHangout,
-    deleteHangout,
-  } = useHangoutsStore();
+    refetch,
+  } = useHangoutsQuery();
+  const createMutation = useCreateHangoutMutation();
+  const updateMutation = useUpdateHangoutMutation();
+  const deleteMutation = useDeleteHangoutMutation();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingHangoutId, setEditingHangoutId] = useState<string | null>(null);
@@ -32,9 +38,12 @@ export function Hangouts() {
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchHangouts();
-  }, [fetchHangouts]);
+  const errorMessage =
+    isError && error instanceof Error
+      ? error.message
+      : isError
+        ? 'Failed to load hangouts'
+        : null;
 
   const openCreate = useCallback(() => {
     setEditingHangoutId(null);
@@ -68,9 +77,12 @@ export function Hangouts() {
       setSubmitError(null);
       try {
         if (editingHangoutId === null) {
-          await createHangout(data);
+          await createMutation.mutateAsync(data);
         } else {
-          await updateHangout(editingHangoutId, data);
+          await updateMutation.mutateAsync({
+            id: editingHangoutId,
+            body: data,
+          });
         }
         setFormOpen(false);
       } catch (err) {
@@ -80,16 +92,16 @@ export function Hangouts() {
         throw err;
       }
     },
-    [editingHangoutId, createHangout, updateHangout],
+    [editingHangoutId, createMutation, updateMutation],
   );
 
   const handleDeleteConfirm = useCallback(
     async (id: string) => {
-      await deleteHangout(id);
+      await deleteMutation.mutateAsync(id);
       setDeleteOpen(false);
       setHangoutToDelete(null);
     },
-    [deleteHangout],
+    [deleteMutation],
   );
 
   return (
@@ -119,9 +131,9 @@ export function Hangouts() {
       </Box>
       <HangoutsTable
         items={items}
-        loading={loading}
-        error={error}
-        onRetry={fetchHangouts}
+        loading={isLoading}
+        error={errorMessage}
+        onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
       />

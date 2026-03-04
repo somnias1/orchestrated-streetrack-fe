@@ -1,25 +1,31 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useCategoriesQuery } from '../../services/categories/hooks';
+import {
+  useCreateSubcategoryMutation,
+  useDeleteSubcategoryMutation,
+  useSubcategoriesQuery,
+  useUpdateSubcategoryMutation,
+} from '../../services/subcategories/hooks';
 import type { SubcategoryRead } from '../../services/subcategories/types';
 import { themeTokens } from '../../theme/tailwind';
-import { useCategoriesStore } from '../categories/store';
 import { DeleteSubcategoryDialog } from './deleteSubcategoryDialog';
-import { useSubcategoriesStore } from './store';
 import { SubcategoriesTable } from './subcategoriesTable';
 import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
 export function Subcategories() {
   const {
-    items,
-    loading,
+    data: items = [],
+    isLoading,
+    isError,
     error,
-    fetchSubcategories,
-    createSubcategory,
-    updateSubcategory,
-    deleteSubcategory,
-  } = useSubcategoriesStore();
-  const { items: categories, fetchCategories } = useCategoriesStore();
+    refetch,
+  } = useSubcategoriesQuery();
+  const { data: categories = [] } = useCategoriesQuery();
+  const createMutation = useCreateSubcategoryMutation();
+  const updateMutation = useUpdateSubcategoryMutation();
+  const deleteMutation = useDeleteSubcategoryMutation();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<
@@ -36,13 +42,12 @@ export function Subcategories() {
     useState<SubcategoryRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSubcategories();
-  }, [fetchSubcategories]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  const errorMessage =
+    isError && error instanceof Error
+      ? error.message
+      : isError
+        ? 'Failed to load subcategories'
+        : null;
 
   const openCreate = useCallback(() => {
     setEditingSubcategoryId(null);
@@ -78,9 +83,12 @@ export function Subcategories() {
       setSubmitError(null);
       try {
         if (editingSubcategoryId === null) {
-          await createSubcategory(data);
+          await createMutation.mutateAsync(data);
         } else {
-          await updateSubcategory(editingSubcategoryId, data);
+          await updateMutation.mutateAsync({
+            id: editingSubcategoryId,
+            body: data,
+          });
         }
         setFormOpen(false);
       } catch (err) {
@@ -90,16 +98,16 @@ export function Subcategories() {
         throw err;
       }
     },
-    [editingSubcategoryId, createSubcategory, updateSubcategory],
+    [editingSubcategoryId, createMutation, updateMutation],
   );
 
   const handleDeleteConfirm = useCallback(
     async (id: string) => {
-      await deleteSubcategory(id);
+      await deleteMutation.mutateAsync(id);
       setDeleteOpen(false);
       setSubcategoryToDelete(null);
     },
-    [deleteSubcategory],
+    [deleteMutation],
   );
 
   const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
@@ -131,9 +139,9 @@ export function Subcategories() {
       </Box>
       <SubcategoriesTable
         items={items}
-        loading={loading}
-        error={error}
-        onRetry={fetchSubcategories}
+        loading={isLoading}
+        error={errorMessage}
+        onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
       />
