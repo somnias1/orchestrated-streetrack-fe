@@ -6,7 +6,7 @@ Phase 13 — React Query services (complete). **Next:** Phase 14+ (see ROADMAP /
 
 ## Last Task Completed
 
-Phase 13: TanStack React Query for all resources; hooks in services (categories, subcategories, transactions, hangouts); modules refactored to use hooks; Zustand stores removed; screen tests wrapped with QueryClientProvider; service test path assertions aligned with constants; gate and phase summary.
+Phase 13: TanStack React Query for all resources; hooks in services; modules refactored to use hooks and sync query result into Zustand stores for global read access (stores: items, loading, error, setFromQuery); screen tests wrapped with QueryClientProvider; service test path assertions aligned with constants; gate and phase summary.
 
 ## Next Task
 
@@ -15,6 +15,7 @@ Phase 13: TanStack React Query for all resources; hooks in services (categories,
 
 ## Key Decisions
 
+- **Server state + global store (Phase 13):** React Query is the source of truth for fetch, cache, mutations, and refetch. Zustand stores (per resource) hold a mirror (`items`, `loading`, `error`) synced from the query in screens via `setFromQuery`, so any component can read from the store without using the query hook.
 - **Rsbuild env**: Use `loadEnv({ prefixes: ['VITE_'] })` and `source.define: { ...publicVars }` so env vars from .env (or venv/shell) are available at build time; app config reads `process.env.VITE_*`.
 - **.env**: Added to .gitignore so secrets are not committed.
 - **Testing**: Vitest 4 + React Testing Library + MSW; coverage excludes app shell, auth redirect/callback, home, theme, and presentational chip so gate applies to §1.3-touched code.
