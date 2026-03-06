@@ -32,6 +32,11 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 - [x] API client with Bearer token (callbackApi); all list endpoints use `skip`/`limit`
 - [x] Tailwind + MUI, theme helper for Tailwind colors in `sx`
 - [x] Unit/integration tests: Vitest, RTL, MSW — auth, API client, all four resources (services, stores, screens, CRUD flows); coverage gate (80% lines/statements, 70% branches/functions)
+- [x] **Phase 13:** TanStack React Query for all list/CRUD; hooks in services; modules use hooks; Zustand as global read mirror synced from query
+- [x] **Phase 14:** Theme, layout & Categories table alignment — tweakcn-style theme, light/dark toggle, table state row min height
+- [x] **Phase 15:** Remaining screens & CRUD — Subcategories, Transactions, Hangouts table state alignment; theme tokens verified
+- [x] **Phase 16:** Tests & coverage gate — §1.3 mapping; 80% lines/statements, 70% branches/functions; gate passing
+- [x] **Bugfixes (Phase 04/07/08):** Virtual table full-width alignment (categoriesTable, transactionsTable, hangoutsTable) per VIRTUAL-TABLE-SIZING-FIX.md
 
 ---
 
@@ -50,11 +55,6 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 ### Frontend
 
-- [ ] **Phase 13:** TanStack React Query for all list/CRUD services and hooks; modules use hooks; Zustand only for UI state if needed
-- [ ] **Phase 14:** Theme, layout & Categories table on shadcn; tweakcn-style theme; light/dark mode; table state alignment
-- [ ] **Phase 15:** Remaining screens & CRUD dialogs on shadcn; unify table state; reduce MUI
-- [ ] **Phase 16:** Tests & coverage gate — update/add tests for Phases 13–15; meet 80% lines/statements, 70% branches/functions; §1.3 mapping
-- [ ] Branch coverage: raise to ≥70% if it drops (see TECHSPEC §6.2; gate currently enforces 70% branches) — addressed in Phase 16
 - [ ] Optional: layout/UX refinements; keyboard/a11y for virtualized tables and dialogs
 
 ---
@@ -108,4 +108,4 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 ---
 
-_Last updated: Phase 12 complete (all four resources: list + virtualized table + full CRUD UI; tests and coverage gate). Copy to streetrack-be BACKLOG.md to keep repos in sync._
+_Last updated: Phases 13–16 complete (React Query, theme/layout, table alignment, tests & coverage gate); Phase 04/07/08 bugfixes (virtual table full-width alignment). Copy to streetrack-be BACKLOG.md to keep repos in sync._
