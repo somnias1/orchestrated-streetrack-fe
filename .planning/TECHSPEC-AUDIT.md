@@ -1,9 +1,9 @@
 # TECHSPEC Audit Report
 
-**Date:** 2026-03-03  
-**Scope:** Compare project to TECHSPEC.md: §1.3 test mapping, §8.3 Definition of Done, all ROADMAP phases (01–16), README (§1.5, §8.3), coverage (§6.2).
+**Date:** 2026-03-03 (re-run; includes Phase 04/07/08 bugfixes)  
+**Scope:** Compare project to TECHSPEC.md: §1.3 test mapping, §8.3 Definition of Done, all ROADMAP phases (01–16), post-Phase-16 bugfixes (virtual table sizing), README (§1.5, §8.3), coverage (§6.2).
 
-**Sources:** TECHSPEC.md, STATE.md, `.planning/phase-00-ROADMAP.md`, `.planning/phase-NN-SPEC.md`, `.planning/phase-NN-SUMMARY.md`, README.md, `npm test -- --coverage`.
+**Sources:** TECHSPEC.md, STATE.md, `.planning/phase-00-ROADMAP.md`, `.planning/phase-NN-SPEC.md`, `.planning/phase-NN-SUMMARY.md`, `.planning/phase-NN-SPEC-BUGFIX-*.md`, `.planning/phase-NN-SUMMARY-BUGFIX-*.md`, `.planning/VIRTUAL-TABLE-SIZING-FIX.md`, README.md, `npm test -- --coverage`.
 
 ---
 
@@ -63,8 +63,7 @@ Source: `.planning/phase-00-ROADMAP.md`, STATE.md, `.planning/phase-NN-SPEC.md`,
 | **03**              | Categories Data & Store                    | —            | ✓    | ✓       | categories service, store, screen loading/error/empty/retry.                                                           |
 | **04**              | Categories Table & UX                      | —            | ✓    | ✓       | CategoriesTable (TanStack Table + Virtual), chips, states.                                                             |
 | **05**              | Tests & Verification                       | —            | ✓    | ✓       | Vitest, RTL, MSW; auth, categories, API client, Layout tests; coverage gate; §1.3 mapping.                             |
-| **06**              | Subcategories List & Virtual               | —            | ✓    | ✓       | subcategories service, store, screen, virtualized table,                                                               |
-| route + nav, tests. |
+| **06**              | Subcategories List & Virtual               | —            | ✓    | ✓       | subcategories service, store, screen, virtualized table, route + nav, tests.                                           |
 | **07**              | Transactions List & Virtual                | —            | ✓    | ✓       | transactions service, store, screen, virtualized table, route + nav, tests.                                            |
 | **08**              | Hangouts List & Virtual                    | —            | ✓    | ✓       | hangouts service, store, screen, virtualized table, route + nav, tests.                                                |
 | **09**              | Categories Full CRUD UI                    | —            | ✓    | ✓       | create/edit/delete Categories; form dialog, Zod; Categories.test.tsx CRUD flows.                                       |
@@ -76,9 +75,11 @@ Source: `.planning/phase-00-ROADMAP.md`, STATE.md, `.planning/phase-NN-SPEC.md`,
 | **15**              | Remaining Screens & CRUD on shadcn         | —            | ✓    | ✓       | Subcategories/Transactions/Hangouts tables: unified state row min height; theme tokens verified.                       |
 | **16**              | Tests & coverage gate                      | **Complete** | ✓    | ✓       | §1.3 mapping documented; coverage gate verified (80% lines/stmts, 70% branches/funcs); 71 tests, 12 files.             |
 
-**STATE.md:** "Phase 16 — Tests & coverage gate (complete). **Next:** Phase 17+ per ROADMAP / FRAMEWORK.md §6."
+**STATE.md:** "Phase 16 — Tests & coverage gate (complete). **Phase 04, 07, 08 bugfixes** (categoriesTable, transactionsTable, hangoutsTable virtual table full-width alignment) complete. **Next:** Phase 17+ per ROADMAP / FRAMEWORK.md §6."
 
-**Conclusion:** All 16 ROADMAP phases have SPEC + SUMMARY and align with described deliverables in code. STATE marks Phase 16 complete.
+**Post-Phase-16 bugfixes (SPEC + SUMMARY):** Virtualized table full-width alignment applied to categoriesTable (Phase 04), transactionsTable (Phase 07), hangoutsTable (Phase 08). Each has a committed bugfix SPEC and SUMMARY: `phase-04-SPEC-BUGFIX-virtual-table-sizing.md`, `phase-04-SUMMARY-BUGFIX-virtual-table-sizing.md`, `phase-07-SPEC-BUGFIX-virtual-table-sizing.md`, `phase-07-SUMMARY-BUGFIX-virtual-table-sizing.md`, `phase-08-SPEC-BUGFIX-virtual-table-sizing.md`, `phase-08-SUMMARY-BUGFIX-virtual-table-sizing.md`. Master fix guide: `.planning/VIRTUAL-TABLE-SIZING-FIX.md`. Layout/sizing only; no new tests; gate passing.
+
+**Conclusion:** All 16 ROADMAP phases have SPEC + SUMMARY and align with described deliverables in code. STATE marks Phase 16 complete and Phase 04/07/08 bugfixes complete. Bugfix workflow (SPEC → implementation → SUMMARY) is documented and followed.
 
 ---
 
@@ -108,10 +109,10 @@ Source: `.planning/phase-00-ROADMAP.md`, STATE.md, `.planning/phase-NN-SPEC.md`,
 
 | Metric     | Threshold (vitest.config.ts) | Actual (All files) | Pass? |
 | ---------- | ---------------------------- | ------------------ | ----- |
-| Statements | 80%                          | **87.24%**         | ✓     |
-| Lines      | 80%                          | **89.59%**         | ✓     |
-| Branches   | 70%                          | **73.41%**         | ✓     |
-| Functions  | 70%                          | **87.83%**         | ✓     |
+| Statements | 80%                          | **87.39%**         | ✓     |
+| Lines      | 80%                          | **89.77%**         | ✓     |
+| Branches   | 70%                          | **73.19%**         | ✓     |
+| Functions  | 70%                          | **88.42%**         | ✓     |
 
 - **Test run:** 12 test files, 71 tests passed.
 - **Coverage gate:** **Passes** — all four metrics meet or exceed thresholds.
@@ -126,8 +127,17 @@ Source: `.planning/phase-00-ROADMAP.md`, STATE.md, `.planning/phase-NN-SPEC.md`,
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | §1.3 test cases         | All covered; mapping in §1; includes Auth, Categories list, API client, Navigation, and Subcategories/Transactions/Hangouts list states. |
 | §8.3 Definition of Done | All audit-able bullets met; Gitflow merge not verifiable from repo alone.                                                                |
-| Phases (ROADMAP 01–16)  | All 16 phases have SPEC + SUMMARY; code aligns; STATE: Phase 16 complete.                                                                |
+| Phases (ROADMAP 01–16)  | All 16 phases have SPEC + SUMMARY; code aligns; STATE: Phase 16 complete; Phase 04/07/08 bugfixes (virtual table sizing) have SPEC + SUMMARY. |
 | README (§1.5, §8.3)     | Run app and tests (and gate) documented; key decisions in TECHSPEC/STATE.                                                                |
-| Coverage (§6.2)         | **Met.** Statements 87.24%, Lines 89.59%, Branches 73.41%, Functions 87.83% (thresholds 80/80/70/70).                                    |
+| Coverage (§6.2)         | **Met.** Statements 87.39%, Lines 89.77%, Branches 73.19%, Functions 88.42% (thresholds 80/80/70/70).                                    |
 
 **Notes:** BACKLOG.md is present at repo root per §1.5. ROADMAP has 16 phases (01–16); Phase 17+ for future features (e.g. import/export, reports) per FRAMEWORK.md §6.
+
+---
+
+## Changelog (TECHSPEC-AUDIT.md)
+
+| Date       | Change |
+| ---------- | ------ |
+| 2026-03-03 | Initial audit: §1.3 mapping, §8.3 DoD, phases 01–16, README, coverage; 12 files, 71 tests; coverage 87.24% stmts, 89.59% lines, 73.41% branch, 87.83% funcs. |
+| 2026-03-03 | Re-run: Scope extended to post-Phase-16 bugfixes. STATE.md reflects Phase 04/07/08 bugfixes (virtual table full-width alignment). Documented bugfix SPECs and SUMMARYs (phase-NN-SPEC-BUGFIX-virtual-table-sizing.md, phase-NN-SUMMARY-BUGFIX-virtual-table-sizing.md for N=04,07,08) and VIRTUAL-TABLE-SIZING-FIX.md. Fixed Phase 06 table row in §3. Coverage re-run: 87.39% stmts, 89.77% lines, 73.19% branch, 88.42% funcs. Added this Changelog. |
