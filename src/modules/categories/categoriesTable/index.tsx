@@ -31,7 +31,9 @@ const TABLE_MIN_HEIGHT = 400;
 /** Min height for loading/error/empty state row so body area is consistent (§5.1) */
 const STATE_ROW_MIN_HEIGHT = TABLE_MIN_HEIGHT - ROW_HEIGHT;
 const COLUMN_SIZES = [180, 280, 120, 120] as const;
-const GRID_TEMPLATE = COLUMN_SIZES.map((s) => `${s}px`).join(' ');
+const TABLE_WIDTH = COLUMN_SIZES.reduce((a, b) => a + b, 0);
+/** Proportional columns so header and body fill 100% and stay aligned */
+const GRID_TEMPLATE_FR = COLUMN_SIZES.map((s) => `${s}fr`).join(' ');
 
 function createColumns(
   onEdit: (category: CategoryRead) => void,
@@ -166,31 +168,45 @@ export function CategoriesTable({
           maxHeight: '60vh',
         }}
       >
-        <Table stickyHeader sx={{ minWidth: 560 }}>
+        <Table
+          stickyHeader
+          sx={{
+            width: '100%',
+            minWidth: TABLE_WIDTH,
+            tableLayout: 'fixed',
+          }}
+        >
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableCell
-                    key={header.id}
-                    variant="head"
-                    sx={{
-                      backgroundColor: themeTokens.surface,
-                      color: themeTokens.textPrimary,
-                      borderBottom: `1px solid ${themeTokens.border}`,
-                      fontWeight: 600,
-                      width: header.getSize(),
-                      minWidth: header.getSize(),
-                    }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableCell>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const size =
+                    (header.column.columnDef as { size?: number }).size ??
+                    header.getSize();
+                  const widthPct = `${(size / TABLE_WIDTH) * 100}%`;
+                  return (
+                    <TableCell
+                      key={header.id}
+                      variant="head"
+                      sx={{
+                        backgroundColor: themeTokens.surface,
+                        color: themeTokens.textPrimary,
+                        borderBottom: `1px solid ${themeTokens.border}`,
+                        fontWeight: 600,
+                        width: widthPct,
+                        minWidth: size,
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHead>
@@ -259,8 +275,8 @@ export function CategoriesTable({
             sx={{
               position: 'relative',
               width: '100%',
+              minWidth: TABLE_WIDTH,
               height: `${totalSize}px`,
-              minWidth: 560,
             }}
           >
             {virtualItems.map((virtualRow) => {
@@ -272,11 +288,12 @@ export function CategoriesTable({
                     position: 'absolute',
                     top: 0,
                     left: 0,
+                    right: 0,
                     width: '100%',
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
                     display: 'grid',
-                    gridTemplateColumns: GRID_TEMPLATE,
+                    gridTemplateColumns: GRID_TEMPLATE_FR,
                     alignItems: 'center',
                     borderBottom: `1px solid ${themeTokens.border}`,
                     backgroundColor: themeTokens.surface,

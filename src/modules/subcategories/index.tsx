@@ -1,7 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { useCategoriesQuery } from '../../services/categories/hooks';
 import {
   useCreateSubcategoryMutation,
   useDeleteSubcategoryMutation,
@@ -10,7 +9,6 @@ import {
 } from '../../services/subcategories/hooks';
 import type { SubcategoryRead } from '../../services/subcategories/types';
 import { themeTokens } from '../../theme/tailwind';
-import { useCategoriesStore } from '../categories/store';
 import { DeleteSubcategoryDialog } from './deleteSubcategoryDialog';
 import { useSubcategoriesStore } from './store';
 import { SubcategoriesTable } from './subcategoriesTable';
@@ -24,11 +22,9 @@ export function Subcategories() {
     error,
     refetch,
   } = useSubcategoriesQuery();
-  const { data: categories = [] } = useCategoriesQuery();
   const setSubcategoriesFromQuery = useSubcategoriesStore(
     (s) => s.setFromQuery,
   );
-  const setCategoriesFromQuery = useCategoriesStore((s) => s.setFromQuery);
 
   useEffect(() => {
     const err =
@@ -39,10 +35,6 @@ export function Subcategories() {
           : null;
     setSubcategoriesFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setSubcategoriesFromQuery]);
-
-  useEffect(() => {
-    setCategoriesFromQuery(categories, false, null);
-  }, [categories, setCategoriesFromQuery]);
 
   const createMutation = useCreateSubcategoryMutation();
   const updateMutation = useUpdateSubcategoryMutation();
@@ -131,8 +123,6 @@ export function Subcategories() {
     [deleteMutation],
   );
 
-  const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
-
   return (
     <Box sx={{ py: 2 }}>
       <Box
@@ -172,7 +162,6 @@ export function Subcategories() {
         initialValues={formInitial}
         onSubmit={handleFormSubmit}
         submitError={submitError}
-        categoryOptions={categoryOptions}
       />
       <DeleteSubcategoryDialog
         open={deleteOpen}
