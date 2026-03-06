@@ -15,6 +15,8 @@ export function useTransactionsQuery(options?: ListOptions) {
   return useQuery({
     queryKey: [...transactionsQueryKey, options ?? {}],
     queryFn: () => fetchTransactionsApi(options),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 

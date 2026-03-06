@@ -11,8 +11,10 @@ import {
   Select,
   TextField,
 } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCategoriesQuery } from '../../../services/categories/hooks';
 import { themeTokens } from '../../../theme/tailwind';
+import { useCategoriesStore } from '../../categories/store';
 import { type SubcategoryFormValues, subcategoryFormSchema } from './schema';
 import type {
   SubcategoryFormDialogProps,
@@ -34,9 +36,22 @@ export function SubcategoryFormDialog({
   initialValues,
   onSubmit,
   submitError,
-  categoryOptions,
 }: SubcategoryFormDialogProps) {
   const isEdit = initialValues !== null;
+  const { data: categories, isFetching } = useCategoriesQuery(undefined, {
+    enabled: open,
+  });
+  const setCategoriesFromQuery = useCategoriesStore((s) => s.setFromQuery);
+
+  const categoryOptions = useMemo(
+    () =>
+      (categories ?? []).map((category) => ({
+        id: category.id,
+        name: category.name,
+        is_income: category.is_income,
+      })),
+    [categories],
+  );
   const [category_id, setCategoryId] = useState(
     initialValues?.category_id ?? '',
   );
@@ -44,18 +59,18 @@ export function SubcategoryFormDialog({
   const [description, setDescription] = useState(
     initialValues?.description ?? '',
   );
-  const [belongs_to_income, setBelongsToIncome] = useState(
-    initialValues?.belongs_to_income ?? false,
-  );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setCategoriesFromQuery(categories ?? [], false, null);
+  }, [categories, setCategoriesFromQuery]);
 
   useEffect(() => {
     if (open) {
       setCategoryId(initialValues?.category_id ?? '');
       setName(initialValues?.name ?? '');
       setDescription(initialValues?.description ?? '');
-      setBelongsToIncome(initialValues?.belongs_to_income ?? false);
       setFieldErrors({});
     }
   }, [open, initialValues]);
@@ -67,7 +82,8 @@ export function SubcategoryFormDialog({
         category_id: category_id.trim(),
         name: name.trim(),
         description: description.trim() || null,
-        belongs_to_income,
+        belongs_to_income:
+          categoryOptions.find((c) => c.id === category_id)?.is_income ?? false,
       };
       const parsed = subcategoryFormSchema.safeParse({
         category_id: raw.category_id,
@@ -95,7 +111,7 @@ export function SubcategoryFormDialog({
         setSubmitting(false);
       }
     },
-    [category_id, name, description, belongs_to_income, onSubmit, onClose],
+    [category_id, name, description, onSubmit, onClose, categoryOptions],
   );
 
   const handleClose = useCallback(() => {
@@ -135,6 +151,7 @@ export function SubcategoryFormDialog({
               labelId="subcategory-category-label"
               value={category_id}
               label="Category"
+              disabled={isFetching}
               onChange={(e) => setCategoryId(e.target.value)}
               sx={{
                 color: themeTokens.textPrimary,
@@ -182,32 +199,6 @@ export function SubcategoryFormDialog({
               '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
-          <FormControl fullWidth error={Boolean(fieldErrors.belongs_to_income)}>
-            <InputLabel
-              id="subcategory-type-label"
-              sx={{ color: themeTokens.textSecondary }}
-            >
-              Type
-            </InputLabel>
-            <Select
-              labelId="subcategory-type-label"
-              value={belongs_to_income ? 'income' : 'expense'}
-              label="Type"
-              onChange={(e) => setBelongsToIncome(e.target.value === 'income')}
-              sx={{
-                color: themeTokens.textPrimary,
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: themeTokens.border,
-                },
-              }}
-            >
-              <MenuItem value="expense">Expense</MenuItem>
-              <MenuItem value="income">Income</MenuItem>
-            </Select>
-            {fieldErrors.belongs_to_income && (
-              <FormHelperText>{fieldErrors.belongs_to_income}</FormHelperText>
-            )}
-          </FormControl>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button

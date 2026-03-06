@@ -15,6 +15,8 @@ export function useHangoutsQuery(options?: ListOptions) {
   return useQuery({
     queryKey: [...hangoutsQueryKey, options ?? {}],
     queryFn: () => fetchHangoutsApi(options),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 

@@ -15,6 +15,8 @@ export function useSubcategoriesQuery(options?: ListOptions) {
   return useQuery({
     queryKey: [...subcategoriesQueryKey, options ?? {}],
     queryFn: () => fetchSubcategoriesApi(options),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 
