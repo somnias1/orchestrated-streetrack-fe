@@ -10,6 +10,7 @@ When the user asks to **start a GSD phase**, **run bootstrap**, or **run audit**
 ## When to consider delegating
 
 - User says **"GSD session start — Phase NN"** (any number: 01, 02, 03, … 07, …).
+- User says **"GSD session start — Phase NN (bugfix: …)"** — same phase flow; SPEC describes bug (observed vs expected), root cause, and fix approach; tests reproduce bug before fix (red → green). See FRAMEWORK §6.3 and .cursor/gsd/README.md (Bugfixes).
 - User says **"Run bootstrap"** or **"Bootstrap the GSD project"**.
 - User says **"Run audit"** or **"Verify project against TECHSPEC"** or **"TECHSPEC audit"**.
 

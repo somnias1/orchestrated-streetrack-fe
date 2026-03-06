@@ -258,10 +258,10 @@ describe('Transactions screen', () => {
 
     const dialog = screen.getByRole('dialog', { name: /create transaction/i });
     await userEvent.click(within(dialog).getByLabelText(/subcategory/i));
-    await waitFor(() => {
-      expect(screen.getByRole('option', { name: 'Food' })).toBeInTheDocument();
+    const subcategoryOption = await screen.findByRole('option', {
+      name: /Food/,
     });
-    await userEvent.click(screen.getByRole('option', { name: 'Food' }));
+    await userEvent.click(subcategoryOption);
     await userEvent.clear(
       within(dialog).getByRole('spinbutton', { name: /value/i }),
     );

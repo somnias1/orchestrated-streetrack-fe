@@ -11,5 +11,4 @@ export type SubcategoryFormDialogProps = Readonly<{
   initialValues: SubcategoryFormPayload | null;
   onSubmit: (data: SubcategoryFormPayload) => Promise<void>;
   submitError: string | null;
-  categoryOptions: { id: string; name: string }[];
 }>;

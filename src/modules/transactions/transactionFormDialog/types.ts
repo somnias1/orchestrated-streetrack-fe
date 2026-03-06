@@ -12,6 +12,10 @@ export type TransactionFormDialogProps = Readonly<{
   initialValues: TransactionFormPayload | null;
   onSubmit: (data: TransactionFormPayload) => Promise<void>;
   submitError: string | null;
-  subcategoryOptions: { id: string; name: string }[];
+  subcategoryOptions: {
+    id: string;
+    name: string;
+    belongs_to_income: boolean;
+  }[];
   hangoutOptions: { id: string; name: string }[];
 }>;
