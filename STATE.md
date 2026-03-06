@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Phase 16 — Tests & coverage gate (complete). **Phase 04 bugfix** (categoriesTable) and **Phase 07 bugfix** (transactionsTable virtual table full-width alignment) complete. **Next:** Phase 17+ per ROADMAP / FRAMEWORK.md §6.
+Phase 16 — Tests & coverage gate (complete). **Phase 04, 07, 08 bugfixes** (categoriesTable, transactionsTable, hangoutsTable virtual table full-width alignment) complete. **Next:** Phase 17+ per ROADMAP / FRAMEWORK.md §6.
 
 ## Last Task Completed
 
-Phase 07 bugfix: virtual table full-width alignment in `transactionsTable` (TABLE_WIDTH, GRID_TEMPLATE_FR, tableLayout fixed, percentage header widths). Previously: Phase 04 bugfix (categoriesTable); Phase 16: §1.3 → test mapping documented; coverage gate verified; gate passing.
+Phase 08 bugfix: virtual table full-width alignment in `hangoutsTable` (TABLE_WIDTH, GRID_TEMPLATE_FR, tableLayout fixed, percentage header widths). Previously: Phase 07 bugfix (transactionsTable); Phase 04 bugfix (categoriesTable); Phase 16: §1.3 → test mapping documented; coverage gate verified; gate passing.
 
 ## Next Task
 
