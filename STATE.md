@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 16 — Tests & coverage gate (complete). **Phase 04, 07, 08 bugfixes** (categoriesTable, transactionsTable, hangoutsTable virtual table full-width alignment) complete. **Next:** Phase 17+ per ROADMAP / FRAMEWORK.md §6.
+Phase 17 — List screens: category & transaction names (complete). **Next:** Phase 18+ per ROADMAP / FRAMEWORK.md §6.
 
 ## Last Task Completed
 
-Phase 08 bugfix: virtual table full-width alignment in `hangoutsTable` (TABLE_WIDTH, GRID_TEMPLATE_FR, tableLayout fixed, percentage header widths). Previously: Phase 07 bugfix (transactionsTable); Phase 04 bugfix (categoriesTable); Phase 16: §1.3 → test mapping documented; coverage gate verified; gate passing.
+Phase 17 merged: TECHSPEC §4.1/§4.3 updated; types (SubcategoryRead/TransactionRead with names + IDs); tables display names only; edit flows use IDs from API; tests updated; gate passing.
 
 ## Next Task
 
-1. Phase 17+ (or backlog): New features (e.g. import/export UI, reports) per `.planning/phase-00-ROADMAP.md` and FRAMEWORK.md §6.
+1. Phase 18+ (or backlog) per `.planning/phase-00-ROADMAP.md`.
 
 ## Key Decisions
 
