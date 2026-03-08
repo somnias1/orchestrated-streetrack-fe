@@ -5,6 +5,7 @@
 export type SubcategoryRead = {
   id: string;
   category_id: string;
+  category_name: string;
   name: string;
   description: string | null;
   belongs_to_income: boolean;

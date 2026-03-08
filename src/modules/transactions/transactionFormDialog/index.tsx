@@ -10,14 +10,14 @@ import {
   MenuItem,
   Select,
   TextField,
-} from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
-import { themeTokens } from "../../../theme/tailwind";
-import { type TransactionFormValues, transactionFormSchema } from "./schema";
+} from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
+import { themeTokens } from '../../../theme/tailwind';
+import { type TransactionFormValues, transactionFormSchema } from './schema';
 import type {
   TransactionFormDialogProps,
   TransactionFormPayload,
-} from "./types";
+} from './types';
 
 function toPayload(values: TransactionFormValues): TransactionFormPayload {
   return {
@@ -25,7 +25,7 @@ function toPayload(values: TransactionFormValues): TransactionFormPayload {
     value: values.value,
     description: values.description.trim(),
     date: values.date,
-    hangout_id: values.hangout_id === "" ? null : values.hangout_id,
+    hangout_id: values.hangout_id === '' ? null : values.hangout_id,
   };
 }
 
@@ -40,28 +40,28 @@ export function TransactionFormDialog({
 }: TransactionFormDialogProps) {
   const isEdit = initialValues !== null;
   const [subcategory_id, setSubcategoryId] = useState(
-    initialValues?.subcategory_id ?? "",
+    initialValues?.subcategory_id ?? '',
   );
   const [value, setValue] = useState(
-    initialValues?.value !== undefined ? String(initialValues.value) : "",
+    initialValues?.value !== undefined ? String(initialValues.value) : '',
   );
   const [description, setDescription] = useState(
-    initialValues?.description ?? "",
+    initialValues?.description ?? '',
   );
-  const [date, setDate] = useState(initialValues?.date ?? "");
-  const [hangout_id, setHangoutId] = useState(initialValues?.hangout_id ?? "");
+  const [date, setDate] = useState(initialValues?.date ?? '');
+  const [hangout_id, setHangoutId] = useState(initialValues?.hangout_id ?? '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setSubcategoryId(initialValues?.subcategory_id ?? "");
+      setSubcategoryId(initialValues?.subcategory_id ?? '');
       setValue(
-        initialValues?.value !== undefined ? String(initialValues.value) : "",
+        initialValues?.value !== undefined ? String(initialValues.value) : '',
       );
-      setDescription(initialValues?.description ?? "");
-      setDate(initialValues?.date ?? "");
-      setHangoutId(initialValues?.hangout_id ?? "");
+      setDescription(initialValues?.description ?? '');
+      setDate(initialValues?.date ?? '');
+      setHangoutId(initialValues?.hangout_id ?? '');
       setFieldErrors({});
     }
   }, [open, initialValues]);
@@ -71,10 +71,10 @@ export function TransactionFormDialog({
       e.preventDefault();
       const raw = {
         subcategory_id: subcategory_id.trim(),
-        value: value.trim() === "" ? NaN : Number(value),
+        value: value.trim() === '' ? NaN : Number(value),
         description: description.trim(),
         date: date.trim(),
-        hangout_id: hangout_id.trim() === "" ? null : hangout_id.trim(),
+        hangout_id: hangout_id.trim() === '' ? null : hangout_id.trim(),
       };
       const parsed = transactionFormSchema.safeParse({
         subcategory_id: raw.subcategory_id,
@@ -86,7 +86,7 @@ export function TransactionFormDialog({
       if (!parsed.success) {
         const errors: Record<string, string> = {};
         for (const issue of parsed.error.issues) {
-          const path = issue.path[0]?.toString() ?? "form";
+          const path = issue.path[0]?.toString() ?? 'form';
           if (!errors[path]) errors[path] = issue.message;
         }
         setFieldErrors(errors);
@@ -126,10 +126,10 @@ export function TransactionFormDialog({
     >
       <form onSubmit={handleSubmit}>
         <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-          {isEdit ? "Edit transaction" : "Create transaction"}
+          {isEdit ? 'Edit transaction' : 'Create transaction'}
         </DialogTitle>
         <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
           <FormControl fullWidth error={Boolean(fieldErrors.subcategory_id)}>
@@ -146,14 +146,14 @@ export function TransactionFormDialog({
               onChange={(e) => setSubcategoryId(e.target.value)}
               sx={{
                 color: themeTokens.textPrimary,
-                "& .MuiOutlinedInput-notchedOutline": {
+                '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: themeTokens.border,
                 },
               }}
             >
               {subcategoryOptions.map((sub) => (
                 <MenuItem key={sub.id} value={sub.id}>
-                  {sub.name} ({sub.belongs_to_income ? "Income" : "Expense"})
+                  {sub.name} ({sub.belongs_to_income ? 'Income' : 'Expense'})
                 </MenuItem>
               ))}
             </Select>
@@ -170,10 +170,10 @@ export function TransactionFormDialog({
             fullWidth
             error={Boolean(fieldErrors.value)}
             helperText={fieldErrors.value}
-            inputProps={{ "aria-label": "Transaction value", step: 1 }}
+            inputProps={{ 'aria-label': 'Transaction value', step: 1 }}
             sx={{
-              "& .MuiInputBase-input": { color: themeTokens.textPrimary },
-              "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
+              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
           <TextField
@@ -184,10 +184,10 @@ export function TransactionFormDialog({
             fullWidth
             error={Boolean(fieldErrors.description)}
             helperText={fieldErrors.description}
-            inputProps={{ "aria-label": "Transaction description" }}
+            inputProps={{ 'aria-label': 'Transaction description' }}
             sx={{
-              "& .MuiInputBase-input": { color: themeTokens.textPrimary },
-              "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
+              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
           <TextField
@@ -200,10 +200,10 @@ export function TransactionFormDialog({
             error={Boolean(fieldErrors.date)}
             helperText={fieldErrors.date}
             InputLabelProps={{ shrink: true }}
-            inputProps={{ "aria-label": "Transaction date" }}
+            inputProps={{ 'aria-label': 'Transaction date' }}
             sx={{
-              "& .MuiInputBase-input": { color: themeTokens.textPrimary },
-              "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
+              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
           <FormControl fullWidth error={Boolean(fieldErrors.hangout_id)}>
@@ -220,7 +220,7 @@ export function TransactionFormDialog({
               onChange={(e) => setHangoutId(e.target.value)}
               sx={{
                 color: themeTokens.textPrimary,
-                "& .MuiOutlinedInput-notchedOutline": {
+                '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: themeTokens.border,
                 },
               }}
@@ -252,7 +252,7 @@ export function TransactionFormDialog({
             disabled={submitting}
             sx={{ backgroundColor: themeTokens.primary }}
           >
-            {submitting ? "Saving…" : isEdit ? "Save" : "Create"}
+            {submitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
           </Button>
         </DialogActions>
       </form>

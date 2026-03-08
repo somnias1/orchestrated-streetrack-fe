@@ -259,7 +259,7 @@ All resources are **user-scoped**; `user_id` is set from the Auth0 token on the 
 
 | Schema | Fields | Notes |
 |--------|--------|--------|
-| **SubcategoryRead** | `id`, `category_id` (uuid), `name`, `description` (string \| null), `belongs_to_income` (boolean, default false), `user_id` (string \| null) | Belongs to a category; backend checks category ownership. |
+| **SubcategoryRead** | `id`, `category_id` (uuid), `category_name` (string, from BE for list display), `name`, `description` (string \| null), `belongs_to_income` (boolean, default false), `user_id` (string \| null) | Belongs to a category; backend checks category ownership. GET list/single returns both `category_id` (for operations) and `category_name` (for display). |
 | **SubcategoryCreate** | `category_id` (uuid, required), `name` (required), `description` (string \| null), `belongs_to_income` (boolean, default false) | user_id from token. |
 | **SubcategoryUpdate** | `category_id`, `name`, `description`, `belongs_to_income` (all optional) | PATCH body. |
 
@@ -267,7 +267,7 @@ All resources are **user-scoped**; `user_id` is set from the Auth0 token on the 
 
 | Schema | Fields | Notes |
 |--------|--------|--------|
-| **TransactionRead** | `id`, `subcategory_id` (uuid), `value` (integer), `description` (string), `date` (date string), `hangout_id` (uuid \| null), `user_id` (string \| null) | Links to subcategory and optionally to a hangout. |
+| **TransactionRead** | `id`, `subcategory_id` (uuid), `subcategory_name` (string, from BE for list display), `value` (integer), `description` (string), `date` (date string), `hangout_id` (uuid \| null), `hangout_name` (string \| null, from BE for list display), `user_id` (string \| null) | Links to subcategory and optionally to a hangout. GET list/single returns IDs (for operations) and names (for display). |
 | **TransactionCreate** | `subcategory_id` (uuid, required), `value` (integer, required), `description` (string, required), `date` (date, required), `hangout_id` (uuid \| null) | |
 | **TransactionUpdate** | `subcategory_id`, `value`, `description`, `date`, `hangout_id` (all optional) | PATCH body. |
 
@@ -315,13 +315,13 @@ List endpoints accept optional **`?skip`** and **`?limit`** (query; defaults 0 a
 | PATCH | `/categories/{category_id}` | path + body: CategoryUpdate | 200: CategoryRead | 422 |
 | DELETE | `/categories/{category_id}` | path | 204 | 422 |
 | **Subcategories** |
-| GET | `/subcategories/` | query: skip?, limit? | 200: SubcategoryRead[] | 422 |
+| GET | `/subcategories/` | query: skip?, limit? | 200: SubcategoryRead[] (items include `category_name`) | 422 |
 | POST | `/subcategories/` | body: SubcategoryCreate | 201: SubcategoryRead | 422 |
 | GET | `/subcategories/{subcategory_id}` | path | 200: SubcategoryRead | 422 |
 | PATCH | `/subcategories/{subcategory_id}` | path + body: SubcategoryUpdate | 200: SubcategoryRead | 422 |
 | DELETE | `/subcategories/{subcategory_id}` | path | 204 | 422 |
 | **Transactions** |
-| GET | `/transactions/` | query: skip?, limit? | 200: TransactionRead[] | 422 |
+| GET | `/transactions/` | query: skip?, limit? | 200: TransactionRead[] (items include `subcategory_name`, `hangout_name`) | 422 |
 | POST | `/transactions/` | body: TransactionCreate | 201: TransactionRead | 422 |
 | GET | `/transactions/{transaction_id}` | path | 200: TransactionRead | 422 |
 | PATCH | `/transactions/{transaction_id}` | path + body: TransactionUpdate | 200: TransactionRead | 422 |

@@ -34,11 +34,6 @@ const TABLE_WIDTH = COLUMN_SIZES.reduce((a, b) => a + b, 0);
 /** Proportional columns so header and body fill 100% and stay aligned */
 const GRID_TEMPLATE_FR = COLUMN_SIZES.map((s) => `${s}fr`).join(' ');
 
-function truncateUuid(uuid: string): string {
-  if (uuid.length <= 12) return uuid;
-  return `${uuid.slice(0, 8)}…`;
-}
-
 function formatValue(value: number): string {
   return new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 0,
@@ -117,38 +112,29 @@ function createColumns(
       ),
     },
     {
-      accessorKey: 'subcategory_id',
-      header: 'Subcategory ID',
+      accessorKey: 'subcategory_name',
+      header: 'Subcategory',
       size: COLUMN_SIZES[3],
-      cell: (info) => (
-        <Typography
-          variant="body2"
-          sx={{
-            color: themeTokens.textSecondary,
-            fontFamily: 'monospace',
-            fontSize: '0.75rem',
-          }}
-        >
-          {truncateUuid(info.getValue<string>())}
-        </Typography>
-      ),
+      cell: (info) => {
+        const row = info.row.original;
+        const display = row.subcategory_name?.trim() || '—';
+        return (
+          <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
+            {display}
+          </Typography>
+        );
+      },
     },
     {
-      accessorKey: 'hangout_id',
-      header: 'Hangout ID',
+      accessorKey: 'hangout_name',
+      header: 'Hangout',
       size: COLUMN_SIZES[4],
       cell: (info) => {
-        const value = info.getValue<string | null>();
+        const row = info.row.original;
+        const display = row.hangout_name?.trim() || '—';
         return (
-          <Typography
-            variant="body2"
-            sx={{
-              color: themeTokens.textSecondary,
-              fontFamily: 'monospace',
-              fontSize: '0.75rem',
-            }}
-          >
-            {value ? truncateUuid(value) : '—'}
+          <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
+            {display}
           </Typography>
         );
       },
