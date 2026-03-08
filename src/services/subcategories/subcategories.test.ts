@@ -55,6 +55,7 @@ describe('fetchSubcategories', () => {
       {
         id: '1',
         category_id: 'cat-1',
+        category_name: 'Food',
         name: 'Groceries',
         description: null,
         belongs_to_income: false,
@@ -78,6 +79,7 @@ describe('createSubcategory', () => {
     const created = {
       id: 'new-1',
       category_id: 'cat-1',
+      category_name: 'Food',
       name: 'New',
       description: null,
       belongs_to_income: false,
@@ -111,6 +113,7 @@ describe('getSubcategory', () => {
     const subcategory = {
       id: '1',
       category_id: 'cat-1',
+      category_name: 'Food',
       name: 'Groceries',
       description: null,
       belongs_to_income: false,
@@ -134,6 +137,7 @@ describe('updateSubcategory', () => {
     const updated = {
       id: '1',
       category_id: 'cat-1',
+      category_name: 'Food',
       name: 'Updated',
       description: 'Desc',
       belongs_to_income: true,

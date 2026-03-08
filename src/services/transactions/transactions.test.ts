@@ -55,10 +55,12 @@ describe('fetchTransactions', () => {
       {
         id: '1',
         subcategory_id: 'sub-1',
+        subcategory_name: 'Groceries',
         value: 1000,
         description: 'Coffee',
         date: '2026-03-01',
         hangout_id: null,
+        hangout_name: null,
         user_id: 'u1',
       },
     ];
@@ -79,10 +81,12 @@ describe('createTransaction', () => {
     const created = {
       id: 'new-1',
       subcategory_id: 'sub-1',
+      subcategory_name: 'Groceries',
       value: 500,
       description: 'Lunch',
       date: '2026-03-01',
       hangout_id: null,
+      hangout_name: null,
       user_id: 'u1',
     };
     vi.mocked(callbackApi.post).mockResolvedValue(mockResponse(created));
@@ -113,10 +117,12 @@ describe('getTransaction', () => {
     const transaction = {
       id: '1',
       subcategory_id: 'sub-1',
+      subcategory_name: 'Groceries',
       value: 1000,
       description: 'Coffee',
       date: '2026-03-01',
       hangout_id: null,
+      hangout_name: null,
       user_id: 'u1',
     };
     vi.mocked(callbackApi.get).mockResolvedValue(mockResponse(transaction));
@@ -137,10 +143,12 @@ describe('updateTransaction', () => {
     const updated = {
       id: '1',
       subcategory_id: 'sub-1',
+      subcategory_name: 'Groceries',
       value: 600,
       description: 'Updated',
       date: '2026-03-02',
       hangout_id: null,
+      hangout_name: null,
       user_id: 'u1',
     };
     vi.mocked(callbackApi.patch).mockResolvedValue(mockResponse(updated));

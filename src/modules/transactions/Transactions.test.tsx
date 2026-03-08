@@ -85,19 +85,23 @@ describe('Transactions screen', () => {
       {
         id: '1',
         subcategory_id: 'sub-a',
+        subcategory_name: 'Groceries',
         value: 1000,
         description: 'Coffee',
         date: '2026-03-01',
         hangout_id: null,
+        hangout_name: null,
         user_id: 'u1',
       },
       {
         id: '2',
         subcategory_id: 'sub-b',
+        subcategory_name: 'Dining',
         value: -500,
         description: 'Lunch',
         date: '2026-03-02',
         hangout_id: 'hang-1',
+        hangout_name: 'Team Lunch',
         user_id: 'u1',
       },
     ];
@@ -146,10 +150,12 @@ describe('Transactions screen', () => {
           {
             id: '1',
             subcategory_id: 'sub-1',
+            subcategory_name: 'Groceries',
             value: 100,
             description: 'Snack',
             date: '2026-03-01',
             hangout_id: null,
+            hangout_name: null,
             user_id: 'u1',
           },
         ]);
@@ -205,6 +211,7 @@ describe('Transactions screen', () => {
       {
         id: 'sub-1',
         category_id: 'cat-1',
+        category_name: 'Food',
         name: 'Food',
         description: null,
         belongs_to_income: false,
@@ -214,10 +221,12 @@ describe('Transactions screen', () => {
     const created = {
       id: 'tx-new',
       subcategory_id: 'sub-1',
+      subcategory_name: 'Food',
       value: 500,
       description: 'Lunch',
       date: '2026-03-01',
       hangout_id: null,
+      hangout_name: null,
       user_id: 'u1',
     };
     const listAfterCreate = [created];
@@ -289,10 +298,12 @@ describe('Transactions screen', () => {
       {
         id: 'tx-1',
         subcategory_id: 'sub-a',
+        subcategory_name: 'Groceries',
         value: 1000,
         description: 'Coffee',
         date: '2026-03-01',
         hangout_id: null,
+        hangout_name: null,
         user_id: 'u1',
       },
     ];
@@ -333,10 +344,12 @@ describe('Transactions screen', () => {
       {
         id: 'tx-1',
         subcategory_id: 'sub-a',
+        subcategory_name: 'Groceries',
         value: 1000,
         description: 'Coffee',
         date: '2026-03-01',
         hangout_id: null,
+        hangout_name: null,
         user_id: 'u1',
       },
     ];

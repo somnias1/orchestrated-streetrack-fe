@@ -10,16 +10,16 @@ import {
   MenuItem,
   Select,
   TextField,
-} from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useCategoriesQuery } from "../../../services/categories/hooks";
-import { themeTokens } from "../../../theme/tailwind";
-import { useCategoriesStore } from "../../categories/store";
-import { type SubcategoryFormValues, subcategoryFormSchema } from "./schema";
+} from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCategoriesQuery } from '../../../services/categories/hooks';
+import { themeTokens } from '../../../theme/tailwind';
+import { useCategoriesStore } from '../../categories/store';
+import { type SubcategoryFormValues, subcategoryFormSchema } from './schema';
 import type {
   SubcategoryFormDialogProps,
   SubcategoryFormPayload,
-} from "./types";
+} from './types';
 
 function toPayload(values: SubcategoryFormValues): SubcategoryFormPayload {
   return {
@@ -53,11 +53,11 @@ export function SubcategoryFormDialog({
     [categories],
   );
   const [category_id, setCategoryId] = useState(
-    initialValues?.category_id ?? "",
+    initialValues?.category_id ?? '',
   );
-  const [name, setName] = useState(initialValues?.name ?? "");
+  const [name, setName] = useState(initialValues?.name ?? '');
   const [description, setDescription] = useState(
-    initialValues?.description ?? "",
+    initialValues?.description ?? '',
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -68,9 +68,9 @@ export function SubcategoryFormDialog({
 
   useEffect(() => {
     if (open) {
-      setCategoryId(initialValues?.category_id ?? "");
-      setName(initialValues?.name ?? "");
-      setDescription(initialValues?.description ?? "");
+      setCategoryId(initialValues?.category_id ?? '');
+      setName(initialValues?.name ?? '');
+      setDescription(initialValues?.description ?? '');
       setFieldErrors({});
     }
   }, [open, initialValues]);
@@ -88,13 +88,13 @@ export function SubcategoryFormDialog({
       const parsed = subcategoryFormSchema.safeParse({
         category_id: raw.category_id,
         name: raw.name,
-        description: raw.description === "" ? null : raw.description,
+        description: raw.description === '' ? null : raw.description,
         belongs_to_income: raw.belongs_to_income,
       });
       if (!parsed.success) {
         const errors: Record<string, string> = {};
         for (const issue of parsed.error.issues) {
-          const path = issue.path[0]?.toString() ?? "form";
+          const path = issue.path[0]?.toString() ?? 'form';
           if (!errors[path]) errors[path] = issue.message;
         }
         setFieldErrors(errors);
@@ -134,10 +134,10 @@ export function SubcategoryFormDialog({
     >
       <form onSubmit={handleSubmit} data-testid="subcategory-form-dialog-form">
         <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-          {isEdit ? "Edit subcategory" : "Create subcategory"}
+          {isEdit ? 'Edit subcategory' : 'Create subcategory'}
         </DialogTitle>
         <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           data-testid="subcategory-form-dialog-content"
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
@@ -156,14 +156,14 @@ export function SubcategoryFormDialog({
               onChange={(e) => setCategoryId(e.target.value)}
               sx={{
                 color: themeTokens.textPrimary,
-                "& .MuiOutlinedInput-notchedOutline": {
+                '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: themeTokens.border,
                 },
               }}
             >
               {categoryOptions.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name} ({cat.is_income ? "Income" : "Expense"})
+                  {cat.name} ({cat.is_income ? 'Income' : 'Expense'})
                 </MenuItem>
               ))}
             </Select>
@@ -179,10 +179,10 @@ export function SubcategoryFormDialog({
             fullWidth
             error={Boolean(fieldErrors.name)}
             helperText={fieldErrors.name}
-            inputProps={{ "aria-label": "Subcategory name" }}
+            inputProps={{ 'aria-label': 'Subcategory name' }}
             sx={{
-              "& .MuiInputBase-input": { color: themeTokens.textPrimary },
-              "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
+              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
           <TextField
@@ -194,10 +194,10 @@ export function SubcategoryFormDialog({
             minRows={2}
             error={Boolean(fieldErrors.description)}
             helperText={fieldErrors.description}
-            inputProps={{ "aria-label": "Subcategory description" }}
+            inputProps={{ 'aria-label': 'Subcategory description' }}
             sx={{
-              "& .MuiInputBase-input": { color: themeTokens.textPrimary },
-              "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
+              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
         </DialogContent>
@@ -216,7 +216,7 @@ export function SubcategoryFormDialog({
             disabled={submitting}
             sx={{ backgroundColor: themeTokens.primary }}
           >
-            {submitting ? "Saving…" : isEdit ? "Save" : "Create"}
+            {submitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
           </Button>
         </DialogActions>
       </form>

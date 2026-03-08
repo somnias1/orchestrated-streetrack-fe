@@ -1,22 +1,22 @@
-import AddRounded from "@mui/icons-material/AddRounded";
-import { Box, Button, Typography } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
-import { useHangoutsQuery } from "../../services/hangouts/hooks";
-import { useSubcategoriesQuery } from "../../services/subcategories/hooks";
+import AddRounded from '@mui/icons-material/AddRounded';
+import { Box, Button, Typography } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
+import { useHangoutsQuery } from '../../services/hangouts/hooks';
+import { useSubcategoriesQuery } from '../../services/subcategories/hooks';
 import {
   useCreateTransactionMutation,
   useDeleteTransactionMutation,
   useTransactionsQuery,
   useUpdateTransactionMutation,
-} from "../../services/transactions/hooks";
-import type { TransactionRead } from "../../services/transactions/types";
-import { themeTokens } from "../../theme/tailwind";
-import { useHangoutsStore } from "../hangouts/store";
-import { useSubcategoriesStore } from "../subcategories/store";
-import { DeleteTransactionDialog } from "./deleteTransactionDialog";
-import { useTransactionsStore } from "./store";
-import { TransactionFormDialog } from "./transactionFormDialog";
-import { TransactionsTable } from "./transactionsTable";
+} from '../../services/transactions/hooks';
+import type { TransactionRead } from '../../services/transactions/types';
+import { themeTokens } from '../../theme/tailwind';
+import { useHangoutsStore } from '../hangouts/store';
+import { useSubcategoriesStore } from '../subcategories/store';
+import { DeleteTransactionDialog } from './deleteTransactionDialog';
+import { useTransactionsStore } from './store';
+import { TransactionFormDialog } from './transactionFormDialog';
+import { TransactionsTable } from './transactionsTable';
 
 export function Transactions() {
   const {
@@ -39,7 +39,7 @@ export function Transactions() {
       isError && error instanceof Error
         ? error.message
         : isError
-          ? "Failed to load transactions"
+          ? 'Failed to load transactions'
           : null;
     setTransactionsFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setTransactionsFromQuery]);
@@ -76,7 +76,7 @@ export function Transactions() {
     isError && error instanceof Error
       ? error.message
       : isError
-        ? "Failed to load transactions"
+        ? 'Failed to load transactions'
         : null;
 
   const openCreate = useCallback(() => {
@@ -125,7 +125,7 @@ export function Transactions() {
         setFormOpen(false);
       } catch (err) {
         setSubmitError(
-          err instanceof Error ? err.message : "Something went wrong",
+          err instanceof Error ? err.message : 'Something went wrong',
         );
         throw err;
       }
@@ -153,17 +153,17 @@ export function Transactions() {
     <Box sx={{ py: 2 }}>
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           mb: 2,
-          flexWrap: "wrap",
+          flexWrap: 'wrap',
           gap: 1,
         }}
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Transactions
-          {items.length > 0 ? ` (${items.length})` : ""}
+          {items.length > 0 ? ` (${items.length})` : ''}
         </Typography>
         <Button
           variant="contained"
