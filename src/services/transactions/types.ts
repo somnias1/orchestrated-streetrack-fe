@@ -5,10 +5,12 @@
 export type TransactionRead = {
   id: string;
   subcategory_id: string;
+  subcategory_name: string;
   value: number;
   description: string;
   date: string;
   hangout_id: string | null;
+  hangout_name: string | null;
   user_id: string | null;
 };
 
