@@ -51,4 +51,4 @@
 
 - Transactions CRUD (create/edit/delete) — Phase 11.
 - Filtering/sorting by date or category (optional; BACKLOG medium).
-- Resolving subcategory/hangout names in list (show IDs for now).
+- Resolving subcategory/hangout names in list — **Phase 17**.

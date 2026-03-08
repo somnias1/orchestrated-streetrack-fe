@@ -21,6 +21,7 @@ Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and 
 | 14    | Theme, Layout & Categories Table Alignment | Introduce tweakcn-style theme, light/dark toggle, layout shell, table state alignment on Categories list. | §3.2, §3.4, §3.7, §5.1 | 13         |
 | 15    | Remaining Screens & CRUD on shadcn   | Migrate Subcategories, Transactions, Hangouts lists and all CRUD dialogs to shadcn; unify table state; reduce MUI. | §3.2, §3.4, §3.5, §3.7, §5.1 | 14         |
 | 16    | Tests & coverage gate                | Update/add tests for 13–15; meet 80% lines/statements, 70% branches/functions; §1.3 mapping. | §1.3, §6.1, §6.2, §8.3 | 15         |
+| 17    | List screens: category & transaction names | Use BE-provided category name in Subcategories list and subcategory/hangout names in Transactions list; types, tables, MSW, tests. | §4.1, §4.3, §3.4, §5.1 | 16         |
 
 
 ## Phase sizing guidance
@@ -28,5 +29,5 @@ Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and 
 - Each phase targets **one chat session** worth of work.
 - If a phase feels too large (>8 atomic commits), split it.
 - If two phases are very small (<2 commits each), consider merging them.
-- New features after Phase 16 (e.g. import/export UI, reports) continue from Phase 17+ (see FRAMEWORK.md §6).
+- New features after Phase 16 (e.g. names in lists, import/export UI, reports) continue from Phase 17+ (see FRAMEWORK.md §6).
 

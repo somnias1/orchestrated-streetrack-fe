@@ -52,4 +52,4 @@
 
 - Subcategories CRUD (create/edit/delete) — Phase 10.
 - Filtering by category in list (optional; can add in Phase 10 with category picker).
-- Resolving category name in list (show category_id for now).
+- Resolving category name in list — **Phase 17**.
