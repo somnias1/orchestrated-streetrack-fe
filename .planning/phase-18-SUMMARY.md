@@ -12,6 +12,7 @@
 - `src/modules/transactions/index.tsx`: Add menu (Add → Transaction / Bulk), current-year-month filter, filtered list and count.
 - `src/modules/hangouts/hangoutsTable/index.tsx`: Edit IconButton `sx` color → primary, Delete → error.
 - `src/modules/transactions/Transactions.test.tsx`: Add menu test (Add button, menu items Transaction/Bulk); create flow opens menu then Transaction; transaction dates use `currentMonthDate()` so default filter includes them.
+- **Testing behavior:** `src/utils/test/provider/index.tsx` (ProviderWrapper), `src/utils/test/auth0MockContext.tsx` (Auth0MockContext / Auth0MockProvider), `src/setupTests.ts` (mock useAuth0 via Auth0MockContext); screen and service tests use ProviderWrapper as wrapper.
 
 ## Decisions made
 
@@ -22,6 +23,12 @@
 ## Tests added
 
 - `Transactions.test.tsx`: "has Add button with Transaction and Bulk menu" (replaces "has Create transaction button"); create flow updated to open Add → click Transaction; all transaction dates switched to `currentMonthDate()` for filter compatibility.
+
+## Testing behavior (post-merge update)
+
+- **Shared test setup:** `src/utils/test/provider/index.tsx` exports **ProviderWrapper** (QueryClient + Auth0MockProvider) for tests that need a logged-in user and API (useCallbackApi, useGetToken, ProtectedRoute).
+- **Auth0 mock:** `src/utils/test/auth0MockContext.tsx` exports **Auth0MockContext** and **Auth0MockProvider** with a configurable mock for `useAuth0()`. **setupTests.ts** mocks `@auth0/auth0-react` so `useAuth0()` returns `React.useContext(Auth0MockContext)`; tests that need unauthenticated can wrap with `<Auth0MockProvider value={{ isAuthenticated: false }}>`.
+- **Usage:** Screen tests (e.g. Categories.test.tsx) and service/hook tests use `ProviderWrapper` as the render wrapper so API calls see an authenticated user; coverage and gate unchanged.
 
 ## Known issues / follow-ups
 
