@@ -2,15 +2,16 @@
 
 ## Current Phase
 
-Phase 18 — UX/UI improvements (in progress).
+Phase 18 — UX/UI improvements (complete).
 
 ## Last Task Completed
 
-Phase 17 merged: TECHSPEC §4.1/§4.3 updated; types (SubcategoryRead/TransactionRead with names + IDs); tables display names only; edit flows use IDs from API; tests updated; gate passing.
+Phase 18: Type as MUI Chips (already present); Transactions Add menu (Transaction/Bulk); default current-month filter for transactions; Hangouts table action colors (primary/error). SUMMARY and merge pending.
 
 ## Next Task
 
-1. Create branch `feature/phase-18-ux-improvements`, spec `.planning/phase-18-SPEC.md`, implement type chips, Transaction/Bulk menu, transactions default current month, Hangouts action colors (per `.planning/phase-00-ROADMAP.md`).
+1. Merge `feature/phase-18-ux-improvements` to main with --no-ff.
+2. Phase 19 — List filters and sort (Categories by type; Subcategories by type and category; Transactions by date tree, subcategory, hangout; sort by date newest first; default current month on Transactions).
 
 ## Key Decisions
 

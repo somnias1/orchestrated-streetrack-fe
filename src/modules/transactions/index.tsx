@@ -1,5 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
-import { Box, Button, Typography } from '@mui/material';
+import ArrowDropDownRounded from '@mui/icons-material/ArrowDropDownRounded';
+import { Box, Button, Menu, MenuItem, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useHangoutsQuery } from '../../services/hangouts/hooks';
 import { useSubcategoriesQuery } from '../../services/subcategories/hooks';
@@ -71,6 +72,7 @@ export function Transactions() {
   const [transactionToDelete, setTransactionToDelete] =
     useState<TransactionRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(null);
 
   const errorMessage =
     isError && error instanceof Error
@@ -79,11 +81,24 @@ export function Transactions() {
         ? 'Failed to load transactions'
         : null;
 
+  // Default current-month filter (Phase 18); date format YYYY-MM-DD
+  const now = new Date();
+  const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const filteredItems = items.filter(
+    (t) => t.date.slice(0, 7) === currentYearMonth,
+  );
+
   const openCreate = useCallback(() => {
+    setAddMenuAnchor(null);
     setEditingTransactionId(null);
     setFormInitial(null);
     setSubmitError(null);
     setFormOpen(true);
+  }, []);
+
+  const openBulkStub = useCallback(() => {
+    setAddMenuAnchor(null);
+    // Phase 22: Bulk transactions dialog; stub for Phase 18
   }, []);
 
   const openEdit = useCallback((transaction: TransactionRead) => {
@@ -163,19 +178,32 @@ export function Transactions() {
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Transactions
-          {items.length > 0 ? ` (${items.length})` : ''}
+          {filteredItems.length > 0 ? ` (${filteredItems.length})` : ''}
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddRounded />}
-          onClick={openCreate}
+          endIcon={<ArrowDropDownRounded />}
+          onClick={(e) => setAddMenuAnchor(e.currentTarget)}
+          aria-haspopup="menu"
+          aria-expanded={Boolean(addMenuAnchor)}
           sx={{ backgroundColor: themeTokens.primary }}
         >
-          Create transaction
+          Add
         </Button>
+        <Menu
+          anchorEl={addMenuAnchor}
+          open={Boolean(addMenuAnchor)}
+          onClose={() => setAddMenuAnchor(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <MenuItem onClick={openCreate}>Transaction</MenuItem>
+          <MenuItem onClick={openBulkStub}>Bulk</MenuItem>
+        </Menu>
       </Box>
       <TransactionsTable
-        items={items}
+        items={filteredItems}
         loading={isLoading}
         error={errorMessage}
         onRetry={refetch}
