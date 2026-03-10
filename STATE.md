@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 18 — UX/UI improvements (complete).
+Phase 19 — List filters and sort (complete).
 
 ## Last Task Completed
 
-Phase 18: Type as MUI Chips (already present); Transactions Add menu (Transaction/Bulk); default current-month filter for transactions; Hangouts table action colors (primary/error). SUMMARY and merge pending.
+Phase 19: Categories type filter; Subcategories type + category filters; Transactions date (year/month/day), subcategory, hangout filters; default current month; sort newest first (backend). SUMMARY and merge pending.
 
 ## Next Task
 
-1. Merge `feature/phase-18-ux-improvements` to main with --no-ff.
-2. Phase 19 — List filters and sort (Categories by type; Subcategories by type and category; Transactions by date tree, subcategory, hangout; sort by date newest first; default current month on Transactions).
+1. Merge `feature/phase-19-list-filters-sort` to main with --no-ff.
+2. Phase 20 — Periodic expenses (subcategories): is_periodic, due_day in types, form, and list.
 
 ## Key Decisions
 
