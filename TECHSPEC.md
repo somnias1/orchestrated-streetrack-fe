@@ -425,6 +425,12 @@ Frontend service layout per resource: `src/services/<resource>/index.ts` (client
 - If using MSW: run only in Node (Jest) environment; do not start MSW in the production app bundle.
 - Pin test deps (e.g. testing-library, jest) to exact versions to avoid flakiness.
 
+#### Auth0 and provider wrapper (Vitest)
+
+- **setupTests.ts** mocks `@auth0/auth0-react` so that `useAuth0()` returns `React.useContext(Auth0MockContext)`. All tests therefore resolve Auth0 from the same mock context.
+- **Auth0MockContext** and **Auth0MockProvider** live in `src/utils/test/auth0MockContext.tsx`. The default mock is a logged-in user (`isAuthenticated: true`, `getAccessTokenSilently` resolves a token). Override by wrapping with `<Auth0MockProvider value={{ isAuthenticated: false }}>` (or other partial overrides).
+- **ProviderWrapper** (`src/utils/test/provider/index.tsx`) wraps the tree with `QueryClientProvider` and `Auth0MockProvider`. Use it as the `wrapper` in `render()` or `renderHook()` for any test that needs API calls (e.g. screens, hooks that use callbackApi). This keeps a consistent authenticated context and avoids per-test Auth0 setup.
+
 ---
 
 ## 7. Deployment & Environment
