@@ -23,25 +23,16 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef } from 'react';
 import type { HangoutRead } from '../../../services/hangouts/types';
 import { themeTokens } from '../../../theme/tailwind';
+import { formatDate } from '../../../utils';
+import {
+  COLUMN_SIZES,
+  GRID_TEMPLATE_FR,
+  ROW_HEIGHT,
+  STATE_ROW_MIN_HEIGHT,
+  TABLE_MIN_HEIGHT,
+  TABLE_WIDTH,
+} from './constants';
 import type { HangoutsTableProps } from './types';
-
-const ROW_HEIGHT = 48;
-const TABLE_MIN_HEIGHT = 400;
-/** Min height for loading/error/empty state row so body area is consistent (§5.1) */
-const STATE_ROW_MIN_HEIGHT = TABLE_MIN_HEIGHT - ROW_HEIGHT;
-const COLUMN_SIZES = [200, 280, 120, 80] as const;
-const TABLE_WIDTH = COLUMN_SIZES.reduce((a, b) => a + b, 0);
-/** Proportional columns so header and body fill 100% and stay aligned */
-const GRID_TEMPLATE_FR = COLUMN_SIZES.map((s) => `${s}fr`).join(' ');
-
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    return Number.isNaN(d.getTime()) ? dateStr : d.toLocaleDateString();
-  } catch {
-    return dateStr;
-  }
-}
 
 function createColumns(
   onEdit: (hangout: HangoutRead) => void,

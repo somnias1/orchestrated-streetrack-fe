@@ -1,72 +1,94 @@
-import { callbackApi } from '../../utils/callbackApi';
-import { transactionsPaths } from './constants';
+import {
+  type UseMutationOptions,
+  type UseQueryOptions,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
+import { config } from '../../config';
+import useCallbackApi from '../../utils/callbackApi';
+import { transactionsPaths, transactionsQueryKey } from './constants';
 import type {
   GetTransactionsResponse,
   TransactionCreate,
   TransactionRead,
+  TransactionsListParams,
   TransactionUpdate,
 } from './types';
 
-const DEFAULT_SKIP = 0;
-const DEFAULT_LIMIT = 50;
+const baseURL = config.apiUrl;
 
-/**
- * Fetch transactions list from the backend. Uses callbackApi (Bearer token attached by interceptor).
- * TECHSPEC §4.3: skip and limit optional; defaults 0, 50.
- */
-export async function fetchTransactions(options?: {
-  skip?: number;
-  limit?: number;
-}): Promise<TransactionRead[]> {
-  const skip = options?.skip ?? DEFAULT_SKIP;
-  const limit = options?.limit ?? DEFAULT_LIMIT;
-  const { data } = await callbackApi.get<GetTransactionsResponse>(
-    transactionsPaths.list,
-    { params: { skip, limit } },
-  );
-  return data;
+export function useTransactionsQuery(
+  params?: TransactionsListParams,
+  queryOptions?: Partial<
+    UseQueryOptions<GetTransactionsResponse, Error, GetTransactionsResponse>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useQuery<GetTransactionsResponse, Error, GetTransactionsResponse>({
+    queryKey: [transactionsQueryKey, params ?? {}],
+    queryFn: () =>
+      callbackApi<GetTransactionsResponse>(transactionsPaths.list, {
+        params,
+        baseURL,
+      }),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    ...queryOptions,
+  });
 }
 
-/**
- * Create a transaction. POST /transactions/; returns created TransactionRead (201).
- */
-export async function createTransaction(
-  body: TransactionCreate,
-): Promise<TransactionRead> {
-  const { data } = await callbackApi.post<TransactionRead>(
-    transactionsPaths.list,
-    body,
-  );
-  return data;
+export function useCreateTransactionMutation(
+  options?: Partial<
+    UseMutationOptions<TransactionRead, Error, TransactionCreate>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<TransactionRead, Error, TransactionCreate>({
+    mutationFn: (body: TransactionCreate) =>
+      callbackApi<TransactionRead>(transactionsPaths.list, {
+        data: body,
+        method: 'POST',
+        baseURL,
+      }),
+    ...options,
+  });
 }
 
-/**
- * Get a single transaction by id. GET /transactions/{id}.
- */
-export async function getTransaction(id: string): Promise<TransactionRead> {
-  const { data } = await callbackApi.get<TransactionRead>(
-    transactionsPaths.get(id),
-  );
-  return data;
+export function useUpdateTransactionMutation(
+  options?: Partial<
+    UseMutationOptions<
+      TransactionRead,
+      Error,
+      { id: string; body: TransactionUpdate }
+    >
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<
+    TransactionRead,
+    Error,
+    { id: string; body: TransactionUpdate }
+  >({
+    mutationFn: ({ id, body }: { id: string; body: TransactionUpdate }) =>
+      callbackApi<TransactionRead>(transactionsPaths.update(id), {
+        data: body,
+        method: 'PATCH',
+        baseURL,
+      }),
+    ...options,
+  });
 }
 
-/**
- * Update a transaction. PATCH /transactions/{id}; returns updated TransactionRead (200).
- */
-export async function updateTransaction(
-  id: string,
-  body: TransactionUpdate,
-): Promise<TransactionRead> {
-  const { data } = await callbackApi.patch<TransactionRead>(
-    transactionsPaths.update(id),
-    body,
-  );
-  return data;
-}
-
-/**
- * Delete a transaction. DELETE /transactions/{id}; 204 no content.
- */
-export async function deleteTransaction(id: string): Promise<void> {
-  await callbackApi.delete(transactionsPaths.delete(id));
+export function useDeleteTransactionMutation(
+  options?: Partial<UseMutationOptions<void, Error, string>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<void, Error, string>({
+    mutationFn: (id: string) =>
+      callbackApi<void>(transactionsPaths.delete(id), {
+        method: 'DELETE',
+        baseURL,
+      }),
+    ...options,
+  });
 }

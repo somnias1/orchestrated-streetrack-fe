@@ -2,6 +2,8 @@
  * Subcategories API types (TECHSPEC §4.1). Match backend OpenAPI schemas.
  */
 
+import type { DefaultParams } from '../types';
+
 export type SubcategoryRead = {
   id: string;
   category_id: string;
@@ -24,6 +26,11 @@ export type SubcategoryUpdate = {
   name?: string | null;
   description?: string | null;
   belongs_to_income?: boolean | null;
+};
+
+export type SubcategoriesListParams = DefaultParams & {
+  belongs_to_income?: boolean;
+  category_id?: string;
 };
 
 /** GET /subcategories/ response */

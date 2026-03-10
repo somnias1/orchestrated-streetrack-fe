@@ -24,16 +24,15 @@ import { useRef } from 'react';
 import type { CategoryRead } from '../../../services/categories/types';
 import { themeTokens } from '../../../theme/tailwind';
 import { CategoryTypeChip } from './CategoryTypeChip';
+import {
+  COLUMN_SIZES,
+  GRID_TEMPLATE_FR,
+  ROW_HEIGHT,
+  STATE_ROW_MIN_HEIGHT,
+  TABLE_MIN_HEIGHT,
+  TABLE_WIDTH,
+} from './constants';
 import type { CategoriesTableProps } from './types';
-
-const ROW_HEIGHT = 48;
-const TABLE_MIN_HEIGHT = 400;
-/** Min height for loading/error/empty state row so body area is consistent (§5.1) */
-const STATE_ROW_MIN_HEIGHT = TABLE_MIN_HEIGHT - ROW_HEIGHT;
-const COLUMN_SIZES = [180, 280, 120, 120] as const;
-const TABLE_WIDTH = COLUMN_SIZES.reduce((a, b) => a + b, 0);
-/** Proportional columns so header and body fill 100% and stay aligned */
-const GRID_TEMPLATE_FR = COLUMN_SIZES.map((s) => `${s}fr`).join(' ');
 
 function createColumns(
   onEdit: (category: CategoryRead) => void,
@@ -99,6 +98,7 @@ function createColumns(
               <IconButton
                 size="small"
                 onClick={() => onEdit(category)}
+                data-testid="edit-button"
                 aria-label={`Edit ${category.name}`}
                 sx={{ color: themeTokens.primary }}
               >
@@ -109,6 +109,7 @@ function createColumns(
               <IconButton
                 size="small"
                 onClick={() => onDelete(category)}
+                data-testid="delete-button"
                 aria-label={`Delete ${category.name}`}
                 sx={{ color: themeTokens.error }}
               >
@@ -245,6 +246,7 @@ export function CategoriesTable({
                   <Button
                     variant="contained"
                     onClick={onRetry}
+                    data-testid="retry-button"
                     sx={{ backgroundColor: themeTokens.primary }}
                   >
                     Retry

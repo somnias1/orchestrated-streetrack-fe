@@ -12,7 +12,7 @@ import {
   TextField,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useCategoriesQuery } from '../../../services/categories/hooks';
+import { useCategoriesQuery } from '../../../services/categories';
 import { themeTokens } from '../../../theme/tailwind';
 import { useCategoriesStore } from '../../categories/store';
 import { type SubcategoryFormValues, subcategoryFormSchema } from './schema';

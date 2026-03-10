@@ -3,3 +3,8 @@
  */
 
 export type { HTTPValidationError, ValidationError } from './validation';
+
+export type DefaultParams = {
+  skip?: number;
+  limit?: number;
+};

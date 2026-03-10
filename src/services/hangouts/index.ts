@@ -1,68 +1,84 @@
-import { callbackApi } from '../../utils/callbackApi';
-import { hangoutsPaths } from './constants';
+import {
+  type UseMutationOptions,
+  type UseQueryOptions,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
+import { config } from '../../config';
+import useCallbackApi from '../../utils/callbackApi';
+import { hangoutsPaths, hangoutsQueryKey } from './constants';
 import type {
   GetHangoutsResponse,
   HangoutCreate,
   HangoutRead,
+  HangoutsListParams,
   HangoutUpdate,
 } from './types';
 
-const DEFAULT_SKIP = 0;
-const DEFAULT_LIMIT = 50;
+const baseURL = config.apiUrl;
 
-/**
- * Fetch hangouts list from the backend. Uses callbackApi (Bearer token attached by interceptor).
- * TECHSPEC §4.3: skip and limit optional; defaults 0, 50.
- */
-export async function fetchHangouts(options?: {
-  skip?: number;
-  limit?: number;
-}): Promise<HangoutRead[]> {
-  const skip = options?.skip ?? DEFAULT_SKIP;
-  const limit = options?.limit ?? DEFAULT_LIMIT;
-  const { data } = await callbackApi.get<GetHangoutsResponse>(
-    hangoutsPaths.list,
-    { params: { skip, limit } },
-  );
-  return data;
+export function useHangoutsQuery(
+  params?: HangoutsListParams,
+  queryOptions?: Partial<
+    UseQueryOptions<GetHangoutsResponse, Error, GetHangoutsResponse>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useQuery<GetHangoutsResponse, Error, GetHangoutsResponse>({
+    queryKey: [hangoutsQueryKey, params ?? {}],
+    queryFn: () =>
+      callbackApi<GetHangoutsResponse>(hangoutsPaths.list, {
+        params,
+        baseURL,
+      }),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    ...queryOptions,
+  });
 }
 
-/**
- * Create a hangout. POST /hangouts/; returns created HangoutRead (201).
- */
-export async function createHangout(body: HangoutCreate): Promise<HangoutRead> {
-  const { data } = await callbackApi.post<HangoutRead>(
-    hangoutsPaths.list,
-    body,
-  );
-  return data;
+export function useCreateHangoutMutation(
+  options?: Partial<UseMutationOptions<HangoutRead, Error, HangoutCreate>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<HangoutRead, Error, HangoutCreate>({
+    mutationFn: (body: HangoutCreate) =>
+      callbackApi<HangoutRead>(hangoutsPaths.list, {
+        data: body,
+        method: 'POST',
+        baseURL,
+      }),
+    ...options,
+  });
 }
 
-/**
- * Get a single hangout by id. GET /hangouts/{id}.
- */
-export async function getHangout(id: string): Promise<HangoutRead> {
-  const { data } = await callbackApi.get<HangoutRead>(hangoutsPaths.get(id));
-  return data;
+export function useUpdateHangoutMutation(
+  options?: Partial<
+    UseMutationOptions<HangoutRead, Error, { id: string; body: HangoutUpdate }>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<HangoutRead, Error, { id: string; body: HangoutUpdate }>({
+    mutationFn: ({ id, body }: { id: string; body: HangoutUpdate }) =>
+      callbackApi<HangoutRead>(hangoutsPaths.update(id), {
+        data: body,
+        method: 'PATCH',
+        baseURL,
+      }),
+    ...options,
+  });
 }
 
-/**
- * Update a hangout. PATCH /hangouts/{id}; returns updated HangoutRead (200).
- */
-export async function updateHangout(
-  id: string,
-  body: HangoutUpdate,
-): Promise<HangoutRead> {
-  const { data } = await callbackApi.patch<HangoutRead>(
-    hangoutsPaths.update(id),
-    body,
-  );
-  return data;
-}
-
-/**
- * Delete a hangout. DELETE /hangouts/{id}; 204 no content.
- */
-export async function deleteHangout(id: string): Promise<void> {
-  await callbackApi.delete(hangoutsPaths.delete(id));
+export function useDeleteHangoutMutation(
+  options?: Partial<UseMutationOptions<void, Error, string>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<void, Error, string>({
+    mutationFn: (id: string) =>
+      callbackApi<void>(hangoutsPaths.delete(id), {
+        method: 'DELETE',
+        baseURL,
+      }),
+    ...options,
+  });
 }

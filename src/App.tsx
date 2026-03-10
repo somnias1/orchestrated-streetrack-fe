@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -14,26 +13,13 @@ import { Layout } from './modules/layout';
 import { Subcategories } from './modules/subcategories';
 import { Transactions } from './modules/transactions';
 import { routes } from './routes';
-import { useGetToken } from './utils/auth/useGetToken';
-import { setTokenGetter } from './utils/callbackApi';
-
-function TokenInjector({ children }: { children: React.ReactNode }) {
-  const getToken = useGetToken();
-  useEffect(() => {
-    setTokenGetter(getToken);
-    return () => setTokenGetter(null);
-  }, [getToken]);
-  return <>{children}</>;
-}
 
 function ProtectedShell() {
   return (
     <ProtectedRoute>
-      <TokenInjector>
-        <Layout>
-          <Outlet />
-        </Layout>
-      </TokenInjector>
+      <Layout>
+        <Outlet />
+      </Layout>
     </ProtectedRoute>
   );
 }

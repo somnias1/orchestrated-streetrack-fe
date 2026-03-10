@@ -1,72 +1,94 @@
-import { callbackApi } from '../../utils/callbackApi';
-import { subcategoriesPaths } from './constants';
+import {
+  type UseMutationOptions,
+  type UseQueryOptions,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
+import { config } from '../../config';
+import useCallbackApi from '../../utils/callbackApi';
+import { subcategoriesPaths, subcategoriesQueryKey } from './constants';
 import type {
   GetSubcategoriesResponse,
+  SubcategoriesListParams,
   SubcategoryCreate,
   SubcategoryRead,
   SubcategoryUpdate,
 } from './types';
 
-const DEFAULT_SKIP = 0;
-const DEFAULT_LIMIT = 50;
+const baseURL = config.apiUrl;
 
-/**
- * Fetch subcategories list from the backend. Uses callbackApi (Bearer token attached by interceptor).
- * TECHSPEC §4.3: skip and limit optional; defaults 0, 50.
- */
-export async function fetchSubcategories(options?: {
-  skip?: number;
-  limit?: number;
-}): Promise<SubcategoryRead[]> {
-  const skip = options?.skip ?? DEFAULT_SKIP;
-  const limit = options?.limit ?? DEFAULT_LIMIT;
-  const { data } = await callbackApi.get<GetSubcategoriesResponse>(
-    subcategoriesPaths.list,
-    { params: { skip, limit } },
-  );
-  return data;
+export function useSubcategoriesQuery(
+  params?: SubcategoriesListParams,
+  queryOptions?: Partial<
+    UseQueryOptions<GetSubcategoriesResponse, Error, GetSubcategoriesResponse>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useQuery<GetSubcategoriesResponse, Error, GetSubcategoriesResponse>({
+    queryKey: [subcategoriesQueryKey, params ?? {}],
+    queryFn: () =>
+      callbackApi<GetSubcategoriesResponse>(subcategoriesPaths.list, {
+        params,
+        baseURL,
+      }),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    ...queryOptions,
+  });
 }
 
-/**
- * Create a subcategory. POST /subcategories/; returns created SubcategoryRead (201).
- */
-export async function createSubcategory(
-  body: SubcategoryCreate,
-): Promise<SubcategoryRead> {
-  const { data } = await callbackApi.post<SubcategoryRead>(
-    subcategoriesPaths.list,
-    body,
-  );
-  return data;
+export function useCreateSubcategoryMutation(
+  options?: Partial<
+    UseMutationOptions<SubcategoryRead, Error, SubcategoryCreate>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<SubcategoryRead, Error, SubcategoryCreate>({
+    mutationFn: (body: SubcategoryCreate) =>
+      callbackApi<SubcategoryRead>(subcategoriesPaths.list, {
+        data: body,
+        method: 'POST',
+        baseURL,
+      }),
+    ...options,
+  });
 }
 
-/**
- * Get a single subcategory by id. GET /subcategories/{id}.
- */
-export async function getSubcategory(id: string): Promise<SubcategoryRead> {
-  const { data } = await callbackApi.get<SubcategoryRead>(
-    subcategoriesPaths.get(id),
-  );
-  return data;
+export function useUpdateSubcategoryMutation(
+  options?: Partial<
+    UseMutationOptions<
+      SubcategoryRead,
+      Error,
+      { id: string; body: SubcategoryUpdate }
+    >
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<
+    SubcategoryRead,
+    Error,
+    { id: string; body: SubcategoryUpdate }
+  >({
+    mutationFn: ({ id, body }: { id: string; body: SubcategoryUpdate }) =>
+      callbackApi<SubcategoryRead>(subcategoriesPaths.update(id), {
+        data: body,
+        method: 'PATCH',
+        baseURL,
+      }),
+    ...options,
+  });
 }
 
-/**
- * Update a subcategory. PATCH /subcategories/{id}; returns updated SubcategoryRead (200).
- */
-export async function updateSubcategory(
-  id: string,
-  body: SubcategoryUpdate,
-): Promise<SubcategoryRead> {
-  const { data } = await callbackApi.patch<SubcategoryRead>(
-    subcategoriesPaths.update(id),
-    body,
-  );
-  return data;
-}
-
-/**
- * Delete a subcategory. DELETE /subcategories/{id}; 204 no content.
- */
-export async function deleteSubcategory(id: string): Promise<void> {
-  await callbackApi.delete(subcategoriesPaths.delete(id));
+export function useDeleteSubcategoryMutation(
+  options?: Partial<UseMutationOptions<void, Error, string>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<void, Error, string>({
+    mutationFn: (id: string) =>
+      callbackApi<void>(subcategoriesPaths.delete(id), {
+        method: 'DELETE',
+        baseURL,
+      }),
+    ...options,
+  });
 }
