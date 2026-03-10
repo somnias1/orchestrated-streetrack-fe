@@ -35,6 +35,12 @@ const transactionsUrl = `${API_URL}/transactions`;
 const subcategoriesUrl = `${API_URL}/subcategories`;
 const hangoutsUrl = `${API_URL}/hangouts`;
 
+/** Transaction date in current year-month so default filter includes it */
+function currentMonthDate(day = 1): string {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 const defaultHandlers = [
   http.get(subcategoriesUrl, () => HttpResponse.json([])),
   http.get(hangoutsUrl, () => HttpResponse.json([])),
@@ -88,7 +94,7 @@ describe('Transactions screen', () => {
         subcategory_name: 'Groceries',
         value: 1000,
         description: 'Coffee',
-        date: '2026-03-01',
+        date: currentMonthDate(1),
         hangout_id: null,
         hangout_name: null,
         user_id: 'u1',
@@ -99,7 +105,7 @@ describe('Transactions screen', () => {
         subcategory_name: 'Dining',
         value: -500,
         description: 'Lunch',
-        date: '2026-03-02',
+        date: currentMonthDate(2),
         hangout_id: 'hang-1',
         hangout_name: 'Team Lunch',
         user_id: 'u1',
@@ -153,7 +159,7 @@ describe('Transactions screen', () => {
             subcategory_name: 'Groceries',
             value: 100,
             description: 'Snack',
-            date: '2026-03-01',
+            date: currentMonthDate(1),
             hangout_id: null,
             hangout_name: null,
             user_id: 'u1',
@@ -191,7 +197,7 @@ describe('Transactions screen', () => {
     });
   });
 
-  it('has Create transaction button', async () => {
+  it('has Add button with Transaction and Bulk menu', async () => {
     server.use(
       ...defaultHandlers,
       http.get(transactionsUrl, () => HttpResponse.json([])),
@@ -200,8 +206,16 @@ describe('Transactions screen', () => {
     renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
+      expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /add/i }));
+    await waitFor(() => {
       expect(
-        screen.getByRole('button', { name: /create transaction/i }),
+        screen.getByRole('menuitem', { name: /transaction/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: /bulk/i }),
       ).toBeInTheDocument();
     });
   });
@@ -224,7 +238,7 @@ describe('Transactions screen', () => {
       subcategory_name: 'Food',
       value: 500,
       description: 'Lunch',
-      date: '2026-03-01',
+      date: currentMonthDate(1),
       hangout_id: null,
       hangout_name: null,
       user_id: 'u1',
@@ -241,7 +255,7 @@ describe('Transactions screen', () => {
           subcategory_id: 'sub-1',
           value: 500,
           description: 'Lunch',
-          date: '2026-03-01',
+          date: currentMonthDate(1),
         });
         return HttpResponse.json(created, { status: 201 });
       }),
@@ -250,13 +264,17 @@ describe('Transactions screen', () => {
     renderWithQueryClient(<Transactions />);
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('button', { name: /create transaction/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument();
     });
 
+    await userEvent.click(screen.getByRole('button', { name: /add/i }));
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: /transaction/i }),
+      ).toBeInTheDocument();
+    });
     await userEvent.click(
-      screen.getByRole('button', { name: /create transaction/i }),
+      screen.getByRole('menuitem', { name: /transaction/i }),
     );
 
     await waitFor(() => {
@@ -282,7 +300,10 @@ describe('Transactions screen', () => {
       within(dialog).getByLabelText(/description/i),
       'Lunch',
     );
-    await userEvent.type(within(dialog).getByLabelText(/date/i), '2026-03-01');
+    await userEvent.type(
+      within(dialog).getByLabelText(/date/i),
+      currentMonthDate(1),
+    );
     await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
 
     await waitFor(() => {
@@ -301,7 +322,7 @@ describe('Transactions screen', () => {
         subcategory_name: 'Groceries',
         value: 1000,
         description: 'Coffee',
-        date: '2026-03-01',
+        date: currentMonthDate(1),
         hangout_id: null,
         hangout_name: null,
         user_id: 'u1',
@@ -347,7 +368,7 @@ describe('Transactions screen', () => {
         subcategory_name: 'Groceries',
         value: 1000,
         description: 'Coffee',
-        date: '2026-03-01',
+        date: currentMonthDate(1),
         hangout_id: null,
         hangout_name: null,
         user_id: 'u1',
