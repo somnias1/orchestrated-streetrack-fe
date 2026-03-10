@@ -6,6 +6,7 @@ import App from './App';
 import { config } from './config';
 import { applySavedTheme } from './theme/mode';
 import './theme/theme.css';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 applySavedTheme();
 
@@ -39,6 +40,7 @@ if (rootEl) {
         >
           <QueryClientProvider client={queryClient}>
             <App />
+            <ReactQueryDevtools />
           </QueryClientProvider>
         </Auth0Provider>
       </React.StrictMode>,

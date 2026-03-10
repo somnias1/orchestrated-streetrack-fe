@@ -1,68 +1,47 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { callbackApi, setTokenGetter } from './index';
+import axios from 'axios';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import callbackApi from './callback';
+
+vi.mock('axios', () => ({
+  default: vi.fn(),
+}));
 
 describe('callbackApi', () => {
-  afterEach(() => {
-    setTokenGetter(null);
+  beforeEach(() => {
+    vi.mocked(axios).mockReset();
   });
 
-  it('attaches Bearer token when token getter returns a token', async () => {
+  it('attaches Bearer token when getToken returns a token', async () => {
     const token = 'fake-jwt-token';
-    setTokenGetter(() => Promise.resolve(token));
-
-    let capturedAuth: string | undefined;
-    const response = await callbackApi.get('/categories/', {
-      adapter: (config) => {
-        capturedAuth = config.headers?.Authorization as string | undefined;
-        return Promise.resolve({
-          data: [],
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config,
-        });
-      },
+    const getToken = vi.fn().mockResolvedValue(token);
+    vi.mocked(axios).mockResolvedValue({
+      data: [],
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as never,
     });
 
-    expect(capturedAuth).toBe(`Bearer ${token}`);
-    expect(response.status).toBe(200);
+    await callbackApi(getToken, '/categories/', {});
+
+    expect(axios).toHaveBeenCalledTimes(1);
+    const callConfig = vi.mocked(axios).mock.calls[0]?.[0];
+    expect(callConfig?.headers?.Authorization).toBe(`Bearer ${token}`);
   });
 
-  it('does not attach Authorization header when token getter is not set', async () => {
-    let capturedAuth: string | undefined;
-    await callbackApi.get('/categories/', {
-      adapter: (config) => {
-        capturedAuth = config.headers?.Authorization as string | undefined;
-        return Promise.resolve({
-          data: [],
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config,
-        });
-      },
-    });
-
-    expect(capturedAuth).toBeUndefined();
+  it('throws when getToken returns empty string', async () => {
+    const getToken = vi.fn().mockResolvedValue('');
+    await expect(callbackApi(getToken, '/categories/', {})).rejects.toThrow(
+      'Token not found',
+    );
+    expect(axios).not.toHaveBeenCalled();
   });
 
-  it('does not attach Authorization header when token getter returns undefined', async () => {
-    setTokenGetter(() => Promise.resolve(undefined));
-
-    let capturedAuth: string | undefined;
-    await callbackApi.get('/categories/', {
-      adapter: (config) => {
-        capturedAuth = config.headers?.Authorization as string | undefined;
-        return Promise.resolve({
-          data: [],
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config,
-        });
-      },
-    });
-
-    expect(capturedAuth).toBeUndefined();
+  it('throws when getToken returns undefined', async () => {
+    const getToken = vi.fn().mockResolvedValue(undefined);
+    await expect(callbackApi(getToken, '/categories/', {})).rejects.toThrow(
+      'Token not found',
+    );
+    expect(axios).not.toHaveBeenCalled();
   });
 });

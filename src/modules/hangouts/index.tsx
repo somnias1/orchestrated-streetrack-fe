@@ -1,12 +1,14 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import {
   useCreateHangoutMutation,
   useDeleteHangoutMutation,
   useHangoutsQuery,
   useUpdateHangoutMutation,
-} from '../../services/hangouts/hooks';
+} from '../../services/hangouts';
+import { hangoutsQueryKey } from '../../services/hangouts/constants';
 import type { HangoutRead } from '../../services/hangouts/types';
 import { themeTokens } from '../../theme/tailwind';
 import { DeleteHangoutDialog } from './deleteHangoutDialog';
@@ -15,6 +17,7 @@ import { HangoutsTable } from './hangoutsTable';
 import { useHangoutsStore } from './store';
 
 export function Hangouts() {
+  const queryClient = useQueryClient();
   const {
     data: items = [],
     isLoading,
@@ -34,9 +37,25 @@ export function Hangouts() {
     setFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setFromQuery]);
 
-  const createMutation = useCreateHangoutMutation();
-  const updateMutation = useUpdateHangoutMutation();
-  const deleteMutation = useDeleteHangoutMutation();
+  const handleInvalidateHangouts = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [hangoutsQueryKey] });
+  }, [queryClient]);
+
+  const createMutation = useCreateHangoutMutation({
+    onSuccess: () => {
+      handleInvalidateHangouts();
+    },
+  });
+  const updateMutation = useUpdateHangoutMutation({
+    onSuccess: () => {
+      handleInvalidateHangouts();
+    },
+  });
+  const deleteMutation = useDeleteHangoutMutation({
+    onSuccess: () => {
+      handleInvalidateHangouts();
+    },
+  });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingHangoutId, setEditingHangoutId] = useState<string | null>(null);

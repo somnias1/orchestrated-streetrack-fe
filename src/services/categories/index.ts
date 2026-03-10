@@ -1,5 +1,13 @@
-import { callbackApi } from '../../utils/callbackApi';
-import { categoriesPaths } from './constants';
+import {
+  type UseMutationOptions,
+  type UseQueryOptions,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
+import { config } from '../../config';
+import useCallbackApi from '../../utils/callbackApi';
+import type { DefaultParams } from '../types';
+import { categoriesPaths, categoriesQueryKey } from './constants';
 import type {
   CategoryCreate,
   CategoryRead,
@@ -7,64 +15,72 @@ import type {
   GetCategoriesResponse,
 } from './types';
 
-const DEFAULT_SKIP = 0;
-const DEFAULT_LIMIT = 50;
+const baseURL = config.apiUrl;
 
-/**
- * Fetch categories list from the backend. Uses callbackApi (Bearer token attached by interceptor).
- * TECHSPEC §4.3: skip and limit optional; defaults 0, 50.
- */
-export async function fetchCategories(options?: {
-  skip?: number;
-  limit?: number;
-}): Promise<CategoryRead[]> {
-  const skip = options?.skip ?? DEFAULT_SKIP;
-  const limit = options?.limit ?? DEFAULT_LIMIT;
-  const { data } = await callbackApi.get<GetCategoriesResponse>(
-    categoriesPaths.list,
-    { params: { skip, limit } },
+export function useCategoriesQuery(
+  params?: DefaultParams & { is_income?: boolean },
+  queryOptions?: Partial<
+    UseQueryOptions<GetCategoriesResponse, Error, GetCategoriesResponse>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useQuery<GetCategoriesResponse, Error, GetCategoriesResponse>({
+    queryKey: [categoriesQueryKey, params ?? {}],
+    queryFn: () => callbackApi(categoriesPaths.list, { params, baseURL }),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    ...queryOptions,
+  });
+}
+
+export function useCreateCategoryMutation(
+  options?: Partial<UseMutationOptions<CategoryRead, Error, CategoryCreate>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<CategoryRead, Error, CategoryCreate>({
+    mutationFn: (body: CategoryCreate) =>
+      callbackApi<CategoryRead>(categoriesPaths.list, {
+        data: body,
+        method: 'POST',
+        baseURL,
+      }),
+    ...options,
+  });
+}
+
+export function useUpdateCategoryMutation(
+  options?: Partial<
+    UseMutationOptions<
+      CategoryRead,
+      Error,
+      { id: string; body: CategoryUpdate }
+    >
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<CategoryRead, Error, { id: string; body: CategoryUpdate }>(
+    {
+      mutationFn: ({ id, body }: { id: string; body: CategoryUpdate }) =>
+        callbackApi<CategoryRead>(categoriesPaths.update(id), {
+          data: body,
+          method: 'PATCH',
+          baseURL,
+        }),
+      ...options,
+    },
   );
-  return data;
 }
 
-/**
- * Create a category. POST /categories/; returns created CategoryRead (201).
- */
-export async function createCategory(
-  body: CategoryCreate,
-): Promise<CategoryRead> {
-  const { data } = await callbackApi.post<CategoryRead>(
-    categoriesPaths.list,
-    body,
-  );
-  return data;
-}
-
-/**
- * Get a single category by id. GET /categories/{id}.
- */
-export async function getCategory(id: string): Promise<CategoryRead> {
-  const { data } = await callbackApi.get<CategoryRead>(categoriesPaths.get(id));
-  return data;
-}
-
-/**
- * Update a category. PATCH /categories/{id}; returns updated CategoryRead (200).
- */
-export async function updateCategory(
-  id: string,
-  body: CategoryUpdate,
-): Promise<CategoryRead> {
-  const { data } = await callbackApi.patch<CategoryRead>(
-    categoriesPaths.update(id),
-    body,
-  );
-  return data;
-}
-
-/**
- * Delete a category. DELETE /categories/{id}; 204 no content.
- */
-export async function deleteCategory(id: string): Promise<void> {
-  await callbackApi.delete(categoriesPaths.delete(id));
+export function useDeleteCategoryMutation(
+  options?: Partial<UseMutationOptions<void, Error, string>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<void, Error, string>({
+    mutationFn: (id: string) =>
+      callbackApi<void>(categoriesPaths.delete(id), {
+        method: 'DELETE',
+        baseURL,
+      }),
+    ...options,
+  });
 }

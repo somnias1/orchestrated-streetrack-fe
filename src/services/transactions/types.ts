@@ -2,6 +2,8 @@
  * Transactions API types (TECHSPEC §4.1). Match backend OpenAPI schemas.
  */
 
+import type { DefaultParams } from '../types';
+
 export type TransactionRead = {
   id: string;
   subcategory_id: string;
@@ -28,6 +30,14 @@ export type TransactionUpdate = {
   description?: string | null;
   date?: string | null;
   hangout_id?: string | null;
+};
+
+export type TransactionsListParams = DefaultParams & {
+  year?: number;
+  month?: number;
+  day?: number;
+  subcategory_id?: string;
+  hangout_id?: string;
 };
 
 /** GET /transactions/ response */

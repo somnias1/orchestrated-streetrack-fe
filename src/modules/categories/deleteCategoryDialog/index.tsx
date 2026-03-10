@@ -51,7 +51,10 @@ export function DeleteCategoryDialog({
       <DialogTitle sx={{ color: themeTokens.textPrimary }}>
         Delete category
       </DialogTitle>
-      <DialogContent sx={{ color: themeTokens.textSecondary }}>
+      <DialogContent
+        sx={{ color: themeTokens.textSecondary }}
+        data-testid="delete-category-dialog-content"
+      >
         Delete category «{name}»? This cannot be undone.
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>

@@ -1,32 +1,43 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import ArrowDropDownRounded from '@mui/icons-material/ArrowDropDownRounded';
 import { Box, Button, Menu, MenuItem, Typography } from '@mui/material';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
-import { useHangoutsQuery } from '../../services/hangouts/hooks';
-import { useSubcategoriesQuery } from '../../services/subcategories/hooks';
+import { useHangoutsQuery } from '../../services/hangouts';
+import { useSubcategoriesQuery } from '../../services/subcategories';
 import {
   useCreateTransactionMutation,
   useDeleteTransactionMutation,
   useTransactionsQuery,
   useUpdateTransactionMutation,
-} from '../../services/transactions/hooks';
-import type { TransactionRead } from '../../services/transactions/types';
+} from '../../services/transactions';
+import { transactionsQueryKey } from '../../services/transactions/constants';
+import type {
+  TransactionRead,
+  TransactionsListParams,
+} from '../../services/transactions/types';
 import { themeTokens } from '../../theme/tailwind';
 import { useHangoutsStore } from '../hangouts/store';
 import { useSubcategoriesStore } from '../subcategories/store';
+import { defaultTransactionsListParams } from './constants';
 import { DeleteTransactionDialog } from './deleteTransactionDialog';
 import { useTransactionsStore } from './store';
 import { TransactionFormDialog } from './transactionFormDialog';
 import { TransactionsTable } from './transactionsTable';
 
 export function Transactions() {
+  const queryClient = useQueryClient();
+
+  const [listParams, _setListParams] = useState<TransactionsListParams>(
+    defaultTransactionsListParams,
+  );
   const {
     data: items = [],
     isLoading,
     isError,
     error,
     refetch,
-  } = useTransactionsQuery();
+  } = useTransactionsQuery(listParams);
   const { data: subcategories = [] } = useSubcategoriesQuery();
   const { data: hangouts = [] } = useHangoutsQuery();
   const setTransactionsFromQuery = useTransactionsStore((s) => s.setFromQuery);
@@ -53,9 +64,25 @@ export function Transactions() {
     setHangoutsFromQuery(hangouts, false, null);
   }, [hangouts, setHangoutsFromQuery]);
 
-  const createMutation = useCreateTransactionMutation();
-  const updateMutation = useUpdateTransactionMutation();
-  const deleteMutation = useDeleteTransactionMutation();
+  const handleInvalidateTransactions = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [transactionsQueryKey] });
+  }, [queryClient]);
+
+  const createMutation = useCreateTransactionMutation({
+    onSuccess: () => {
+      handleInvalidateTransactions();
+    },
+  });
+  const updateMutation = useUpdateTransactionMutation({
+    onSuccess: () => {
+      handleInvalidateTransactions();
+    },
+  });
+  const deleteMutation = useDeleteTransactionMutation({
+    onSuccess: () => {
+      handleInvalidateTransactions();
+    },
+  });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingTransactionId, setEditingTransactionId] = useState<
@@ -80,13 +107,6 @@ export function Transactions() {
       : isError
         ? 'Failed to load transactions'
         : null;
-
-  // Default current-month filter (Phase 18); date format YYYY-MM-DD
-  const now = new Date();
-  const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const filteredItems = items.filter(
-    (t) => t.date.slice(0, 7) === currentYearMonth,
-  );
 
   const openCreate = useCallback(() => {
     setAddMenuAnchor(null);
@@ -178,7 +198,7 @@ export function Transactions() {
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Transactions
-          {filteredItems.length > 0 ? ` (${filteredItems.length})` : ''}
+          {items.length > 0 ? ` (${items.length})` : ''}
         </Typography>
         <Button
           variant="contained"
@@ -203,7 +223,7 @@ export function Transactions() {
         </Menu>
       </Box>
       <TransactionsTable
-        items={filteredItems}
+        items={items}
         loading={isLoading}
         error={errorMessage}
         onRetry={refetch}

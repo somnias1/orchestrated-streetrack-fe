@@ -1,12 +1,14 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
-} from '../../services/categories/hooks';
+} from '../../services/categories';
+import { categoriesQueryKey } from '../../services/categories/constants';
 import type { CategoryRead } from '../../services/categories/types';
 import { themeTokens } from '../../theme/tailwind';
 import { CategoriesTable } from './categoriesTable';
@@ -15,6 +17,7 @@ import { DeleteCategoryDialog } from './deleteCategoryDialog';
 import { useCategoriesStore } from './store';
 
 export function Categories() {
+  const queryClient = useQueryClient();
   const {
     data: items = [],
     isLoading,
@@ -33,9 +36,24 @@ export function Categories() {
           : null;
     setFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setFromQuery]);
-  const createMutation = useCreateCategoryMutation();
-  const updateMutation = useUpdateCategoryMutation();
-  const deleteMutation = useDeleteCategoryMutation();
+  const handleInvalidateCategories = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [categoriesQueryKey] });
+  }, [queryClient]);
+  const createMutation = useCreateCategoryMutation({
+    onSuccess: () => {
+      handleInvalidateCategories();
+    },
+  });
+  const updateMutation = useUpdateCategoryMutation({
+    onSuccess: () => {
+      handleInvalidateCategories();
+    },
+  });
+  const deleteMutation = useDeleteCategoryMutation({
+    onSuccess: () => {
+      handleInvalidateCategories();
+    },
+  });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(

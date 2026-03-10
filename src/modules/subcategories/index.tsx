@@ -1,12 +1,14 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import { Box, Button, Typography } from '@mui/material';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import {
   useCreateSubcategoryMutation,
   useDeleteSubcategoryMutation,
   useSubcategoriesQuery,
   useUpdateSubcategoryMutation,
-} from '../../services/subcategories/hooks';
+} from '../../services/subcategories';
+import { subcategoriesQueryKey } from '../../services/subcategories/constants';
 import type { SubcategoryRead } from '../../services/subcategories/types';
 import { themeTokens } from '../../theme/tailwind';
 import { DeleteSubcategoryDialog } from './deleteSubcategoryDialog';
@@ -15,6 +17,7 @@ import { SubcategoriesTable } from './subcategoriesTable';
 import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
 export function Subcategories() {
+  const queryClient = useQueryClient();
   const {
     data: items = [],
     isLoading,
@@ -36,9 +39,25 @@ export function Subcategories() {
     setSubcategoriesFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setSubcategoriesFromQuery]);
 
-  const createMutation = useCreateSubcategoryMutation();
-  const updateMutation = useUpdateSubcategoryMutation();
-  const deleteMutation = useDeleteSubcategoryMutation();
+  const handleInvalidateSubcategories = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [subcategoriesQueryKey] });
+  }, [queryClient]);
+
+  const createMutation = useCreateSubcategoryMutation({
+    onSuccess: () => {
+      handleInvalidateSubcategories();
+    },
+  });
+  const updateMutation = useUpdateSubcategoryMutation({
+    onSuccess: () => {
+      handleInvalidateSubcategories();
+    },
+  });
+  const deleteMutation = useDeleteSubcategoryMutation({
+    onSuccess: () => {
+      handleInvalidateSubcategories();
+    },
+  });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<
