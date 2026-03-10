@@ -12,7 +12,12 @@ import {
   TextField,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { themeTokens } from '../../../theme/tailwind';
+import {
+  selectFormControlSx,
+  selectMenuPaperSx,
+  selectThemedSx,
+  themeTokens,
+} from '../../../theme/tailwind';
 import { type CategoryFormValues, categoryFormSchema } from './schema';
 import type { CategoryFormDialogProps, CategoryFormPayload } from './types';
 
@@ -120,10 +125,7 @@ export function CategoryFormDialog({
             error={Boolean(fieldErrors.name)}
             helperText={fieldErrors.name}
             inputProps={{ 'aria-label': 'Category name' }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
+            sx={selectFormControlSx}
           />
           <TextField
             label="Description"
@@ -135,29 +137,21 @@ export function CategoryFormDialog({
             error={Boolean(fieldErrors.description)}
             helperText={fieldErrors.description}
             inputProps={{ 'aria-label': 'Category description' }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
+            sx={selectFormControlSx}
           />
-          <FormControl fullWidth error={Boolean(fieldErrors.is_income)}>
-            <InputLabel
-              id="category-type-label"
-              sx={{ color: themeTokens.textSecondary }}
-            >
-              Type
-            </InputLabel>
+          <FormControl
+            fullWidth
+            error={Boolean(fieldErrors.is_income)}
+            sx={selectFormControlSx}
+          >
+            <InputLabel id="category-type-label">Type</InputLabel>
             <Select
               labelId="category-type-label"
               value={is_income ? 'income' : 'expense'}
               label="Type"
               onChange={(e) => setIsIncome(e.target.value === 'income')}
-              sx={{
-                color: themeTokens.textPrimary,
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: themeTokens.border,
-                },
-              }}
+              sx={selectThemedSx}
+              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
             >
               <MenuItem value="expense">Expense</MenuItem>
               <MenuItem value="income">Income</MenuItem>

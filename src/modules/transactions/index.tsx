@@ -1,9 +1,12 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import ArrowDropDownRounded from '@mui/icons-material/ArrowDropDownRounded';
+import FilterAltOff from '@mui/icons-material/FilterAltOff';
 import {
   Box,
   Button,
+  Divider,
   FormControl,
+  IconButton,
   InputLabel,
   Menu,
   MenuItem,
@@ -25,34 +28,32 @@ import type {
   TransactionRead,
   TransactionsListParams,
 } from '../../services/transactions/types';
-import { themeTokens } from '../../theme/tailwind';
+import {
+  selectFormControlSx,
+  selectMenuPaperSx,
+  selectThemedSx,
+  themeTokens,
+} from '../../theme/tailwind';
 import { useHangoutsStore } from '../hangouts/store';
 import { useSubcategoriesStore } from '../subcategories/store';
-import { defaultTransactionsListParams } from './constants';
+import {
+  DAY_OPTIONS,
+  defaultTransactionsListParams,
+  getDefaultMonth,
+  getDefaultYear,
+  MONTHS,
+  YEAR_OPTIONS,
+} from './constants';
 import { DeleteTransactionDialog } from './deleteTransactionDialog';
 import { useTransactionsStore } from './store';
 import { TransactionFormDialog } from './transactionFormDialog';
 import { TransactionsTable } from './transactionsTable';
 
-const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
-const CURRENT_YEAR = new Date().getFullYear();
-const YEAR_OPTIONS = [
-  CURRENT_YEAR - 2,
-  CURRENT_YEAR - 1,
-  CURRENT_YEAR,
-  CURRENT_YEAR + 1,
-];
-const DAY_OPTIONS = [...Array(31)].map((_, i) => i + 1);
-
 export function Transactions() {
   const queryClient = useQueryClient();
 
-  const [year, setYear] = useState(
-    () => defaultTransactionsListParams.year ?? CURRENT_YEAR,
-  );
-  const [month, setMonth] = useState(
-    () => defaultTransactionsListParams.month ?? new Date().getMonth() + 1,
-  );
+  const [year, setYear] = useState(getDefaultYear);
+  const [month, setMonth] = useState(getDefaultMonth);
   const [day, setDay] = useState<string>('');
   const [subcategoryId, setSubcategoryId] = useState('');
   const [hangoutId, setHangoutId] = useState('');
@@ -60,14 +61,22 @@ export function Transactions() {
     const params: TransactionsListParams = {
       skip: 0,
       limit: defaultTransactionsListParams.limit ?? 50,
-      year,
-      month,
     };
+    if (year !== '') params.year = Number(year);
+    if (month !== '') params.month = Number(month);
     if (day !== '') params.day = Number(day);
     if (subcategoryId) params.subcategory_id = subcategoryId;
     if (hangoutId) params.hangout_id = hangoutId;
     return params;
   }, [year, month, day, subcategoryId, hangoutId]);
+
+  const clearFilters = useCallback(() => {
+    setYear('');
+    setMonth('');
+    setDay('');
+    setSubcategoryId('');
+    setHangoutId('');
+  }, []);
 
   const {
     data: items = [],
@@ -261,41 +270,48 @@ export function Transactions() {
         </Menu>
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <FormControl size="small" sx={{ minWidth: 90 }}>
+        <FormControl size="small" sx={{ minWidth: 90, ...selectFormControlSx }}>
           <InputLabel id="transactions-year-label">Year</InputLabel>
           <Select
             labelId="transactions-year-label"
             id="transactions-year"
             value={year}
             label="Year"
-            onChange={(e) => setYear(Number(e.target.value))}
-            sx={{ backgroundColor: themeTokens.surface }}
+            onChange={(e) => setYear(e.target.value)}
+            sx={selectThemedSx}
+            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
+            <MenuItem value="">All</MenuItem>
             {YEAR_OPTIONS.map((y) => (
-              <MenuItem key={y} value={y}>
+              <MenuItem key={y} value={String(y)}>
                 {y}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl size="small" sx={{ minWidth: 100 }}>
+        <FormControl
+          size="small"
+          sx={{ minWidth: 100, ...selectFormControlSx }}
+        >
           <InputLabel id="transactions-month-label">Month</InputLabel>
           <Select
             labelId="transactions-month-label"
             id="transactions-month"
             value={month}
             label="Month"
-            onChange={(e) => setMonth(Number(e.target.value))}
-            sx={{ backgroundColor: themeTokens.surface }}
+            onChange={(e) => setMonth(e.target.value)}
+            sx={selectThemedSx}
+            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
+            <MenuItem value="">All</MenuItem>
             {MONTHS.map((m) => (
-              <MenuItem key={m} value={m}>
+              <MenuItem key={m} value={String(m)}>
                 {m}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl size="small" sx={{ minWidth: 80 }}>
+        <FormControl size="small" sx={{ minWidth: 80, ...selectFormControlSx }}>
           <InputLabel id="transactions-day-label">Day</InputLabel>
           <Select
             labelId="transactions-day-label"
@@ -303,7 +319,10 @@ export function Transactions() {
             value={day}
             label="Day"
             onChange={(e) => setDay(e.target.value)}
-            sx={{ backgroundColor: themeTokens.surface }}
+            sx={selectThemedSx}
+            MenuProps={{
+              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
+            }}
           >
             <MenuItem value="">All</MenuItem>
             {DAY_OPTIONS.map((d) => (
@@ -313,7 +332,15 @@ export function Transactions() {
             ))}
           </Select>
         </FormControl>
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ borderColor: themeTokens.border }}
+        />
+        <FormControl
+          size="small"
+          sx={{ minWidth: 180, ...selectFormControlSx }}
+        >
           <InputLabel id="transactions-subcategory-label">
             Subcategory
           </InputLabel>
@@ -323,7 +350,8 @@ export function Transactions() {
             value={subcategoryId}
             label="Subcategory"
             onChange={(e) => setSubcategoryId(e.target.value)}
-            sx={{ backgroundColor: themeTokens.surface }}
+            sx={selectThemedSx}
+            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
             <MenuItem value="">All</MenuItem>
             {subcategories.map((s) => (
@@ -333,7 +361,10 @@ export function Transactions() {
             ))}
           </Select>
         </FormControl>
-        <FormControl size="small" sx={{ minWidth: 160 }}>
+        <FormControl
+          size="small"
+          sx={{ minWidth: 160, ...selectFormControlSx }}
+        >
           <InputLabel id="transactions-hangout-label">Hangout</InputLabel>
           <Select
             labelId="transactions-hangout-label"
@@ -341,7 +372,8 @@ export function Transactions() {
             value={hangoutId}
             label="Hangout"
             onChange={(e) => setHangoutId(e.target.value)}
-            sx={{ backgroundColor: themeTokens.surface }}
+            sx={selectThemedSx}
+            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
             <MenuItem value="">All</MenuItem>
             {hangouts.map((h) => (
@@ -351,6 +383,22 @@ export function Transactions() {
             ))}
           </Select>
         </FormControl>
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ borderColor: themeTokens.border }}
+        />
+        <IconButton
+          onClick={clearFilters}
+          sx={{
+            alignSelf: 'flex-start',
+            color: themeTokens.textSecondary,
+            '&.Mui-disabled': { color: themeTokens.disabled },
+          }}
+          disabled={!year && !month && !day && !subcategoryId && !hangoutId}
+        >
+          <FilterAltOff />
+        </IconButton>
       </Box>
       <TransactionsTable
         items={items}

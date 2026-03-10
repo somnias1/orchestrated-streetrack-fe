@@ -2,6 +2,8 @@
  * Hangouts API types (TECHSPEC §4.1). Match backend OpenAPI schemas.
  */
 
+import type { DefaultParams } from '../types';
+
 export type HangoutRead = {
   id: string;
   name: string;
@@ -24,3 +26,5 @@ export type HangoutUpdate = {
 
 /** GET /hangouts/ response */
 export type GetHangoutsResponse = HangoutRead[];
+
+export type HangoutsListParams = DefaultParams;

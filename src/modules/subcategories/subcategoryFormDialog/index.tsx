@@ -13,7 +13,12 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCategoriesQuery } from '../../../services/categories';
-import { themeTokens } from '../../../theme/tailwind';
+import {
+  selectFormControlSx,
+  selectMenuPaperSx,
+  selectThemedSx,
+  themeTokens,
+} from '../../../theme/tailwind';
 import { useCategoriesStore } from '../../categories/store';
 import { type SubcategoryFormValues, subcategoryFormSchema } from './schema';
 import type {
@@ -141,25 +146,20 @@ export function SubcategoryFormDialog({
           data-testid="subcategory-form-dialog-content"
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <FormControl fullWidth error={Boolean(fieldErrors.category_id)}>
-            <InputLabel
-              id="subcategory-category-label"
-              sx={{ color: themeTokens.textSecondary }}
-            >
-              Category
-            </InputLabel>
+          <FormControl
+            fullWidth
+            error={Boolean(fieldErrors.category_id)}
+            sx={selectFormControlSx}
+          >
+            <InputLabel id="subcategory-category-label">Category</InputLabel>
             <Select
               labelId="subcategory-category-label"
               value={category_id}
               label="Category"
               disabled={isFetching}
               onChange={(e) => setCategoryId(e.target.value)}
-              sx={{
-                color: themeTokens.textPrimary,
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: themeTokens.border,
-                },
-              }}
+              sx={selectThemedSx}
+              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
             >
               {categoryOptions.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
