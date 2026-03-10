@@ -1,6 +1,6 @@
 # Phase Roadmap
 
-Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and TECHSPEC-AUDIT.md. Extended 2026-03-03 with Phases 13–16 (React Query, UX/UI revamp, tests & coverage).
+Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and TECHSPEC-AUDIT.md. Extended 2026-03-03 with Phases 13–16 (React Query, UX/UI revamp, tests & coverage). Extended 2026-03-09 with Phases 18–24 (finance stream: UX, filters, periodic, dashboard, bulk, import/export, tests).
 
 
 | Phase | Name                                 | Goal                                                                 | Key TECHSPEC sections              | Depends on |
@@ -22,6 +22,13 @@ Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and 
 | 15    | Remaining Screens & CRUD on shadcn   | Migrate Subcategories, Transactions, Hangouts lists and all CRUD dialogs to shadcn; unify table state; reduce MUI. | §3.2, §3.4, §3.5, §3.7, §5.1 | 14         |
 | 16    | Tests & coverage gate                | Update/add tests for 13–15; meet 80% lines/statements, 70% branches/functions; §1.3 mapping. | §1.3, §6.1, §6.2, §8.3 | 15         |
 | 17    | List screens: category & transaction names | Use BE-provided category name in Subcategories list and subcategory/hangout names in Transactions list; types, tables, MSW, tests. | §4.1, §4.3, §3.4, §5.1 | 16         |
+| 18    | UX/UI improvements                         | Type as MUI Chips; Transactions: Button+Menu (Transaction / Bulk); default current-month filter for transactions; Hangouts table action colors (primary/error). | §3.4, §3.7             | 17         |
+| 19    | List filters and sort                      | Categories by type; Subcategories by type and category; Transactions by date tree, subcategory, hangout; sort by date (newest first); default current month on Transactions. | §4.3, §3.4             | 18         |
+| 20    | Periodic expenses (subcategories)          | Subcategory is_periodic, due_day in types, form, and list.                                                                 | §4.1, §3.4, §3.5       | 19         |
+| 21    | Home dashboard                             | Dashboard API client and hooks; Home screen with balance, month balance, due periodic expenses.                             | §3.4, §4.3, §4.1       | 20         |
+| 22    | Bulk transactions                          | POST /transactions/bulk; BulkTransactionsDialog with tree and bulk submit.                                                   | §4.3, §4.1, §3.4       | 19, 20     |
+| 23    | Transaction manager import/export          | Import (paste → preview → bulk); Export (date-filtered CSV download).                                                        | §4.3, §3.4             | 22         |
+| 24    | Finance expansion tests and polish         | Tests for dashboard, bulk, import/export, filters, periodic; §1.3 mapping; coverage gate.                                    | §1.3, §6.1, §6.2, §8.3 | 21–23      |
 
 
 ## Phase sizing guidance
@@ -29,5 +36,5 @@ Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and 
 - Each phase targets **one chat session** worth of work.
 - If a phase feels too large (>8 atomic commits), split it.
 - If two phases are very small (<2 commits each), consider merging them.
-- New features after Phase 16 (e.g. names in lists, import/export UI, reports) continue from Phase 17+ (see FRAMEWORK.md §6).
+- New features after Phase 17 continue from Phase 18 (see above). Finance stream (filters, dashboard, bulk, import/export) through Phase 24 (FRAMEWORK.md §6).
 

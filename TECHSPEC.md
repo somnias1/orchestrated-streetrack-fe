@@ -26,6 +26,7 @@ Users need a **personal finance / expense-tracking** application to manage **inc
   - **Categories list**: Renders loading, success (rows), error (with retry), and empty states.
   - **API client**: Bearer token is attached to requests when user is authenticated.
   - **Navigation**: Layout shows Home and Categories links; routing matches `routes.ts`.
+  - **Finance stream (Phases 18–24):** Filters, dashboard, bulk transactions, import/export, and periodic subcategory behaviour covered by tests; §1.3 mapping in Phase 24.
 - Test suite runs and passes; coverage meets the gate in §6.2.
 
 ### 1.4 Out of Scope (v1 / current)
@@ -45,10 +46,10 @@ The **BACKLOG.md** at repo root is the single full-stack backlog (backend + fron
 
 | BACKLOG area | Frontend scope | TECHSPEC / phases |
 | ------------ | -------------- | ----------------- |
-| **Done** | Auth0, layout (Home, Categories), categories list (virtualized table), API client with Bearer token, Tailwind + MUI | §1.2, §3.4, §4.3 (Categories), §4.4 |
-| **High** | Virtualization for Subcategories and Transactions lists; unit tests (components, API/hooks, auth) | §5.1, §6; new phases for subcategories/transactions UI + tests |
-| **Medium** | Categories full CRUD UI (create, edit, delete); Subcategories list + CRUD; Transactions list + CRUD; Hangouts list + CRUD; loading/error states; layout refinements | §3.4, §4.3 (all resources); phase specs per feature |
-| **Later** | Import/export UI (clipboard); reports/dashboards; optional PWA | §4.3 when backend export/import exists; new phases |
+| **Done** | Auth0, layout, all four resources (list + CRUD), React Query, theme, tests & coverage, names in lists (Phase 17) | §1.2, §3.4, §4.3, §4.4, §6 |
+| **High** | Phase 18 UX/UI (chips, Transaction/Bulk menu, current-month default, Hangouts actions); Phase 19 list filters and sort; Phase 20 periodic expenses; Phase 21 Home dashboard; Phase 22 bulk transactions; Phase 23 import/export UI; Phase 24 tests and polish | §3.4, §4.1, §4.3, §6; ROADMAP 18–24 |
+| **Medium** | Loading/error refinements; layout and navigation polish | §3.4 |
+| **Later** | Import/export UI refinements (clipboard); reports/dashboards; optional PWA | §4.3; Phase 23 covers main import/export |
 
 Backend list endpoints support **`?skip`** and **`?limit`** (defaults 0, 50); use for pagination or “load more” when implementing virtualization at scale (BACKLOG: optional skip/limit). Keep BACKLOG and TECHSPEC in sync when adding new features: update BACKLOG Done, then add or update TECHSPEC sections and phase specs.
 
@@ -171,8 +172,12 @@ All application source under **`src/`**. Root holds config, docs, tooling.
 | ------------- | ----------------- | -------------------------------------------- |
 | **Login**    | `routes.auth.login`    | Auth0 login redirect.                        |
 | **Callback** | `routes.auth.callback` | Auth0 callback; then redirect to app.        |
-| **Home**     | `routes.home`         | Placeholder landing.                         |
-| **Categories** | `routes.categories`  | List of user categories in virtualized table; loading/error/empty + retry; “About” dialog. |
+| **Home**     | `routes.home`         | Dashboard: cumulative balance, month balance (month+year selector), due periodic expenses for selected month; loading/error + retry (Phases 18–24). |
+| **Categories** | `routes.categories`  | List in virtualized table; filter by type (income/expense); loading/error/empty + retry; CRUD dialogs. |
+| **Subcategories** | `routes.subcategories` | List in virtualized table; filter by type and category; periodic expense fields (is_periodic, due_day) in form and list; CRUD dialogs. |
+| **Transactions** | `routes.transactions` | List in virtualized table; default filter current month (year+month); filter by date tree, subcategory, hangout; sort by date (newest first). Button + Menu: “Transaction” (single form dialog), “Bulk” (bulk dialog). CRUD + bulk (Phases 18–24). |
+| **Hangouts** | `routes.hangouts` | List in virtualized table; CRUD dialogs. Table action colors aligned with other tables (primary/error). |
+| **Transaction manager** | (e.g. under Transactions or dedicated route) | Import: paste sheet data → preview → bulk create; Export: date-filtered CSV download (Phases 22–23). |
 
 All paths are defined in `src/routes.ts`.
 
@@ -259,9 +264,9 @@ All resources are **user-scoped**; `user_id` is set from the Auth0 token on the 
 
 | Schema | Fields | Notes |
 |--------|--------|--------|
-| **SubcategoryRead** | `id`, `category_id` (uuid), `category_name` (string, from BE for list display), `name`, `description` (string \| null), `belongs_to_income` (boolean, default false), `user_id` (string \| null) | Belongs to a category; backend checks category ownership. GET list/single returns both `category_id` (for operations) and `category_name` (for display). |
-| **SubcategoryCreate** | `category_id` (uuid, required), `name` (required), `description` (string \| null), `belongs_to_income` (boolean, default false) | user_id from token. |
-| **SubcategoryUpdate** | `category_id`, `name`, `description`, `belongs_to_income` (all optional) | PATCH body. |
+| **SubcategoryRead** | `id`, `category_id` (uuid), `category_name` (string, from BE for list display), `name`, `description` (string \| null), `belongs_to_income` (boolean, default false), `is_periodic` (boolean, default false), `due_day` (number \| null), `user_id` (string \| null) | Belongs to a category; backend checks category ownership. Periodic expenses: `due_day` (1–31) required when `is_periodic` is true. |
+| **SubcategoryCreate** | `category_id` (uuid, required), `name` (required), `description` (string \| null), `belongs_to_income` (boolean, default false), `is_periodic` (boolean, default false), `due_day` (number \| null) | user_id from token; `due_day` required when `is_periodic=true`. |
+| **SubcategoryUpdate** | `category_id`, `name`, `description`, `belongs_to_income`, `is_periodic`, `due_day` (all optional) | PATCH body. |
 
 #### Transaction
 
@@ -270,6 +275,22 @@ All resources are **user-scoped**; `user_id` is set from the Auth0 token on the 
 | **TransactionRead** | `id`, `subcategory_id` (uuid), `subcategory_name` (string, from BE for list display), `value` (integer), `description` (string), `date` (date string), `hangout_id` (uuid \| null), `hangout_name` (string \| null, from BE for list display), `user_id` (string \| null) | Links to subcategory and optionally to a hangout. GET list/single returns IDs (for operations) and names (for display). |
 | **TransactionCreate** | `subcategory_id` (uuid, required), `value` (integer, required), `description` (string, required), `date` (date, required), `hangout_id` (uuid \| null) | |
 | **TransactionUpdate** | `subcategory_id`, `value`, `description`, `date`, `hangout_id` (all optional) | PATCH body. |
+| **TransactionBulkCreate** | Normalized tree: category → subcategory → hangout → transaction items (per BE contract). | Body for POST `/transactions/bulk`; response 201: TransactionRead[]. |
+
+#### Dashboard (Home)
+
+| Schema | Fields | Notes |
+|--------|--------|--------|
+| **DashboardBalanceRead** | Cumulative balance (structure per BE OpenAPI). | GET `/dashboard/balance`. |
+| **DashboardMonthBalanceRead** | Balance for a given month (structure per BE OpenAPI). | GET `/dashboard/month-balance?year=&month=`. |
+| **DashboardDuePeriodicExpenseRead** | Due periodic expense item for selected month (structure per BE OpenAPI). | GET `/dashboard/due-periodic-expenses?year=&month=` → array. |
+
+#### Transaction manager
+
+| Schema | Purpose |
+|--------|--------|
+| **TransactionImportRequest** | Body for POST `/transaction-manager/import` (e.g. pasted sheet rows, format per BE). |
+| **TransactionImportPreview** | Response: payload ready for POST `/transactions/bulk` or validation errors. |
 
 #### Hangout
 
@@ -304,36 +325,44 @@ Frontend types live in `src/services/<resource>/types.ts` (e.g. `categories/type
 
 #### Endpoints (expanded from OpenAPI)
 
-List endpoints accept optional **`?skip`** and **`?limit`** (query; defaults 0 and 50). All IDs in paths are UUIDs.
+List endpoints accept optional **`?skip`** and **`?limit`** (query; defaults 0 and 50). Filter/sort params below apply when backend supports them (Phases 18–24 / BE 11+). All IDs in paths are UUIDs.
 
 | Method | Path | Request | Response | Errors |
 |--------|------|---------|----------|--------|
 | **Categories** |
-| GET | `/categories/` | query: skip?, limit? | 200: CategoryRead[] | 422 |
-| POST | `/categories/` | body: CategoryCreate | 201: CategoryRead | 422 |
-| GET | `/categories/{category_id}` | path: category_id | 200: CategoryRead | 422 |
-| PATCH | `/categories/{category_id}` | path + body: CategoryUpdate | 200: CategoryRead | 422 |
-| DELETE | `/categories/{category_id}` | path | 204 | 422 |
+| GET | `/categories/` | query: skip?, limit?, is_income? | 200: CategoryRead[] | 401, 422 |
+| POST | `/categories/` | body: CategoryCreate | 201: CategoryRead | 401, 422 |
+| GET | `/categories/{category_id}` | path: category_id | 200: CategoryRead | 401, 404 |
+| PATCH | `/categories/{category_id}` | path + body: CategoryUpdate | 200: CategoryRead | 401, 404, 422 |
+| DELETE | `/categories/{category_id}` | path | 204 | 401, 404 |
 | **Subcategories** |
-| GET | `/subcategories/` | query: skip?, limit? | 200: SubcategoryRead[] (items include `category_name`) | 422 |
-| POST | `/subcategories/` | body: SubcategoryCreate | 201: SubcategoryRead | 422 |
-| GET | `/subcategories/{subcategory_id}` | path | 200: SubcategoryRead | 422 |
-| PATCH | `/subcategories/{subcategory_id}` | path + body: SubcategoryUpdate | 200: SubcategoryRead | 422 |
-| DELETE | `/subcategories/{subcategory_id}` | path | 204 | 422 |
+| GET | `/subcategories/` | query: skip?, limit?, belongs_to_income?, category_id? | 200: SubcategoryRead[] (items include `category_name`, `is_periodic`, `due_day`) | 401, 422 |
+| POST | `/subcategories/` | body: SubcategoryCreate | 201: SubcategoryRead | 401, 404, 422 |
+| GET | `/subcategories/{subcategory_id}` | path | 200: SubcategoryRead | 401, 404 |
+| PATCH | `/subcategories/{subcategory_id}` | path + body: SubcategoryUpdate | 200: SubcategoryRead | 401, 404, 422 |
+| DELETE | `/subcategories/{subcategory_id}` | path | 204 | 401, 404 |
 | **Transactions** |
-| GET | `/transactions/` | query: skip?, limit? | 200: TransactionRead[] (items include `subcategory_name`, `hangout_name`) | 422 |
-| POST | `/transactions/` | body: TransactionCreate | 201: TransactionRead | 422 |
-| GET | `/transactions/{transaction_id}` | path | 200: TransactionRead | 422 |
-| PATCH | `/transactions/{transaction_id}` | path + body: TransactionUpdate | 200: TransactionRead | 422 |
-| DELETE | `/transactions/{transaction_id}` | path | 204 | 422 |
+| GET | `/transactions/` | query: skip?, limit?, year?, month?, day?, subcategory_id?, hangout_id?; sort by date (newest first) default | 200: TransactionRead[] (items include `subcategory_name`, `hangout_name`) | 401, 422 |
+| POST | `/transactions/` | body: TransactionCreate | 201: TransactionRead | 401, 404, 422 |
+| POST | `/transactions/bulk` | body: TransactionBulkCreate | 201: TransactionRead[] | 401, 404, 422 |
+| GET | `/transactions/{transaction_id}` | path | 200: TransactionRead | 401, 404 |
+| PATCH | `/transactions/{transaction_id}` | path + body: TransactionUpdate | 200: TransactionRead | 401, 404, 422 |
+| DELETE | `/transactions/{transaction_id}` | path | 204 | 401, 404 |
 | **Hangouts** |
-| GET | `/hangouts/` | query: skip?, limit? | 200: HangoutRead[] | 422 |
-| POST | `/hangouts/` | body: HangoutCreate | 201: HangoutRead | 422 |
-| GET | `/hangouts/{hangout_id}` | path | 200: HangoutRead | 422 |
-| PATCH | `/hangouts/{hangout_id}` | path + body: HangoutUpdate | 200: HangoutRead | 422 |
-| DELETE | `/hangouts/{hangout_id}` | path | 204 | 422 |
+| GET | `/hangouts/` | query: skip?, limit? | 200: HangoutRead[] | 401, 422 |
+| POST | `/hangouts/` | body: HangoutCreate | 201: HangoutRead | 401, 422 |
+| GET | `/hangouts/{hangout_id}` | path | 200: HangoutRead | 401, 404 |
+| PATCH | `/hangouts/{hangout_id}` | path + body: HangoutUpdate | 200: HangoutRead | 401, 404, 422 |
+| DELETE | `/hangouts/{hangout_id}` | path | 204 | 401, 404 |
+| **Dashboard** |
+| GET | `/dashboard/balance` | none | 200: DashboardBalanceRead | 401 |
+| GET | `/dashboard/month-balance` | query: year, month | 200: DashboardMonthBalanceRead | 401, 422 |
+| GET | `/dashboard/due-periodic-expenses` | query: year, month | 200: DashboardDuePeriodicExpenseRead[] | 401, 422 |
+| **Transaction manager** |
+| POST | `/transaction-manager/import` | body: TransactionImportRequest | 200: TransactionImportPreview | 401, 404, 422 |
+| GET | `/transaction-manager/export` | query: year?, month?, day?, subcategory_id?, hangout_id? | 200: text/csv (oldest to newest) | 401, 422 |
 
-Frontend service layout per resource: `src/services/<resource>/index.ts` (client functions), `types.ts` (Read/Create/Update + list response types), `constants.ts` (path strings, no leading slash). Categories is implemented; Subcategories, Transactions, Hangouts follow the same pattern when phased in (see BACKLOG §1.6).
+Frontend service layout per resource: `src/services/<resource>/index.ts` (client functions), `types.ts` (Read/Create/Update + list response types), `constants.ts` (path strings, no leading slash). Add `dashboard` (or `home`) service for dashboard endpoints; transaction-manager for import/export (see BACKLOG §1.6 and ROADMAP Phases 18–24).
 
 ### 4.4 Authentication & Authorization
 
@@ -463,6 +492,7 @@ Frontend service layout per resource: `src/services/<resource>/index.ts` (client
 
 | Date       | Change |
 | ---------- | ------ |
+| 2026-03-09 | **Finance stream (Phases 18–24):** §4.1 Subcategory: added `is_periodic`, `due_day`; Transaction: added TransactionBulkCreate; new Dashboard and Transaction manager DTOs. §4.3: list filters (categories is_income; subcategories belongs_to_income, category_id; transactions year, month, day, subcategory_id, hangout_id; sort newest first); POST /transactions/bulk; GET dashboard/balance, month-balance, due-periodic-expenses; POST /transaction-manager/import, GET /transaction-manager/export. §3.4: Screens table expanded (Home dashboard, Categories/Subcategories/Transactions filters and behaviour, Hangouts actions, Transaction manager). Aligned with ROADMAP and BE_TECHSPEC. |
 | 2026-02-26 | TECHSPEC rewritten for Streetrack (frontend): §1 Problem & Context (personal finance, categories, Auth0, virtualized list). §2 Web stack (React, Rsbuild, Auth0, Zustand, TanStack Table/Virtual, MUI, Tailwind, Biome). §3 Architecture (SPA, modules, services, theme, routes). §3.7 UI/UX (dark fintech style, tokens, table patterns, retry CTA). §4 Data & APIs (Category, backend, Auth0). §5–§8 NFRs, testing, deployment, GSD integration. Aligned with FRAMEWORK.md and BACKLOG.md. |
 | 2026-03-03 | **Phases 13–16**: §2.2 added @tanstack/react-query (Phase 13). §2.4, §3.3, §4.2 updated for React Query as server state (Phase 13+), Zustand as global read mirror synced from query + UI state; retry CTA may call query client refetch. ROADMAP and BACKLOG extended with Phase 13 (React Query services), 14 (Theme, layout & Categories table), 15 (Remaining screens & CRUD on shadcn), 16 (Tests & coverage gate). |
 | 2026-03-03 | **Phase 13 follow-up**: Zustand stores re-added as global read layer; §2.2, §2.4, §3.1, §3.3, §4.2 updated to describe mirror (items, loading, error) synced from React Query in screens. Phase 13 SPEC and SUMMARY updated accordingly. |

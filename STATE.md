@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 17 — List screens: category & transaction names (complete). **Next:** Phase 18+ per ROADMAP / FRAMEWORK.md §6.
+Phase 18 — UX/UI improvements (in progress).
 
 ## Last Task Completed
 
@@ -10,7 +10,7 @@ Phase 17 merged: TECHSPEC §4.1/§4.3 updated; types (SubcategoryRead/Transactio
 
 ## Next Task
 
-1. Phase 18+ (or backlog) per `.planning/phase-00-ROADMAP.md`.
+1. Create branch `feature/phase-18-ux-improvements`, spec `.planning/phase-18-SPEC.md`, implement type chips, Transaction/Bulk menu, transactions default current month, Hangouts action colors (per `.planning/phase-00-ROADMAP.md`).
 
 ## Key Decisions
 
@@ -18,7 +18,7 @@ Phase 17 merged: TECHSPEC §4.1/§4.3 updated; types (SubcategoryRead/Transactio
 - **Rsbuild env**: Use `loadEnv({ prefixes: ['VITE_'] })` and `source.define: { ...publicVars }` so env vars from .env (or venv/shell) are available at build time; app config reads `process.env.VITE_*`.
 - **.env**: Added to .gitignore so secrets are not committed.
 - **Testing**: Vitest 4 + React Testing Library + MSW; coverage excludes app shell, auth redirect/callback, home, theme, and presentational chip so gate applies to §1.3-touched code.
-- **Next phases**: ROADMAP extended to Phase 16; Phase 14 = theme, layout, Categories table; Phase 15 = remaining screens & CRUD on shadcn (table state + tokens); Phase 16 = tests & coverage gate (see `.planning/phase-00-ROADMAP.md`).
+- **Next phases**: ROADMAP extended to Phase 24; Phases 18–24 = finance stream (UX, filters, periodic, dashboard, bulk, import/export, tests) — see `.planning/phase-00-ROADMAP.md`.
 
 ## Blockers
 
