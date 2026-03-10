@@ -31,3 +31,35 @@ export const themeTokens = {
   warning: 'var(--warning)',
   disabled: 'var(--disabled)',
 } as const;
+
+/**
+ * Shared MUI Select styling for dark/light theme readability.
+ * Use on FormControl (label + outline) and Select (field + dropdown).
+ */
+export const selectFormControlSx = {
+  '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+  '& .MuiInputLabel-root.Mui-focused': { color: themeTokens.textSecondary },
+} as const;
+
+export const selectThemedSx = {
+  backgroundColor: themeTokens.surface,
+  color: themeTokens.textPrimary,
+  '& .MuiOutlinedInput-notchedOutline': { borderColor: themeTokens.border },
+  '& .MuiSelect-icon': { color: themeTokens.textSecondary },
+  '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+} as const;
+
+/** MenuProps.PaperProps.sx for Select dropdown; keeps list readable in dark theme */
+export const selectMenuPaperSx = {
+  backgroundColor: themeTokens.surface,
+  color: themeTokens.textPrimary,
+  border: `1px solid ${themeTokens.border}`,
+  '& .MuiMenuItem-root': { color: themeTokens.textPrimary },
+  '& .MuiMenuItem-root:hover': { backgroundColor: themeTokens.background },
+  '& .MuiMenuItem-root.Mui-selected': {
+    backgroundColor: themeTokens.background,
+  },
+  '& .MuiMenuItem-root.Mui-selected:hover': {
+    backgroundColor: themeTokens.background,
+  },
+} as const;

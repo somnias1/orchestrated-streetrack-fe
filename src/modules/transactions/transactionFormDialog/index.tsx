@@ -12,7 +12,12 @@ import {
   TextField,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { themeTokens } from '../../../theme/tailwind';
+import {
+  selectFormControlSx,
+  selectMenuPaperSx,
+  selectThemedSx,
+  themeTokens,
+} from '../../../theme/tailwind';
 import { type TransactionFormValues, transactionFormSchema } from './schema';
 import type {
   TransactionFormDialogProps,
@@ -132,11 +137,12 @@ export function TransactionFormDialog({
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <FormControl fullWidth error={Boolean(fieldErrors.subcategory_id)}>
-            <InputLabel
-              id="transaction-subcategory-label"
-              sx={{ color: themeTokens.textSecondary }}
-            >
+          <FormControl
+            fullWidth
+            error={Boolean(fieldErrors.subcategory_id)}
+            sx={selectFormControlSx}
+          >
+            <InputLabel id="transaction-subcategory-label">
               Subcategory
             </InputLabel>
             <Select
@@ -144,12 +150,8 @@ export function TransactionFormDialog({
               value={subcategory_id}
               label="Subcategory"
               onChange={(e) => setSubcategoryId(e.target.value)}
-              sx={{
-                color: themeTokens.textPrimary,
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: themeTokens.border,
-                },
-              }}
+              sx={selectThemedSx}
+              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
             >
               {subcategoryOptions.map((sub) => (
                 <MenuItem key={sub.id} value={sub.id}>
@@ -206,24 +208,19 @@ export function TransactionFormDialog({
               '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
-          <FormControl fullWidth error={Boolean(fieldErrors.hangout_id)}>
-            <InputLabel
-              id="transaction-hangout-label"
-              sx={{ color: themeTokens.textSecondary }}
-            >
-              Hangout
-            </InputLabel>
+          <FormControl
+            fullWidth
+            error={Boolean(fieldErrors.hangout_id)}
+            sx={selectFormControlSx}
+          >
+            <InputLabel id="transaction-hangout-label">Hangout</InputLabel>
             <Select
               labelId="transaction-hangout-label"
               value={hangout_id}
               label="Hangout"
               onChange={(e) => setHangoutId(e.target.value)}
-              sx={{
-                color: themeTokens.textPrimary,
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: themeTokens.border,
-                },
-              }}
+              sx={selectThemedSx}
+              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
             >
               <MenuItem value="">None</MenuItem>
               {hangoutOptions.map((h) => (

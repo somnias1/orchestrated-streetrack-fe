@@ -1,8 +1,11 @@
 import AddRounded from '@mui/icons-material/AddRounded';
+import FilterAltOff from '@mui/icons-material/FilterAltOff';
 import {
   Box,
   Button,
+  Divider,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -18,21 +21,31 @@ import {
 } from '../../services/categories';
 import { categoriesQueryKey } from '../../services/categories/constants';
 import type { CategoryRead } from '../../services/categories/types';
-import { themeTokens } from '../../theme/tailwind';
+import {
+  selectFormControlSx,
+  selectMenuPaperSx,
+  selectThemedSx,
+  themeTokens,
+} from '../../theme/tailwind';
 import { CategoriesTable } from './categoriesTable';
 import { CategoryFormDialog } from './categoryFormDialog';
+import { type CategoryTypeFilter, DEFAULT_TYPE_FILTER } from './constants';
 import { DeleteCategoryDialog } from './deleteCategoryDialog';
 import { useCategoriesStore } from './store';
 
-export type CategoryTypeFilter = 'all' | 'income' | 'expense';
-
 export function Categories() {
   const queryClient = useQueryClient();
-  const [typeFilter, setTypeFilter] = useState<CategoryTypeFilter>('all');
+  const [typeFilter, setTypeFilter] =
+    useState<CategoryTypeFilter>(DEFAULT_TYPE_FILTER);
   const queryParams = useMemo(() => {
     if (typeFilter === 'all') return undefined;
     return { is_income: typeFilter === 'income' };
   }, [typeFilter]);
+
+  const clearFilters = useCallback(() => {
+    setTypeFilter(DEFAULT_TYPE_FILTER);
+  }, []);
+
   const {
     data: items = [],
     isLoading,
@@ -176,21 +189,47 @@ export function Categories() {
           Create category
         </Button>
       </Box>
-      <FormControl size="small" sx={{ minWidth: 140, mb: 2 }}>
-        <InputLabel id="categories-type-filter-label">Type</InputLabel>
-        <Select
-          labelId="categories-type-filter-label"
-          id="categories-type-filter"
-          value={typeFilter}
-          label="Type"
-          onChange={(e) => setTypeFilter(e.target.value as CategoryTypeFilter)}
-          sx={{ backgroundColor: themeTokens.surface }}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+        <FormControl
+          size="small"
+          sx={{ minWidth: 140, ...selectFormControlSx }}
         >
-          <MenuItem value="all">All</MenuItem>
-          <MenuItem value="income">Income</MenuItem>
-          <MenuItem value="expense">Expense</MenuItem>
-        </Select>
-      </FormControl>
+          <InputLabel id="categories-type-filter-label">Type</InputLabel>
+          <Select
+            labelId="categories-type-filter-label"
+            id="categories-type-filter"
+            value={typeFilter}
+            label="Type"
+            onChange={(e) =>
+              setTypeFilter(e.target.value as CategoryTypeFilter)
+            }
+            sx={selectThemedSx}
+            MenuProps={{
+              PaperProps: { sx: selectMenuPaperSx },
+            }}
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="income">Income</MenuItem>
+            <MenuItem value="expense">Expense</MenuItem>
+          </Select>
+        </FormControl>
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ borderColor: themeTokens.border }}
+        />
+        <IconButton
+          onClick={clearFilters}
+          sx={{
+            alignSelf: 'flex-start',
+            color: themeTokens.textSecondary,
+            '&.Mui-disabled': { color: themeTokens.disabled },
+          }}
+          disabled={typeFilter === 'all'}
+        >
+          <FilterAltOff />
+        </IconButton>
+      </Box>
       <CategoriesTable
         items={items}
         loading={isLoading}

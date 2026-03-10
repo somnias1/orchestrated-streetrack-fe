@@ -1,8 +1,11 @@
 import AddRounded from '@mui/icons-material/AddRounded';
+import FilterAltOff from '@mui/icons-material/FilterAltOff';
 import {
   Box,
   Button,
+  Divider,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -19,18 +22,28 @@ import {
 } from '../../services/subcategories';
 import { subcategoriesQueryKey } from '../../services/subcategories/constants';
 import type { SubcategoryRead } from '../../services/subcategories/types';
-import { themeTokens } from '../../theme/tailwind';
+import {
+  selectFormControlSx,
+  selectMenuPaperSx,
+  selectThemedSx,
+  themeTokens,
+} from '../../theme/tailwind';
+import {
+  DEFAULT_CATEGORY_ID,
+  DEFAULT_TYPE_FILTER,
+  type SubcategoryTypeFilter,
+} from './constants';
 import { DeleteSubcategoryDialog } from './deleteSubcategoryDialog';
 import { useSubcategoriesStore } from './store';
 import { SubcategoriesTable } from './subcategoriesTable';
 import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
-export type SubcategoryTypeFilter = 'all' | 'income' | 'expense';
-
 export function Subcategories() {
   const queryClient = useQueryClient();
-  const [typeFilter, setTypeFilter] = useState<SubcategoryTypeFilter>('all');
-  const [categoryIdFilter, setCategoryIdFilter] = useState<string>('');
+  const [typeFilter, setTypeFilter] =
+    useState<SubcategoryTypeFilter>(DEFAULT_TYPE_FILTER);
+  const [categoryIdFilter, setCategoryIdFilter] =
+    useState<string>(DEFAULT_CATEGORY_ID);
   const { data: categories = [] } = useCategoriesQuery();
   const queryParams = useMemo(() => {
     const params: { belongs_to_income?: boolean; category_id?: string } = {};
@@ -39,6 +52,12 @@ export function Subcategories() {
     if (categoryIdFilter) params.category_id = categoryIdFilter;
     return Object.keys(params).length > 0 ? params : undefined;
   }, [typeFilter, categoryIdFilter]);
+
+  const clearFilters = useCallback(() => {
+    setTypeFilter(DEFAULT_TYPE_FILTER);
+    setCategoryIdFilter(DEFAULT_CATEGORY_ID);
+  }, []);
+
   const {
     data: items = [],
     isLoading,
@@ -189,7 +208,10 @@ export function Subcategories() {
         </Button>
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <FormControl size="small" sx={{ minWidth: 140 }}>
+        <FormControl
+          size="small"
+          sx={{ minWidth: 140, ...selectFormControlSx }}
+        >
           <InputLabel id="subcategories-type-filter-label">Type</InputLabel>
           <Select
             labelId="subcategories-type-filter-label"
@@ -199,14 +221,20 @@ export function Subcategories() {
             onChange={(e) =>
               setTypeFilter(e.target.value as SubcategoryTypeFilter)
             }
-            sx={{ backgroundColor: themeTokens.surface }}
+            sx={selectThemedSx}
+            MenuProps={{
+              PaperProps: { sx: selectMenuPaperSx },
+            }}
           >
             <MenuItem value="all">All</MenuItem>
             <MenuItem value="income">Income</MenuItem>
             <MenuItem value="expense">Expense</MenuItem>
           </Select>
         </FormControl>
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        <FormControl
+          size="small"
+          sx={{ minWidth: 180, ...selectFormControlSx }}
+        >
           <InputLabel id="subcategories-category-filter-label">
             Category
           </InputLabel>
@@ -216,7 +244,10 @@ export function Subcategories() {
             value={categoryIdFilter}
             label="Category"
             onChange={(e) => setCategoryIdFilter(e.target.value)}
-            sx={{ backgroundColor: themeTokens.surface }}
+            sx={selectThemedSx}
+            MenuProps={{
+              PaperProps: { sx: selectMenuPaperSx },
+            }}
           >
             <MenuItem value="">All</MenuItem>
             {categories.map((c) => (
@@ -226,6 +257,24 @@ export function Subcategories() {
             ))}
           </Select>
         </FormControl>
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ borderColor: themeTokens.border }}
+        />
+        <IconButton
+          onClick={clearFilters}
+          sx={{
+            alignSelf: 'flex-start',
+            color: themeTokens.textSecondary,
+            '&.Mui-disabled': { color: themeTokens.disabled },
+          }}
+          disabled={
+            typeFilter === 'all' && categoryIdFilter === DEFAULT_CATEGORY_ID
+          }
+        >
+          <FilterAltOff />
+        </IconButton>
       </Box>
       <SubcategoriesTable
         items={items}
