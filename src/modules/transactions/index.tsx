@@ -1,8 +1,17 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import ArrowDropDownRounded from '@mui/icons-material/ArrowDropDownRounded';
-import { Box, Button, Menu, MenuItem, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  Menu,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHangoutsQuery } from '../../services/hangouts';
 import { useSubcategoriesQuery } from '../../services/subcategories';
 import {
@@ -25,12 +34,41 @@ import { useTransactionsStore } from './store';
 import { TransactionFormDialog } from './transactionFormDialog';
 import { TransactionsTable } from './transactionsTable';
 
+const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = [
+  CURRENT_YEAR - 2,
+  CURRENT_YEAR - 1,
+  CURRENT_YEAR,
+  CURRENT_YEAR + 1,
+];
+const DAY_OPTIONS = [...Array(31)].map((_, i) => i + 1);
+
 export function Transactions() {
   const queryClient = useQueryClient();
 
-  const [listParams, _setListParams] = useState<TransactionsListParams>(
-    defaultTransactionsListParams,
+  const [year, setYear] = useState(
+    () => defaultTransactionsListParams.year ?? CURRENT_YEAR,
   );
+  const [month, setMonth] = useState(
+    () => defaultTransactionsListParams.month ?? new Date().getMonth() + 1,
+  );
+  const [day, setDay] = useState<string>('');
+  const [subcategoryId, setSubcategoryId] = useState('');
+  const [hangoutId, setHangoutId] = useState('');
+  const listParams = useMemo<TransactionsListParams>(() => {
+    const params: TransactionsListParams = {
+      skip: 0,
+      limit: defaultTransactionsListParams.limit ?? 50,
+      year,
+      month,
+    };
+    if (day !== '') params.day = Number(day);
+    if (subcategoryId) params.subcategory_id = subcategoryId;
+    if (hangoutId) params.hangout_id = hangoutId;
+    return params;
+  }, [year, month, day, subcategoryId, hangoutId]);
+
   const {
     data: items = [],
     isLoading,
@@ -221,6 +259,98 @@ export function Transactions() {
           <MenuItem onClick={openCreate}>Transaction</MenuItem>
           <MenuItem onClick={openBulkStub}>Bulk</MenuItem>
         </Menu>
+      </Box>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+        <FormControl size="small" sx={{ minWidth: 90 }}>
+          <InputLabel id="transactions-year-label">Year</InputLabel>
+          <Select
+            labelId="transactions-year-label"
+            id="transactions-year"
+            value={year}
+            label="Year"
+            onChange={(e) => setYear(Number(e.target.value))}
+            sx={{ backgroundColor: themeTokens.surface }}
+          >
+            {YEAR_OPTIONS.map((y) => (
+              <MenuItem key={y} value={y}>
+                {y}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 100 }}>
+          <InputLabel id="transactions-month-label">Month</InputLabel>
+          <Select
+            labelId="transactions-month-label"
+            id="transactions-month"
+            value={month}
+            label="Month"
+            onChange={(e) => setMonth(Number(e.target.value))}
+            sx={{ backgroundColor: themeTokens.surface }}
+          >
+            {MONTHS.map((m) => (
+              <MenuItem key={m} value={m}>
+                {m}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 80 }}>
+          <InputLabel id="transactions-day-label">Day</InputLabel>
+          <Select
+            labelId="transactions-day-label"
+            id="transactions-day"
+            value={day}
+            label="Day"
+            onChange={(e) => setDay(e.target.value)}
+            sx={{ backgroundColor: themeTokens.surface }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {DAY_OPTIONS.map((d) => (
+              <MenuItem key={d} value={String(d)}>
+                {d}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <InputLabel id="transactions-subcategory-label">
+            Subcategory
+          </InputLabel>
+          <Select
+            labelId="transactions-subcategory-label"
+            id="transactions-subcategory-filter"
+            value={subcategoryId}
+            label="Subcategory"
+            onChange={(e) => setSubcategoryId(e.target.value)}
+            sx={{ backgroundColor: themeTokens.surface }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {subcategories.map((s) => (
+              <MenuItem key={s.id} value={s.id}>
+                {s.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel id="transactions-hangout-label">Hangout</InputLabel>
+          <Select
+            labelId="transactions-hangout-label"
+            id="transactions-hangout-filter"
+            value={hangoutId}
+            label="Hangout"
+            onChange={(e) => setHangoutId(e.target.value)}
+            sx={{ backgroundColor: themeTokens.surface }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {hangouts.map((h) => (
+              <MenuItem key={h.id} value={h.id}>
+                {h.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
       <TransactionsTable
         items={items}

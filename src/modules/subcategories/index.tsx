@@ -1,7 +1,16 @@
 import AddRounded from '@mui/icons-material/AddRounded';
-import { Box, Button, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCategoriesQuery } from '../../services/categories';
 import {
   useCreateSubcategoryMutation,
   useDeleteSubcategoryMutation,
@@ -16,15 +25,27 @@ import { useSubcategoriesStore } from './store';
 import { SubcategoriesTable } from './subcategoriesTable';
 import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
+export type SubcategoryTypeFilter = 'all' | 'income' | 'expense';
+
 export function Subcategories() {
   const queryClient = useQueryClient();
+  const [typeFilter, setTypeFilter] = useState<SubcategoryTypeFilter>('all');
+  const [categoryIdFilter, setCategoryIdFilter] = useState<string>('');
+  const { data: categories = [] } = useCategoriesQuery();
+  const queryParams = useMemo(() => {
+    const params: { belongs_to_income?: boolean; category_id?: string } = {};
+    if (typeFilter !== 'all')
+      params.belongs_to_income = typeFilter === 'income';
+    if (categoryIdFilter) params.category_id = categoryIdFilter;
+    return Object.keys(params).length > 0 ? params : undefined;
+  }, [typeFilter, categoryIdFilter]);
   const {
     data: items = [],
     isLoading,
     isError,
     error,
     refetch,
-  } = useSubcategoriesQuery();
+  } = useSubcategoriesQuery(queryParams);
   const setSubcategoriesFromQuery = useSubcategoriesStore(
     (s) => s.setFromQuery,
   );
@@ -166,6 +187,45 @@ export function Subcategories() {
         >
           Create subcategory
         </Button>
+      </Box>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel id="subcategories-type-filter-label">Type</InputLabel>
+          <Select
+            labelId="subcategories-type-filter-label"
+            id="subcategories-type-filter"
+            value={typeFilter}
+            label="Type"
+            onChange={(e) =>
+              setTypeFilter(e.target.value as SubcategoryTypeFilter)
+            }
+            sx={{ backgroundColor: themeTokens.surface }}
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="income">Income</MenuItem>
+            <MenuItem value="expense">Expense</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <InputLabel id="subcategories-category-filter-label">
+            Category
+          </InputLabel>
+          <Select
+            labelId="subcategories-category-filter-label"
+            id="subcategories-category-filter"
+            value={categoryIdFilter}
+            label="Category"
+            onChange={(e) => setCategoryIdFilter(e.target.value)}
+            sx={{ backgroundColor: themeTokens.surface }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {categories.map((c) => (
+              <MenuItem key={c.id} value={c.id}>
+                {c.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
       <SubcategoriesTable
         items={items}

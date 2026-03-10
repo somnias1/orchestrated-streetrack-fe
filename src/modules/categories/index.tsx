@@ -1,7 +1,15 @@
 import AddRounded from '@mui/icons-material/AddRounded';
-import { Box, Button, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
@@ -16,15 +24,22 @@ import { CategoryFormDialog } from './categoryFormDialog';
 import { DeleteCategoryDialog } from './deleteCategoryDialog';
 import { useCategoriesStore } from './store';
 
+export type CategoryTypeFilter = 'all' | 'income' | 'expense';
+
 export function Categories() {
   const queryClient = useQueryClient();
+  const [typeFilter, setTypeFilter] = useState<CategoryTypeFilter>('all');
+  const queryParams = useMemo(() => {
+    if (typeFilter === 'all') return undefined;
+    return { is_income: typeFilter === 'income' };
+  }, [typeFilter]);
   const {
     data: items = [],
     isLoading,
     isError,
     error,
     refetch,
-  } = useCategoriesQuery();
+  } = useCategoriesQuery(queryParams);
   const setFromQuery = useCategoriesStore((s) => s.setFromQuery);
 
   useEffect(() => {
@@ -161,6 +176,21 @@ export function Categories() {
           Create category
         </Button>
       </Box>
+      <FormControl size="small" sx={{ minWidth: 140, mb: 2 }}>
+        <InputLabel id="categories-type-filter-label">Type</InputLabel>
+        <Select
+          labelId="categories-type-filter-label"
+          id="categories-type-filter"
+          value={typeFilter}
+          label="Type"
+          onChange={(e) => setTypeFilter(e.target.value as CategoryTypeFilter)}
+          sx={{ backgroundColor: themeTokens.surface }}
+        >
+          <MenuItem value="all">All</MenuItem>
+          <MenuItem value="income">Income</MenuItem>
+          <MenuItem value="expense">Expense</MenuItem>
+        </Select>
+      </FormControl>
       <CategoriesTable
         items={items}
         loading={isLoading}

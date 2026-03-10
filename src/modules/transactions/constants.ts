@@ -1,4 +1,4 @@
-import type { TransactionsListParams } from '../../services/transactions/hooks';
+import type { TransactionsListParams } from '../../services/transactions/types';
 
 export const defaultTransactionsListParams: TransactionsListParams = {
   skip: 0,
