@@ -141,7 +141,7 @@ function createColumns(
                 size="small"
                 onClick={() => onEdit(hangout)}
                 aria-label={`Edit ${hangout.name}`}
-                sx={{ color: themeTokens.textSecondary }}
+                sx={{ color: themeTokens.primary }}
               >
                 <EditRounded fontSize="small" />
               </IconButton>
@@ -151,7 +151,7 @@ function createColumns(
                 size="small"
                 onClick={() => onDelete(hangout)}
                 aria-label={`Delete ${hangout.name}`}
-                sx={{ color: themeTokens.textSecondary }}
+                sx={{ color: themeTokens.error }}
               >
                 <DeleteOutlineRounded fontSize="small" />
               </IconButton>
