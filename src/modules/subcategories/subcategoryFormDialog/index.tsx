@@ -1,10 +1,12 @@
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   InputLabel,
   MenuItem,
@@ -32,6 +34,8 @@ function toPayload(values: SubcategoryFormValues): SubcategoryFormPayload {
     name: values.name.trim(),
     description: values.description?.trim() || null,
     belongs_to_income: values.belongs_to_income,
+    is_periodic: values.is_periodic,
+    due_day: values.is_periodic ? values.due_day : null,
   };
 }
 
@@ -64,6 +68,12 @@ export function SubcategoryFormDialog({
   const [description, setDescription] = useState(
     initialValues?.description ?? '',
   );
+  const [is_periodic, setIsPeriodic] = useState(
+    initialValues?.is_periodic ?? false,
+  );
+  const [due_day, setDueDay] = useState<string>(
+    initialValues?.due_day != null ? String(initialValues.due_day) : '',
+  );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -76,6 +86,10 @@ export function SubcategoryFormDialog({
       setCategoryId(initialValues?.category_id ?? '');
       setName(initialValues?.name ?? '');
       setDescription(initialValues?.description ?? '');
+      setIsPeriodic(initialValues?.is_periodic ?? false);
+      setDueDay(
+        initialValues?.due_day != null ? String(initialValues.due_day) : '',
+      );
       setFieldErrors({});
     }
   }, [open, initialValues]);
@@ -83,18 +97,24 @@ export function SubcategoryFormDialog({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      const dueDayNum =
+        due_day.trim() === '' ? null : Number.parseInt(due_day.trim(), 10);
       const raw = {
         category_id: category_id.trim(),
         name: name.trim(),
         description: description.trim() || null,
         belongs_to_income:
           categoryOptions.find((c) => c.id === category_id)?.is_income ?? false,
+        is_periodic,
+        due_day: dueDayNum,
       };
       const parsed = subcategoryFormSchema.safeParse({
         category_id: raw.category_id,
         name: raw.name,
         description: raw.description === '' ? null : raw.description,
         belongs_to_income: raw.belongs_to_income,
+        is_periodic: raw.is_periodic,
+        due_day: raw.due_day,
       });
       if (!parsed.success) {
         const errors: Record<string, string> = {};
@@ -116,7 +136,16 @@ export function SubcategoryFormDialog({
         setSubmitting(false);
       }
     },
-    [category_id, name, description, onSubmit, onClose, categoryOptions],
+    [
+      category_id,
+      name,
+      description,
+      is_periodic,
+      due_day,
+      onSubmit,
+      onClose,
+      categoryOptions,
+    ],
   );
 
   const handleClose = useCallback(() => {
@@ -200,6 +229,44 @@ export function SubcategoryFormDialog({
               '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
             }}
           />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={is_periodic}
+                onChange={(e) => setIsPeriodic(e.target.checked)}
+                sx={{
+                  color: themeTokens.textSecondary,
+                  '&.Mui-checked': { color: themeTokens.primary },
+                }}
+              />
+            }
+            label="Periodic expense"
+            sx={{ color: themeTokens.textPrimary }}
+          />
+          {is_periodic && (
+            <TextField
+              label="Due day (1–31)"
+              value={due_day}
+              onChange={(e) =>
+                setDueDay(e.target.value.replace(/\D/g, '').slice(0, 2))
+              }
+              fullWidth
+              type="text"
+              inputMode="numeric"
+              error={Boolean(fieldErrors.due_day)}
+              helperText={fieldErrors.due_day}
+              inputProps={{
+                'aria-label': 'Due day (1–31)',
+                min: 1,
+                max: 31,
+                placeholder: 'e.g. 15',
+              }}
+              sx={{
+                '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+                '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+              }}
+            />
+          )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button

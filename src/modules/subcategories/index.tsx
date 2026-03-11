@@ -108,6 +108,8 @@ export function Subcategories() {
     name: string;
     description: string | null;
     belongs_to_income: boolean;
+    is_periodic: boolean;
+    due_day: number | null;
   } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [subcategoryToDelete, setSubcategoryToDelete] =
@@ -135,6 +137,8 @@ export function Subcategories() {
       name: subcategory.name,
       description: subcategory.description,
       belongs_to_income: subcategory.belongs_to_income,
+      is_periodic: subcategory.is_periodic,
+      due_day: subcategory.due_day,
     });
     setSubmitError(null);
     setFormOpen(true);
@@ -151,6 +155,8 @@ export function Subcategories() {
       name: string;
       description: string | null;
       belongs_to_income: boolean;
+      is_periodic: boolean;
+      due_day: number | null;
     }) => {
       setSubmitError(null);
       try {

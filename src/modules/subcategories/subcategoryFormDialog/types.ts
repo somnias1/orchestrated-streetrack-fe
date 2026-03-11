@@ -3,6 +3,8 @@ export type SubcategoryFormPayload = {
   name: string;
   description: string | null;
   belongs_to_income: boolean;
+  is_periodic: boolean;
+  due_day: number | null;
 };
 
 export type SubcategoryFormDialogProps = Readonly<{
