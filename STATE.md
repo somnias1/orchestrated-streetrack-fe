@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 21 — Home dashboard (complete).
+Phase 22 — Bulk transactions (in progress).
 
 ## Last Task Completed
 
@@ -10,8 +10,9 @@ Phase 21: Dashboard service (types, constants, React Query hooks) and Home scree
 
 ## Next Task
 
-1. Merge `feature/phase-21-home-dashboard` to main with --no-ff.
-2. Phase 22 — Bulk transactions: POST /transactions/bulk, BulkTransactionsDialog.
+1. Commit `.planning/phase-22-SPEC.md` (spec-first) on the Phase 22 branch.
+2. Implement POST `/transactions/bulk` service types + mutation hook.
+3. Implement and wire `BulkTransactionsDialog` from Transactions “Add → Bulk”.
 
 ## Key Decisions
 
