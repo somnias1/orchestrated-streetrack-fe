@@ -2,17 +2,16 @@
 
 ## Current Phase
 
-Phase 22 — Bulk transactions (in progress).
+Phase 22 — Bulk transactions (complete).
 
 ## Last Task Completed
 
-Phase 21: Dashboard service (types, constants, React Query hooks) and Home screen with balance, month balance (year+month selector), due periodic expenses; loading/error + retry per section.
+Phase 22: POST /transactions/bulk service (types, path, useBulkCreateTransactionsMutation); BulkTransactionsDialog (rows, validation, submit); wired to Transactions Add → Bulk; Vitest globals fix for test runner.
 
 ## Next Task
 
-1. Commit `.planning/phase-22-SPEC.md` (spec-first) on the Phase 22 branch.
-2. Implement POST `/transactions/bulk` service types + mutation hook.
-3. Implement and wire `BulkTransactionsDialog` from Transactions “Add → Bulk”.
+1. Merge `feature/phase-22-bulk-transactions` to main with --no-ff.
+2. Phase 23 — Transaction manager import/export UI (paste → preview → bulk; date-filtered CSV export).
 
 ## Key Decisions
 
