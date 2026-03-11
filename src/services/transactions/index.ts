@@ -8,7 +8,9 @@ import { config } from '../../config';
 import useCallbackApi from '../../utils/callbackApi';
 import { transactionsPaths, transactionsQueryKey } from './constants';
 import type {
+  BulkCreateTransactionsResponse,
   GetTransactionsResponse,
+  TransactionBulkCreate,
   TransactionCreate,
   TransactionRead,
   TransactionsListParams,
@@ -87,6 +89,31 @@ export function useDeleteTransactionMutation(
     mutationFn: (id: string) =>
       callbackApi<void>(transactionsPaths.delete(id), {
         method: 'DELETE',
+        baseURL,
+      }),
+    ...options,
+  });
+}
+
+export function useBulkCreateTransactionsMutation(
+  options?: Partial<
+    UseMutationOptions<
+      BulkCreateTransactionsResponse,
+      Error,
+      TransactionBulkCreate
+    >
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useMutation<
+    BulkCreateTransactionsResponse,
+    Error,
+    TransactionBulkCreate
+  >({
+    mutationFn: (body: TransactionBulkCreate) =>
+      callbackApi<BulkCreateTransactionsResponse>(transactionsPaths.bulk, {
+        data: body,
+        method: 'POST',
         baseURL,
       }),
     ...options,

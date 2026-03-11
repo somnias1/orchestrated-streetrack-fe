@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
 import type { HangoutRead } from '../../../services/hangouts/types';
 import { HangoutsTable } from './index';
 

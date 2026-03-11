@@ -3,15 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
 import { config } from '../../config';
 import { categoriesPaths } from '../../services/categories/constants';
 import { categoriesMock, categoryMock } from '../../services/categories/mocks';

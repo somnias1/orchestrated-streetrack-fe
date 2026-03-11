@@ -42,3 +42,11 @@ export type TransactionsListParams = DefaultParams & {
 
 /** GET /transactions/ response */
 export type GetTransactionsResponse = TransactionRead[];
+
+/** POST /transactions/bulk request body (OpenAPI TransactionBulkCreate) */
+export type TransactionBulkCreate = {
+  transactions: TransactionCreate[];
+};
+
+/** POST /transactions/bulk response (201) */
+export type BulkCreateTransactionsResponse = TransactionRead[];
