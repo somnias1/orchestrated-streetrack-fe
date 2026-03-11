@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHangoutsQuery } from '../../services/hangouts';
 import { useSubcategoriesQuery } from '../../services/subcategories';
 import {
+  useBulkCreateTransactionsMutation,
   useCreateTransactionMutation,
   useDeleteTransactionMutation,
   useTransactionsQuery,
@@ -25,6 +26,7 @@ import {
 } from '../../services/transactions';
 import { transactionsQueryKey } from '../../services/transactions/constants';
 import type {
+  TransactionBulkCreate,
   TransactionRead,
   TransactionsListParams,
 } from '../../services/transactions/types';
@@ -36,6 +38,7 @@ import {
 } from '../../theme/tailwind';
 import { useHangoutsStore } from '../hangouts/store';
 import { useSubcategoriesStore } from '../subcategories/store';
+import { BulkTransactionsDialog } from './bulkTransactionsDialog';
 import {
   DAY_OPTIONS,
   defaultTransactionsListParams,
@@ -130,6 +133,11 @@ export function Transactions() {
       handleInvalidateTransactions();
     },
   });
+  const bulkCreateMutation = useBulkCreateTransactionsMutation({
+    onSuccess: () => {
+      handleInvalidateTransactions();
+    },
+  });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingTransactionId, setEditingTransactionId] = useState<
@@ -147,6 +155,8 @@ export function Transactions() {
     useState<TransactionRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkSubmitError, setBulkSubmitError] = useState<string | null>(null);
 
   const errorMessage =
     isError && error instanceof Error
@@ -163,10 +173,27 @@ export function Transactions() {
     setFormOpen(true);
   }, []);
 
-  const openBulkStub = useCallback(() => {
+  const openBulk = useCallback(() => {
     setAddMenuAnchor(null);
-    // Phase 22: Bulk transactions dialog; stub for Phase 18
+    setBulkSubmitError(null);
+    setBulkOpen(true);
   }, []);
+
+  const handleBulkSubmit = useCallback(
+    async (body: TransactionBulkCreate) => {
+      setBulkSubmitError(null);
+      try {
+        await bulkCreateMutation.mutateAsync(body);
+        setBulkOpen(false);
+      } catch (err) {
+        setBulkSubmitError(
+          err instanceof Error ? err.message : 'Bulk create failed',
+        );
+        throw err;
+      }
+    },
+    [bulkCreateMutation],
+  );
 
   const openEdit = useCallback((transaction: TransactionRead) => {
     setEditingTransactionId(transaction.id);
@@ -266,7 +293,7 @@ export function Transactions() {
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <MenuItem onClick={openCreate}>Transaction</MenuItem>
-          <MenuItem onClick={openBulkStub}>Bulk</MenuItem>
+          <MenuItem onClick={openBulk}>Bulk</MenuItem>
         </Menu>
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
@@ -425,6 +452,18 @@ export function Transactions() {
         }}
         transaction={transactionToDelete}
         onConfirm={handleDeleteConfirm}
+      />
+      <BulkTransactionsDialog
+        open={bulkOpen}
+        onClose={() => {
+          setBulkOpen(false);
+          setBulkSubmitError(null);
+        }}
+        onSubmit={handleBulkSubmit}
+        submitError={bulkSubmitError}
+        submitting={bulkCreateMutation.isPending}
+        subcategoryOptions={subcategoryOptions}
+        hangoutOptions={hangoutOptions}
       />
     </Box>
   );
