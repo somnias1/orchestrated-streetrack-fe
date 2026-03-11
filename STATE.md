@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 20 — Periodic expenses (subcategories) (complete).
+Phase 21 — Home dashboard (complete).
 
 ## Last Task Completed
 
-Phase 20: Subcategory is_periodic and due_day in types, form (Zod + dialog), and list (Periodic and Due day columns).
+Phase 21: Dashboard service (types, constants, React Query hooks) and Home screen with balance, month balance (year+month selector), due periodic expenses; loading/error + retry per section.
 
 ## Next Task
 
-1. Merge `feature/phase-20-periodic-expenses` to main with --no-ff.
-2. Phase 21 — Home dashboard: balance, month balance, due periodic expenses (API client + Home screen).
+1. Merge `feature/phase-21-home-dashboard` to main with --no-ff.
+2. Phase 22 — Bulk transactions: POST /transactions/bulk, BulkTransactionsDialog.
 
 ## Key Decisions
 
