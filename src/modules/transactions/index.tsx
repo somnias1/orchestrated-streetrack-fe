@@ -1,5 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import ArrowDropDownRounded from '@mui/icons-material/ArrowDropDownRounded';
+import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
 import FilterAltOff from '@mui/icons-material/FilterAltOff';
 import {
   Box,
@@ -15,8 +16,14 @@ import {
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { config } from '../../config';
 import { useHangoutsQuery } from '../../services/hangouts';
 import { useSubcategoriesQuery } from '../../services/subcategories';
+import {
+  downloadCsvBlob,
+  transactionManagerPaths,
+  useImportPreviewMutation,
+} from '../../services/transactionManager';
 import {
   useBulkCreateTransactionsMutation,
   useCreateTransactionMutation,
@@ -36,6 +43,7 @@ import {
   selectThemedSx,
   themeTokens,
 } from '../../theme/tailwind';
+import useCallbackApi from '../../utils/callbackApi';
 import { useHangoutsStore } from '../hangouts/store';
 import { useSubcategoriesStore } from '../subcategories/store';
 import { BulkTransactionsDialog } from './bulkTransactionsDialog';
@@ -48,6 +56,7 @@ import {
   YEAR_OPTIONS,
 } from './constants';
 import { DeleteTransactionDialog } from './deleteTransactionDialog';
+import { ImportTransactionsDialog } from './importTransactionsDialog';
 import { useTransactionsStore } from './store';
 import { TransactionFormDialog } from './transactionFormDialog';
 import { TransactionsTable } from './transactionsTable';
@@ -139,6 +148,8 @@ export function Transactions() {
     },
   });
 
+  const { callbackApi } = useCallbackApi();
+  const importPreviewMutation = useImportPreviewMutation();
   const [formOpen, setFormOpen] = useState(false);
   const [editingTransactionId, setEditingTransactionId] = useState<
     string | null
@@ -157,6 +168,14 @@ export function Transactions() {
   const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkSubmitError, setBulkSubmitError] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importPreviewError, setImportPreviewError] = useState<string | null>(
+    null,
+  );
+  const [importSubmitError, setImportSubmitError] = useState<string | null>(
+    null,
+  );
+  const [exporting, setExporting] = useState(false);
 
   const errorMessage =
     isError && error instanceof Error
@@ -178,6 +197,72 @@ export function Transactions() {
     setBulkSubmitError(null);
     setBulkOpen(true);
   }, []);
+
+  const openImport = useCallback(() => {
+    setAddMenuAnchor(null);
+    setImportPreviewError(null);
+    setImportSubmitError(null);
+    setImportOpen(true);
+  }, []);
+
+  const handleImportPreview = useCallback(
+    async (
+      rows: import('../../services/transactionManager/types').TransactionImportRow[],
+    ) => {
+      setImportPreviewError(null);
+      try {
+        return await importPreviewMutation.mutateAsync({ rows });
+      } catch (err) {
+        setImportPreviewError(
+          err instanceof Error ? err.message : 'Preview failed',
+        );
+        throw err;
+      }
+    },
+    [importPreviewMutation],
+  );
+
+  const handleImportSubmit = useCallback(
+    async (body: TransactionBulkCreate) => {
+      setImportSubmitError(null);
+      try {
+        await bulkCreateMutation.mutateAsync(body);
+        setImportOpen(false);
+      } catch (err) {
+        setImportSubmitError(
+          err instanceof Error ? err.message : 'Import create failed',
+        );
+        throw err;
+      }
+    },
+    [bulkCreateMutation],
+  );
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      const exportParams = {
+        ...(listParams.year !== undefined && { year: listParams.year }),
+        ...(listParams.month !== undefined && { month: listParams.month }),
+        ...(listParams.day !== undefined && { day: listParams.day }),
+        ...(listParams.subcategory_id && {
+          subcategory_id: listParams.subcategory_id,
+        }),
+        ...(listParams.hangout_id && {
+          hangout_id: listParams.hangout_id,
+        }),
+      };
+      await downloadCsvBlob(() =>
+        callbackApi<Blob>(transactionManagerPaths.export, {
+          params: exportParams,
+          baseURL: config.apiUrl,
+          responseType: 'blob',
+        }),
+      );
+    } finally {
+      setExporting(false);
+    }
+  }, [callbackApi, listParams]);
 
   const handleBulkSubmit = useCallback(
     async (body: TransactionBulkCreate) => {
@@ -294,7 +379,20 @@ export function Transactions() {
         >
           <MenuItem onClick={openCreate}>Transaction</MenuItem>
           <MenuItem onClick={openBulk}>Bulk</MenuItem>
+          <MenuItem onClick={openImport}>Import</MenuItem>
         </Menu>
+        <Button
+          variant="outlined"
+          startIcon={<FileDownloadOutlined />}
+          onClick={handleExport}
+          disabled={exporting}
+          sx={{
+            borderColor: themeTokens.border,
+            color: themeTokens.textPrimary,
+          }}
+        >
+          {exporting ? 'Exporting…' : 'Export CSV'}
+        </Button>
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
         <FormControl size="small" sx={{ minWidth: 90, ...selectFormControlSx }}>
@@ -464,6 +562,20 @@ export function Transactions() {
         submitting={bulkCreateMutation.isPending}
         subcategoryOptions={subcategoryOptions}
         hangoutOptions={hangoutOptions}
+      />
+      <ImportTransactionsDialog
+        open={importOpen}
+        onClose={() => {
+          setImportOpen(false);
+          setImportPreviewError(null);
+          setImportSubmitError(null);
+        }}
+        onPreview={handleImportPreview}
+        onSubmit={handleImportSubmit}
+        previewError={importPreviewError}
+        submitError={importSubmitError}
+        previewing={importPreviewMutation.isPending}
+        submitting={bulkCreateMutation.isPending}
       />
     </Box>
   );
