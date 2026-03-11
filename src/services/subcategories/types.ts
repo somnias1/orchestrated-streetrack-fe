@@ -11,6 +11,8 @@ export type SubcategoryRead = {
   name: string;
   description: string | null;
   belongs_to_income: boolean;
+  is_periodic: boolean;
+  due_day: number | null;
   user_id: string | null;
 };
 
@@ -19,6 +21,8 @@ export type SubcategoryCreate = {
   name: string;
   description?: string | null;
   belongs_to_income?: boolean;
+  is_periodic?: boolean;
+  due_day?: number | null;
 };
 
 export type SubcategoryUpdate = {
@@ -26,6 +30,8 @@ export type SubcategoryUpdate = {
   name?: string | null;
   description?: string | null;
   belongs_to_income?: boolean | null;
+  is_periodic?: boolean | null;
+  due_day?: number | null;
 };
 
 export type SubcategoriesListParams = DefaultParams & {

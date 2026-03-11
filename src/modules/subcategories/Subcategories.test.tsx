@@ -83,6 +83,8 @@ describe('Subcategories screen', () => {
         name: 'Groceries',
         description: 'Food shopping',
         belongs_to_income: false,
+        is_periodic: false,
+        due_day: null,
         user_id: 'u1',
       },
       {
@@ -92,6 +94,8 @@ describe('Subcategories screen', () => {
         name: 'Salary',
         description: null,
         belongs_to_income: true,
+        is_periodic: false,
+        due_day: null,
         user_id: 'u1',
       },
     ];
@@ -143,6 +147,8 @@ describe('Subcategories screen', () => {
             name: 'Groceries',
             description: null,
             belongs_to_income: false,
+            is_periodic: false,
+            due_day: null,
             user_id: 'u1',
           },
         ]);
@@ -205,6 +211,8 @@ describe('Subcategories screen', () => {
                   name: 'New Sub',
                   description: null,
                   belongs_to_income: false,
+                  is_periodic: false,
+                  due_day: null,
                   user_id: 'u1',
                 },
               ],
@@ -223,6 +231,8 @@ describe('Subcategories screen', () => {
             name: 'New Sub',
             description: null,
             belongs_to_income: false,
+            is_periodic: false,
+            due_day: null,
             user_id: 'u1',
           },
           { status: 201 },
@@ -282,6 +292,8 @@ describe('Subcategories screen', () => {
         name: 'Groceries',
         description: null,
         belongs_to_income: false,
+        is_periodic: false,
+        due_day: null,
         user_id: 'u1',
       },
     ];
@@ -298,6 +310,8 @@ describe('Subcategories screen', () => {
           name: body.name ?? 'Groceries',
           description: null,
           belongs_to_income: false,
+          is_periodic: false,
+          due_day: null,
           user_id: 'u1',
         };
         listData = [updated];
@@ -348,6 +362,8 @@ describe('Subcategories screen', () => {
         name: 'ToDelete',
         description: null,
         belongs_to_income: false,
+        is_periodic: false,
+        due_day: null,
         user_id: 'u1',
       },
     ];

@@ -11,6 +11,8 @@ export function subcategoryMock(
     name: faker.commerce.productName(),
     description: faker.commerce.productDescription(),
     belongs_to_income: false,
+    is_periodic: false,
+    due_day: null,
     user_id: faker.string.uuid(),
     ...data,
   };
