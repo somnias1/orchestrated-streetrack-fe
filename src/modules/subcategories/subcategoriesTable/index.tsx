@@ -101,9 +101,39 @@ function createColumns(
       },
     },
     {
+      accessorKey: 'is_periodic',
+      header: 'Periodic',
+      size: COLUMN_SIZES[4],
+      cell: (info) => {
+        const row = info.row.original;
+        const isPeriodic = row.is_periodic;
+        return (
+          <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
+            {isPeriodic ? 'Yes' : '—'}
+          </Typography>
+        );
+      },
+    },
+    {
+      accessorKey: 'due_day',
+      header: 'Due day',
+      size: COLUMN_SIZES[5],
+      cell: (info) => {
+        const row = info.row.original;
+        const dueDay = row.due_day;
+        const display =
+          row.is_periodic && dueDay != null ? String(dueDay) : '—';
+        return (
+          <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
+            {display}
+          </Typography>
+        );
+      },
+    },
+    {
       id: 'actions',
       header: 'Actions',
-      size: COLUMN_SIZES[4],
+      size: COLUMN_SIZES[6],
       cell: (info) => {
         const subcategory = info.row.original;
         return (
