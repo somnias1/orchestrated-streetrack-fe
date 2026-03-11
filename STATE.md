@@ -10,8 +10,7 @@ Phase 22: POST /transactions/bulk service (types, path, useBulkCreateTransaction
 
 ## Next Task
 
-1. Merge `feature/phase-22-bulk-transactions` to main with --no-ff.
-2. Phase 23 — Transaction manager import/export UI (paste → preview → bulk; date-filtered CSV export).
+Phase 23 — Transaction manager import/export UI (paste → preview → bulk; date-filtered CSV export).
 
 ## Key Decisions
 
