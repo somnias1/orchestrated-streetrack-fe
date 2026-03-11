@@ -2,16 +2,6 @@ import { faker } from '@faker-js/faker';
 import { renderHook, waitFor } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
 import { config } from '../../config';
 import ProviderWrapper from '../../utils/test/provider';
 import { hangoutsPaths } from './constants';

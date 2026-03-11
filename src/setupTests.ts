@@ -1,6 +1,6 @@
+/// <reference types="vitest/globals" />
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
 
 vi.mock('@auth0/auth0-react', async () => {
   const React = await import('react');
