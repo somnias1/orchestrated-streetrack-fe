@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 22 — Bulk transactions (complete).
+Phase 23 — Transaction manager import/export (complete).
 
 ## Last Task Completed
 
-Phase 22: POST /transactions/bulk service (types, path, useBulkCreateTransactionsMutation); BulkTransactionsDialog (rows, validation, submit); wired to Transactions Add → Bulk; Vitest globals fix for test runner.
+Phase 23: Transaction manager service (import preview, export CSV); ImportTransactionsDialog (paste → preview → bulk); Export CSV button using current filters; Import in Add menu.
 
 ## Next Task
 
-Phase 23 — Transaction manager import/export UI (paste → preview → bulk; date-filtered CSV export).
+Phase 24 — Finance expansion tests and polish (dashboard, bulk, import/export, filters, periodic; §1.3 mapping; coverage gate).
 
 ## Key Decisions
 
