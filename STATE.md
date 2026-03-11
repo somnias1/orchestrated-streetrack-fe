@@ -2,16 +2,16 @@
 
 ## Current Phase
 
-Phase 19 — List filters and sort (complete).
+Phase 20 — Periodic expenses (subcategories) (complete).
 
 ## Last Task Completed
 
-Phase 19: Categories type filter; Subcategories type + category filters; Transactions date (year/month/day), subcategory, hangout filters; default current month; sort newest first (backend). SUMMARY and merge pending.
+Phase 20: Subcategory is_periodic and due_day in types, form (Zod + dialog), and list (Periodic and Due day columns).
 
 ## Next Task
 
-1. Merge `feature/phase-19-list-filters-sort` to main with --no-ff.
-2. Phase 20 — Periodic expenses (subcategories): is_periodic, due_day in types, form, and list.
+1. Merge `feature/phase-20-periodic-expenses` to main with --no-ff.
+2. Phase 21 — Home dashboard: balance, month balance, due periodic expenses (API client + Home screen).
 
 ## Key Decisions
 
