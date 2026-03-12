@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 23 — Transaction manager import/export (complete).
+Phase 24 — Finance expansion tests and polish (complete).
 
 ## Last Task Completed
 
-Phase 23: Transaction manager service (import preview, export CSV); ImportTransactionsDialog (paste → preview → bulk); Export CSV button using current filters; Import in Add menu.
+Phase 24: Vitest tests for dashboard and transaction-manager; full Playwright E2E (real Auth0, real backend, page objects, auth setup, navigation, dashboard, CRUD smoke, import/export); §1.3 mapping; README E2E section.
 
 ## Next Task
 
-Phase 24 — Finance expansion tests and polish (dashboard, bulk, import/export, filters, periodic; §1.3 mapping; coverage gate).
+None. Finance stream Phases 18–24 complete. Optional: tune E2E timeout after first full run; add CI for E2E when desired.
 
 ## Key Decisions
 
