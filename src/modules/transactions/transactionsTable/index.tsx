@@ -8,7 +8,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableRow,
   Tooltip,
   Typography,
@@ -198,56 +197,60 @@ export function TransactionsTable({
         overflow: 'hidden',
       }}
     >
+      {/* Header outside scroll area so it never scrolls away */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: GRID_TEMPLATE_FR,
+          width: '100%',
+          minWidth: TABLE_WIDTH,
+          backgroundColor: themeTokens.surface,
+          borderBottom: `1px solid ${themeTokens.border}`,
+          boxSizing: 'border-box',
+        }}
+      >
+        {table.getHeaderGroups().flatMap((group) =>
+          group.headers.map((header) => (
+            <Box
+              key={header.id}
+              component="div"
+              role="columnheader"
+              sx={{
+                px: 2,
+                py: 1.5,
+                textAlign: 'left',
+                backgroundColor: themeTokens.surface,
+                color: themeTokens.textPrimary,
+                fontWeight: 600,
+                minWidth: 0,
+                border: 0,
+              }}
+            >
+              {header.isPlaceholder
+                ? null
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+            </Box>
+          )),
+        )}
+      </Box>
       <Box
         ref={parentRef}
         sx={{
           overflow: 'auto',
           minHeight: TABLE_MIN_HEIGHT,
-          maxHeight: '60vh',
+          maxHeight: '67vh',
         }}
       >
         <Table
-          stickyHeader
           sx={{
             width: '100%',
             minWidth: TABLE_WIDTH,
             tableLayout: 'fixed',
           }}
         >
-          <TableHead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  const size =
-                    (header.column.columnDef as { size?: number }).size ??
-                    header.getSize();
-                  const widthPct = `${(size / TABLE_WIDTH) * 100}%`;
-                  return (
-                    <TableCell
-                      key={header.id}
-                      variant="head"
-                      sx={{
-                        backgroundColor: themeTokens.surface,
-                        color: themeTokens.textPrimary,
-                        borderBottom: `1px solid ${themeTokens.border}`,
-                        fontWeight: 600,
-                        width: widthPct,
-                        minWidth: size,
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHead>
           <TableBody>
             {loading && (
               <TableRow>
@@ -294,6 +297,7 @@ export function TransactionsTable({
               <TableRow>
                 <TableCell
                   colSpan={columnsLength}
+                  align="center"
                   sx={{
                     borderBottom: `1px solid ${themeTokens.border}`,
                     py: 3,

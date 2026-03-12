@@ -15,7 +15,7 @@ import { parsePastedRows } from './parsePaste';
 import type { ImportTransactionsDialogProps } from './types';
 
 const PASTE_PLACEHOLDER =
-  'Paste rows: Category	Subcategory	Value	Description	Date	HangoutId (optional)\nTab or comma separated.';
+  'Paste rows (tab-separated):\nDate	$	Value	Category	Subcategory	[Description]\n\nExample with description:\n07/03/2026	$	130.000,00	Expenses	Hangout with friends';
 
 export function ImportTransactionsDialog({
   open,
@@ -94,9 +94,11 @@ export function ImportTransactionsDialog({
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
-          Paste rows with: Category, Subcategory, Value, Description, Date.
-          Optional 6th column: Hangout ID. Use tab (e.g. from spreadsheet) or
-          comma.
+          Paste tab-separated rows: <strong>Date</strong>, <strong>$</strong>,{' '}
+          <strong>Value</strong>, <strong>Category</strong>,{' '}
+          <strong>Subcategory</strong>. Optional 6th column:{' '}
+          <strong>Description</strong> (if omitted, subcategory is used). Names
+          must match your existing categories/subcategories.
         </Typography>
         <Box
           component="textarea"
@@ -157,7 +159,12 @@ export function ImportTransactionsDialog({
           variant="outlined"
           onClick={handlePreview}
           disabled={previewing || submitting || !pasteText.trim()}
-          sx={{ borderColor: themeTokens.border }}
+          sx={{
+            color: themeTokens.textPrimary,
+            '&:disabled': {
+              color: themeTokens.disabled,
+            },
+          }}
         >
           {previewing ? 'Previewing…' : 'Preview'}
         </Button>
@@ -172,7 +179,12 @@ export function ImportTransactionsDialog({
             preview.transactions.length === 0 ||
             preview.invalid_rows.length > 0
           }
-          sx={{ backgroundColor: themeTokens.primary }}
+          sx={{
+            backgroundColor: themeTokens.primary,
+            '&:disabled': {
+              backgroundColor: themeTokens.disabled,
+            },
+          }}
         >
           {submitting
             ? 'Creating…'

@@ -9,9 +9,11 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Snackbar,
   Typography,
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCategoriesQuery } from '../../services/categories';
 import {
@@ -40,6 +42,8 @@ import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
 export function Subcategories() {
   const queryClient = useQueryClient();
+  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState('');
   const [typeFilter, setTypeFilter] =
     useState<SubcategoryTypeFilter>(DEFAULT_TYPE_FILTER);
   const [categoryIdFilter, setCategoryIdFilter] =
@@ -79,6 +83,10 @@ export function Subcategories() {
     setSubcategoriesFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setSubcategoriesFromQuery]);
 
+  const handleCloseSnackBar = useCallback(() => {
+    setShowSnackBar(false);
+  }, []);
+
   const handleInvalidateSubcategories = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [subcategoriesQueryKey] });
   }, [queryClient]);
@@ -86,16 +94,30 @@ export function Subcategories() {
   const createMutation = useCreateSubcategoryMutation({
     onSuccess: () => {
       handleInvalidateSubcategories();
+      setShowSnackBar(true);
+      setSnackBarMessage('Subcategory created');
     },
   });
   const updateMutation = useUpdateSubcategoryMutation({
     onSuccess: () => {
       handleInvalidateSubcategories();
+      setShowSnackBar(true);
+      setSnackBarMessage('Subcategory updated');
     },
   });
   const deleteMutation = useDeleteSubcategoryMutation({
     onSuccess: () => {
       handleInvalidateSubcategories();
+      setShowSnackBar(true);
+      setSnackBarMessage('Subcategory deleted');
+    },
+    onError: (error) => {
+      setShowSnackBar(true);
+      setSnackBarMessage(
+        (error as AxiosError)?.status === 409
+          ? 'Cannot delete subcategory: it has transactions. Remove or reassign them first.'
+          : 'Failed to delete subcategory',
+      );
     },
   });
 
@@ -252,7 +274,7 @@ export function Subcategories() {
             onChange={(e) => setCategoryIdFilter(e.target.value)}
             sx={selectThemedSx}
             MenuProps={{
-              PaperProps: { sx: selectMenuPaperSx },
+              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
             }}
           >
             <MenuItem value="">All</MenuItem>
@@ -305,6 +327,12 @@ export function Subcategories() {
         }}
         subcategory={subcategoryToDelete}
         onConfirm={handleDeleteConfirm}
+      />
+      <Snackbar
+        open={showSnackBar}
+        onClose={handleCloseSnackBar}
+        message={snackBarMessage}
+        autoHideDuration={1500}
       />
     </Box>
   );

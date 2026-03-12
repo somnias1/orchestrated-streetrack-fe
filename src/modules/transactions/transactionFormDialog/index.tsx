@@ -203,10 +203,7 @@ export function TransactionFormDialog({
             helperText={fieldErrors.date}
             InputLabelProps={{ shrink: true }}
             inputProps={{ 'aria-label': 'Transaction date' }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
+            sx={selectFormControlSx}
           />
           <FormControl
             fullWidth

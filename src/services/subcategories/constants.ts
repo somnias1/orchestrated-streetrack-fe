@@ -7,5 +7,5 @@ export const subcategoriesPaths = {
   list: subcategoriesPath,
   get: (id: string) => `${subcategoriesPath}${id}/`,
   update: (id: string) => `${subcategoriesPath}${id}/`,
-  delete: (id: string) => `${subcategoriesPath}${id}/`,
+  delete: (id: string) => `${subcategoriesPath}${id}`,
 } as const;

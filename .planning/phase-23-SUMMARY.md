@@ -30,3 +30,37 @@
 ## Known issues / follow-ups
 
 - None. Optional later: “Copy to clipboard” / “Paste from clipboard” refinements (BACKLOG Later).
+
+---
+
+## Extension: UX/UI improvements (post-merge)
+
+Documenting follow-up changes merged as an extension to Phase 23.
+
+### Snackbars (CRUD feedback)
+
+- **Categories, Subcategories, Hangouts, Transactions**: Success Snackbar (autoHideDuration 1500ms) on create, update, and delete. Categories also show error Snackbar on delete failure (e.g. 409 "Cannot delete category: it has subcategories. Remove or reassign them first.").
+
+### Tables (layout and scroll)
+
+- **Categories, Subcategories, Hangouts, Transactions**: Table header rendered outside the scrollable body (grid-based header row) so it stays visible; body in a scrollable container with `maxHeight: 67vh`. Categories use MUI `TableContainer` for the scroll region. Improves readability with long lists.
+
+### Theme
+
+- **theme.css**: Themed scrollbars (thin, `--primary` thumb, `--border` track) for both Firefox and WebKit, respecting light/dark theme.
+- **tailwind.ts**: `selectFormControlSx` extended with `& .MuiInputBase-input` color for consistent select field text in theme.
+
+### Services
+
+- **categories/constants.ts, subcategories/constants.ts**: Delete path no trailing slash to match backend.
+- **dashboard/index.ts**: Removed `refetchOnMount: false` from balance, month-balance, and due-periodic-expenses queries so dashboard data refetches on mount.
+
+### Import (paste format)
+
+- **parsePaste.ts**: User format supported — Date (DD/MM/YYYY), $, European value (e.g. 78.294,00), Category, Subcategory, optional 6th column Description. Description defaults to subcategory when omitted.
+- **importTransactionsDialog**: Placeholder and help text updated for the above format.
+
+### Tests and lint
+
+- **Categories.test.tsx**: Delete flow MSW handler updated to request URL without trailing slash to match new delete path.
+- Snackbar close handlers use `[]` deps (setState setter is stable). Biome quote style (single) applied across touched files.

@@ -170,10 +170,22 @@ export function BulkTransactionsDialog({
           Bulk create transactions
         </DialogTitle>
         <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5,
+              maxHeight: '45vh',
+              overflow: 'auto',
+            }}
+          >
             {rows.map((row, index) => (
               <Box
                 key={row.id}
@@ -213,7 +225,11 @@ export function BulkTransactionsDialog({
                       updateRow(index, 'subcategory_id', e.target.value)
                     }
                     sx={selectThemedSx}
-                    MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: { ...selectMenuPaperSx, maxHeight: 350 },
+                      },
+                    }}
                   >
                     {subcategoryOptions.map((sub) => (
                       <MenuItem key={sub.id} value={sub.id}>
@@ -237,7 +253,11 @@ export function BulkTransactionsDialog({
                       updateRow(index, 'hangout_id', e.target.value)
                     }
                     sx={selectThemedSx}
-                    MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: { ...selectMenuPaperSx, maxHeight: 350 },
+                      },
+                    }}
                   >
                     <MenuItem value="">None</MenuItem>
                     {hangoutOptions.map((h) => (

@@ -244,7 +244,7 @@ describe('Categories screen', () => {
         getCount += 1;
         return HttpResponse.json(getCount === 1 ? items : []);
       }),
-      http.delete(`${API_URL}/categories/${items[0].id}/`, () =>
+      http.delete(`${API_URL}/categories/${items[0].id}`, () =>
         HttpResponse.json(null, { status: 204 }),
       ),
     );

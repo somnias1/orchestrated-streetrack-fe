@@ -22,7 +22,6 @@ export function useDashboardBalanceQuery(
     queryFn: () =>
       callbackApi<DashboardBalanceRead>(dashboardPaths.balance, { baseURL }),
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     ...queryOptions,
   });
 }
@@ -50,7 +49,6 @@ export function useDashboardMonthBalanceQuery(
     },
     enabled: params !== null,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     ...queryOptions,
   });
 }
@@ -81,7 +79,6 @@ export function useDashboardDuePeriodicExpensesQuery(
     },
     enabled: params !== null,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     ...queryOptions,
   });
 }

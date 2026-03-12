@@ -8,7 +8,7 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
+  TableContainer,
   TableRow,
   Tooltip,
   Typography,
@@ -162,116 +162,122 @@ export function CategoriesTable({
       }}
     >
       <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: GRID_TEMPLATE_FR,
+          width: '100%',
+          minWidth: TABLE_WIDTH,
+          backgroundColor: themeTokens.surface,
+          borderBottom: `1px solid ${themeTokens.border}`,
+          boxSizing: 'border-box',
+        }}
+      >
+        {table.getHeaderGroups().flatMap((group) =>
+          group.headers.map((header) => (
+            <Box
+              key={header.id}
+              component="div"
+              role="columnheader"
+              sx={{
+                px: 2,
+                py: 1.5,
+                textAlign: 'left',
+                backgroundColor: themeTokens.surface,
+                color: themeTokens.textPrimary,
+                fontWeight: 600,
+                minWidth: 0,
+                border: 0,
+              }}
+            >
+              {header.isPlaceholder
+                ? null
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+            </Box>
+          )),
+        )}
+      </Box>
+      <Box
         ref={parentRef}
         sx={{
           overflow: 'auto',
           minHeight: TABLE_MIN_HEIGHT,
-          maxHeight: '60vh',
+          maxHeight: '67vh',
         }}
       >
-        <Table
-          stickyHeader
+        <TableContainer
           sx={{
             width: '100%',
             minWidth: TABLE_WIDTH,
             tableLayout: 'fixed',
           }}
         >
-          <TableHead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  const size =
-                    (header.column.columnDef as { size?: number }).size ??
-                    header.getSize();
-                  const widthPct = `${(size / TABLE_WIDTH) * 100}%`;
-                  return (
-                    <TableCell
-                      key={header.id}
-                      variant="head"
-                      sx={{
-                        backgroundColor: themeTokens.surface,
-                        color: themeTokens.textPrimary,
-                        borderBottom: `1px solid ${themeTokens.border}`,
-                        fontWeight: 600,
-                        width: widthPct,
-                        minWidth: size,
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHead>
-          <TableBody>
-            {loading && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  sx={{
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    py: 6,
-                    textAlign: 'center',
-                    minHeight: STATE_ROW_MIN_HEIGHT,
-                    verticalAlign: 'middle',
-                  }}
-                >
-                  <CircularProgress sx={{ color: themeTokens.primary }} />
-                </TableCell>
-              </TableRow>
-            )}
-            {!loading && error && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  sx={{
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    py: 3,
-                    textAlign: 'center',
-                    minHeight: STATE_ROW_MIN_HEIGHT,
-                    verticalAlign: 'middle',
-                  }}
-                >
-                  <Typography sx={{ color: themeTokens.error, mb: 2 }}>
-                    {error}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    onClick={onRetry}
-                    data-testid="retry-button"
-                    sx={{ backgroundColor: themeTokens.primary }}
+          <Table aria-label="categories table">
+            <TableBody>
+              {loading && (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    sx={{
+                      borderBottom: `1px solid ${themeTokens.border}`,
+                      py: 6,
+                      textAlign: 'center',
+                      minHeight: STATE_ROW_MIN_HEIGHT,
+                      verticalAlign: 'middle',
+                    }}
                   >
-                    Retry
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-            {!loading && !error && items.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  sx={{
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    py: 3,
-                    color: themeTokens.textSecondary,
-                    minHeight: STATE_ROW_MIN_HEIGHT,
-                    verticalAlign: 'middle',
-                  }}
-                >
-                  No categories found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                    <CircularProgress sx={{ color: themeTokens.primary }} />
+                  </TableCell>
+                </TableRow>
+              )}
+              {!loading && error && (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    sx={{
+                      borderBottom: `1px solid ${themeTokens.border}`,
+                      py: 3,
+                      textAlign: 'center',
+                      minHeight: STATE_ROW_MIN_HEIGHT,
+                      verticalAlign: 'middle',
+                    }}
+                  >
+                    <Typography sx={{ color: themeTokens.error, mb: 2 }}>
+                      {error}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      onClick={onRetry}
+                      data-testid="retry-button"
+                      sx={{ backgroundColor: themeTokens.primary }}
+                    >
+                      Retry
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
+              {!loading && !error && items.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    align="center"
+                    sx={{
+                      borderBottom: `1px solid ${themeTokens.border}`,
+                      py: 3,
+                      color: themeTokens.textSecondary,
+                      minHeight: STATE_ROW_MIN_HEIGHT,
+                      verticalAlign: 'middle',
+                    }}
+                  >
+                    No categories found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
         {showVirtualBody && (
           <Box
             sx={{

@@ -188,7 +188,9 @@ export function SubcategoryFormDialog({
               disabled={isFetching}
               onChange={(e) => setCategoryId(e.target.value)}
               sx={selectThemedSx}
-              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
+              MenuProps={{
+                PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
+              }}
             >
               {categoryOptions.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>

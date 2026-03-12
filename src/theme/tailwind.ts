@@ -39,6 +39,7 @@ export const themeTokens = {
 export const selectFormControlSx = {
   '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
   '& .MuiInputLabel-root.Mui-focused': { color: themeTokens.textSecondary },
+  '& .MuiInputBase-input': { color: themeTokens.textPrimary },
 } as const;
 
 export const selectThemedSx = {

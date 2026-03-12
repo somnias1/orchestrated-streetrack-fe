@@ -9,9 +9,11 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Snackbar,
   Typography,
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   useCategoriesQuery,
@@ -35,6 +37,8 @@ import { useCategoriesStore } from './store';
 
 export function Categories() {
   const queryClient = useQueryClient();
+  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState('');
   const [typeFilter, setTypeFilter] =
     useState<CategoryTypeFilter>(DEFAULT_TYPE_FILTER);
   const queryParams = useMemo(() => {
@@ -64,22 +68,40 @@ export function Categories() {
           : null;
     setFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setFromQuery]);
+
+  const handleCloseSnackBar = useCallback(() => {
+    setShowSnackBar(false);
+  }, []);
   const handleInvalidateCategories = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [categoriesQueryKey] });
   }, [queryClient]);
   const createMutation = useCreateCategoryMutation({
     onSuccess: () => {
       handleInvalidateCategories();
+      setShowSnackBar(true);
+      setSnackBarMessage('Category created');
     },
   });
   const updateMutation = useUpdateCategoryMutation({
     onSuccess: () => {
       handleInvalidateCategories();
+      setShowSnackBar(true);
+      setSnackBarMessage('Category updated');
     },
   });
   const deleteMutation = useDeleteCategoryMutation({
     onSuccess: () => {
       handleInvalidateCategories();
+      setShowSnackBar(true);
+      setSnackBarMessage('Category deleted');
+    },
+    onError: (error) => {
+      setShowSnackBar(true);
+      setSnackBarMessage(
+        (error as AxiosError)?.status === 409
+          ? 'Cannot delete category: it has subcategories. Remove or reassign them first.'
+          : 'Failed to delete category',
+      );
     },
   });
 
@@ -253,6 +275,12 @@ export function Categories() {
         }}
         category={categoryToDelete}
         onConfirm={handleDeleteConfirm}
+      />
+      <Snackbar
+        open={showSnackBar}
+        onClose={handleCloseSnackBar}
+        message={snackBarMessage}
+        autoHideDuration={1500}
       />
     </Box>
   );

@@ -12,11 +12,13 @@ import {
   Menu,
   MenuItem,
   Select,
+  Snackbar,
   Typography,
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config } from '../../config';
+import { dashboardQueryKey } from '../../services/dashboard/constants';
 import { useHangoutsQuery } from '../../services/hangouts';
 import { useSubcategoriesQuery } from '../../services/subcategories';
 import {
@@ -63,7 +65,8 @@ import { TransactionsTable } from './transactionsTable';
 
 export function Transactions() {
   const queryClient = useQueryClient();
-
+  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState('');
   const [year, setYear] = useState(getDefaultYear);
   const [month, setMonth] = useState(getDefaultMonth);
   const [day, setDay] = useState<string>('');
@@ -125,26 +128,35 @@ export function Transactions() {
 
   const handleInvalidateTransactions = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [transactionsQueryKey] });
+    queryClient.invalidateQueries({ queryKey: [dashboardQueryKey] });
   }, [queryClient]);
 
   const createMutation = useCreateTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
+      setShowSnackBar(true);
+      setSnackBarMessage('Transaction created');
     },
   });
   const updateMutation = useUpdateTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
+      setShowSnackBar(true);
+      setSnackBarMessage('Transaction updated');
     },
   });
   const deleteMutation = useDeleteTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
+      setShowSnackBar(true);
+      setSnackBarMessage('Transaction deleted');
     },
   });
   const bulkCreateMutation = useBulkCreateTransactionsMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
+      setShowSnackBar(true);
+      setSnackBarMessage('Transactions bulk created');
     },
   });
 
@@ -203,6 +215,10 @@ export function Transactions() {
     setImportPreviewError(null);
     setImportSubmitError(null);
     setImportOpen(true);
+  }, []);
+
+  const handleCloseSnackBar = useCallback(() => {
+    setShowSnackBar(false);
   }, []);
 
   const handleImportPreview = useCallback(
@@ -476,7 +492,9 @@ export function Transactions() {
             label="Subcategory"
             onChange={(e) => setSubcategoryId(e.target.value)}
             sx={selectThemedSx}
-            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
+            MenuProps={{
+              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
+            }}
           >
             <MenuItem value="">All</MenuItem>
             {subcategories.map((s) => (
@@ -498,7 +516,9 @@ export function Transactions() {
             label="Hangout"
             onChange={(e) => setHangoutId(e.target.value)}
             sx={selectThemedSx}
-            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
+            MenuProps={{
+              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
+            }}
           >
             <MenuItem value="">All</MenuItem>
             {hangouts.map((h) => (
@@ -576,6 +596,12 @@ export function Transactions() {
         submitError={importSubmitError}
         previewing={importPreviewMutation.isPending}
         submitting={bulkCreateMutation.isPending}
+      />
+      <Snackbar
+        open={showSnackBar}
+        onClose={handleCloseSnackBar}
+        message={snackBarMessage}
+        autoHideDuration={1500}
       />
     </Box>
   );

@@ -1,5 +1,5 @@
 import AddRounded from '@mui/icons-material/AddRounded';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Snackbar, Typography } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -26,6 +26,8 @@ export function Hangouts() {
     refetch,
   } = useHangoutsQuery();
   const setFromQuery = useHangoutsStore((s) => s.setFromQuery);
+  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState('');
 
   useEffect(() => {
     const err =
@@ -41,19 +43,29 @@ export function Hangouts() {
     queryClient.invalidateQueries({ queryKey: [hangoutsQueryKey] });
   }, [queryClient]);
 
+  const handleCloseSnackBar = useCallback(() => {
+    setShowSnackBar(false);
+  }, []);
+
   const createMutation = useCreateHangoutMutation({
     onSuccess: () => {
       handleInvalidateHangouts();
+      setShowSnackBar(true);
+      setSnackBarMessage('Hangout created');
     },
   });
   const updateMutation = useUpdateHangoutMutation({
     onSuccess: () => {
       handleInvalidateHangouts();
+      setShowSnackBar(true);
+      setSnackBarMessage('Hangout updated');
     },
   });
   const deleteMutation = useDeleteHangoutMutation({
     onSuccess: () => {
       handleInvalidateHangouts();
+      setShowSnackBar(true);
+      setSnackBarMessage('Hangout deleted');
     },
   });
 
@@ -184,6 +196,12 @@ export function Hangouts() {
         }}
         hangout={hangoutToDelete}
         onConfirm={handleDeleteConfirm}
+      />
+      <Snackbar
+        open={showSnackBar}
+        onClose={handleCloseSnackBar}
+        message={snackBarMessage}
+        autoHideDuration={1500}
       />
     </Box>
   );
