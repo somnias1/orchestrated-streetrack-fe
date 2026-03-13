@@ -34,6 +34,7 @@ export default defineConfig({
         'src/modules/subcategories/subcategoriesTable/index.tsx',
         'src/modules/transactions/transactionsTable/index.tsx',
         'src/modules/hangouts/hangoutsTable/index.tsx',
+        'src/tests/e2e/**',
       ],
       thresholds: {
         lines: 80,

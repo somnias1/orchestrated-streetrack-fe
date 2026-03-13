@@ -207,6 +207,7 @@ export function Categories() {
           startIcon={<AddRounded />}
           onClick={openCreate}
           sx={{ backgroundColor: themeTokens.primary }}
+          data-testid="categories-add-button"
         >
           Create category
         </Button>
@@ -281,6 +282,7 @@ export function Categories() {
         onClose={handleCloseSnackBar}
         message={snackBarMessage}
         autoHideDuration={1500}
+        data-testid="categories-snackbar"
       />
     </Box>
   );

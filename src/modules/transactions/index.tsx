@@ -383,6 +383,7 @@ export function Transactions() {
           aria-haspopup="menu"
           aria-expanded={Boolean(addMenuAnchor)}
           sx={{ backgroundColor: themeTokens.primary }}
+          data-testid="transactions-add-button"
         >
           Add
         </Button>
@@ -406,6 +407,7 @@ export function Transactions() {
             borderColor: themeTokens.border,
             color: themeTokens.textPrimary,
           }}
+          data-testid="transactions-export-csv-button"
         >
           {exporting ? 'Exporting…' : 'Export CSV'}
         </Button>
@@ -602,6 +604,7 @@ export function Transactions() {
         onClose={handleCloseSnackBar}
         message={snackBarMessage}
         autoHideDuration={1500}
+        data-testid="transactions-snackbar"
       />
     </Box>
   );

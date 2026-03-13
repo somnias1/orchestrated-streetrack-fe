@@ -330,9 +330,14 @@ export function SubcategoriesTable({
           >
             {virtualItems.map((virtualRow) => {
               const row = rows[virtualRow.index];
+              const subcategory = row.original;
               return (
                 <Box
                   key={row.id}
+                  component="div"
+                  role="row"
+                  aria-label={subcategory.name}
+                  data-testid={`subcategory-row-${subcategory.id}`}
                   sx={{
                     position: 'absolute',
                     top: 0,

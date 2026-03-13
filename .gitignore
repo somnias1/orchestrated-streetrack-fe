@@ -18,3 +18,9 @@ coverage/
 
 # Environment variables
 .env
+
+# Playwright
+playwright/.auth/
+test-results/
+playwright-report/
+.playwright/

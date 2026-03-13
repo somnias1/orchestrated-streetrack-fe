@@ -46,6 +46,23 @@ npm run test:coverage
 
 **Gate (before every commit on a phase branch):** `npm test && npx biome check .` must pass.
 
+## E2E tests (Playwright)
+
+E2E tests use **real Auth0 login** and the **real backend** (no API mocking). Ensure your `.env` has:
+
+- `VITE_APP_URL` — base URL of the app (e.g. `http://localhost:8080` or your dev URL)
+- `VITE_E2E_USER_EMAIL` — test user email (Auth0)
+- `VITE_E2E_USER_PASSWORD` — test user password
+
+The app and backend must be running (e.g. `npm run dev` and your backend server). Install browsers once, then run the suite:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Or run with UI: `npm run test:e2e:ui`. Tests create and clean up their own data (categories, subcategories, transactions, hangouts) to keep runs isolated.
+
 ## Learn more
 
 - [Rsbuild documentation](https://rsbuild.rs)
