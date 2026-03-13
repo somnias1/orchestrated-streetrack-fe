@@ -4,7 +4,7 @@ export class HangoutsPage {
   constructor(readonly page: Page) {}
 
   get addButton() {
-    return this.page.getByRole('button', { name: /add/i }).first();
+    return this.page.getByTestId('hangouts-add-button');
   }
 
   get tableBody() {
@@ -29,13 +29,19 @@ export class HangoutsPage {
       .click();
   }
 
+  /** Get Delete button for a row by hangout name (first match when duplicates exist). */
   deleteButton(name: string) {
     return this.page
       .getByRole('row', { name: new RegExp(name, 'i') })
+      .first()
       .getByRole('button', { name: /delete/i });
   }
 
+  /** Confirm delete in the open dialog (scoped to avoid matching row buttons). */
   async confirmDelete(): Promise<void> {
-    await this.page.getByRole('button', { name: /delete|confirm/i }).click();
+    await this.page
+      .getByRole('dialog')
+      .getByRole('button', { name: /delete|confirm/i })
+      .click();
   }
 }

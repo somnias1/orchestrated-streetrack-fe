@@ -4,7 +4,7 @@ export class CategoriesPage {
   constructor(readonly page: Page) {}
 
   get addButton() {
-    return this.page.getByRole('button', { name: /add/i }).first();
+    return this.page.getByTestId('categories-add-button');
   }
 
   get typeFilter() {
@@ -20,17 +20,19 @@ export class CategoriesPage {
     await this.addButton.click();
   }
 
-  /** Get Edit button for a row by category name. */
+  /** Get Edit button for a row by category name (first match when duplicates exist). */
   editButton(name: string) {
     return this.page
       .getByRole('row', { name: new RegExp(name, 'i') })
+      .first()
       .getByRole('button', { name: /edit/i });
   }
 
-  /** Get Delete button for a row by category name. */
+  /** Get Delete button for a row by category name (first match when duplicates exist). */
   deleteButton(name: string) {
     return this.page
       .getByRole('row', { name: new RegExp(name, 'i') })
+      .first()
       .getByRole('button', { name: /delete/i });
   }
 
@@ -44,7 +46,11 @@ export class CategoriesPage {
       .click();
   }
 
+  /** Confirm delete in the open dialog (scoped to avoid matching row buttons). */
   async confirmDelete(): Promise<void> {
-    await this.page.getByRole('button', { name: /delete|confirm/i }).click();
+    await this.page
+      .getByRole('dialog')
+      .getByRole('button', { name: /delete|confirm/i })
+      .click();
   }
 }
