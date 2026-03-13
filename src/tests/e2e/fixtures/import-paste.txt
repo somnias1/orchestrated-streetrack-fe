@@ -1,0 +1,8 @@
+07/03/2026	$	130.000,00	E2E Import Category	E2E Import Subcategory	Gift
+08/03/2026	$	221.799,00	E2E Import Category	E2E Import Subcategory	Outing
+09/03/2026	$	39.899,00	E2E Import Category	E2E Import Subcategory	Phone plan
+09/03/2026	$	78.294,00	E2E Import Category	E2E Import Subcategory	Gas
+09/03/2026	$	59.700,00	E2E Import Category	E2E Import Subcategory	Water
+09/03/2026	$	81.650,00	E2E Import Category	E2E Import Subcategory	Utilities
+09/03/2026	$	1.153.000,00	E2E Import Category	E2E Import Subcategory	Credit card
+09/03/2026	$	340.000,00	E2E Import Category	E2E Import Subcategory	Loan payment
