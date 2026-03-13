@@ -16,11 +16,13 @@ export class LoginPage {
     const emailInput = this.page.getByRole('textbox', {
       name: /email|username|log in/i,
     });
-    const passwordInput = this.page.getByLabel(/password/i);
+    // Use input[name="password"] to avoid matching "Show password" switch (aria-label contains "password")
+    const passwordInput = this.page.locator('input[name="password"]');
     await emailInput.fill(email);
     await passwordInput.fill(password);
+    // Primary submit only (exact: true avoids "Continue with Google" and other social buttons)
     await this.page
-      .getByRole('button', { name: /continue|log in|sign in|submit/i })
+      .getByRole('button', { name: 'Continue', exact: true })
       .click();
   }
 
