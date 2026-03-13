@@ -231,6 +231,7 @@ export function Subcategories() {
           startIcon={<AddRounded />}
           onClick={openCreate}
           sx={{ backgroundColor: themeTokens.primary }}
+          data-testid="subcategories-add-button"
         >
           Create subcategory
         </Button>
@@ -333,6 +334,7 @@ export function Subcategories() {
         onClose={handleCloseSnackBar}
         message={snackBarMessage}
         autoHideDuration={1500}
+        data-testid="subcategories-snackbar"
       />
     </Box>
   );

@@ -169,6 +169,7 @@ export function Hangouts() {
           startIcon={<AddRounded />}
           onClick={openCreate}
           sx={{ backgroundColor: themeTokens.primary }}
+          data-testid="hangouts-add-button"
         >
           Create hangout
         </Button>
@@ -202,6 +203,7 @@ export function Hangouts() {
         onClose={handleCloseSnackBar}
         message={snackBarMessage}
         autoHideDuration={1500}
+        data-testid="hangouts-snackbar"
       />
     </Box>
   );
