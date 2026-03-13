@@ -17,15 +17,20 @@ test.describe('Hangouts', () => {
     await hangouts.fillName(name);
     await hangouts.fillDate('2026-03-15');
     await hangouts.submitForm();
-    await expect(page.getByText(/created|saved/i)).toBeVisible({
+    await expect(page.getByTestId('hangouts-snackbar')).toBeVisible({
       timeout: 5000,
     });
+    await expect(page.getByTestId('hangouts-snackbar')).toContainText(
+      /created|saved/i,
+    );
 
     await expect(
-      page.getByRole('row', { name: new RegExp(name, 'i') }),
+      page.getByRole('row', { name: new RegExp(name, 'i') }).first(),
     ).toBeVisible();
     await hangouts.deleteButton(name).click();
     await hangouts.confirmDelete();
-    await expect(page.getByText(/deleted/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('hangouts-snackbar')).toContainText(
+      /deleted/i,
+    );
   });
 });

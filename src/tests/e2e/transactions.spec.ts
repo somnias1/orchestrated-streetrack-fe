@@ -1,9 +1,19 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { routes } from '../../routes';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { LayoutPage } from './pages/LayoutPage';
 import { SubcategoriesPage } from './pages/SubcategoriesPage';
 import { TransactionsPage } from './pages/TransactionsPage';
+
+const IMPORT_CATEGORY_NAME = 'E2E Import Category';
+const IMPORT_SUBCATEGORY_NAME = 'E2E Import Subcategory';
+
+function loadImportFixture(): string {
+  const path = join(process.cwd(), 'src/tests/e2e/fixtures/import-paste.txt');
+  return readFileSync(path, 'utf-8').trim();
+}
 
 test.describe('Transactions', () => {
   test('list loads and Export CSV triggers download', async ({ page }) => {
@@ -26,47 +36,74 @@ test.describe('Transactions', () => {
     await layout.expectAppShell();
     const categories = new CategoriesPage(page);
 
-    const categoryName = `E2E ImpCat ${Date.now()}`;
     await categories.openAdd();
-    await categories.fillCategoryName(categoryName);
+    await categories.fillCategoryName(IMPORT_CATEGORY_NAME);
     await categories.submitForm();
-    await expect(page.getByText('Category created')).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.getByTestId('categories-snackbar')).toContainText(
+      'Category created',
+    );
 
     await layout.goToSubcategories();
     const subcategories = new SubcategoriesPage(page);
     await subcategories.openAdd();
-    const subName = `E2E ImpSub ${Date.now()}`;
-    await subcategories.fillName(subName);
-    await subcategories.selectCategory(categoryName);
+    await subcategories.fillName(IMPORT_SUBCATEGORY_NAME);
+    await subcategories.selectCategory(IMPORT_CATEGORY_NAME);
     await subcategories.submitForm();
-    await expect(page.getByText(/created|saved/i)).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.getByTestId('subcategories-snackbar')).toContainText(
+      /created|saved/i,
+    );
 
     await layout.goToTransactions();
     const transactions = new TransactionsPage(page);
     await transactions.clickImport();
-    const pasteData = `07/03/2026\t$\t1000\t${categoryName}\t${subName}\tE2E import`;
+    const pasteData = loadImportFixture();
     await transactions.importPasteArea.fill(pasteData);
     await transactions.importPreviewButton.click();
-    await expect(page.getByText(/Valid:\s*1/)).toBeVisible({ timeout: 10000 });
-    await page.getByRole('button', { name: /create 1 transaction/i }).click();
-    await expect(page.getByText(/created|transaction/i)).toBeVisible({
+    await expect(page.getByText(/Valid:\s*8/)).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: /create 8 transactions/i }).click();
+    await expect(page.getByTestId('transactions-snackbar')).toBeVisible({
       timeout: 10000,
     });
+    await expect(page.getByTestId('transactions-snackbar')).toContainText(
+      'bulk created',
+    );
+
+    // Delete all transactions under this subcategory so it can be deleted
+    await page.goto(routes.transactions);
+    await transactions.selectSubcategoryFilter(IMPORT_SUBCATEGORY_NAME);
+    await page
+      .locator('[data-testid^="transaction-row-"]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(() => {});
+    const maxDeletes = 50;
+    for (let i = 0; i < maxDeletes; i++) {
+      const rowCount = await page
+        .locator('[data-testid^="transaction-row-"]')
+        .count();
+      if (rowCount === 0) break;
+      await transactions.deleteFirstTransaction();
+      await transactions.confirmDelete();
+      await expect(page.getByTestId('transactions-snackbar')).toContainText(
+        /deleted/i,
+      );
+      await expect(
+        page.locator('[data-testid^="transaction-row-"]'),
+      ).toHaveCount(rowCount - 1, { timeout: 10000 });
+    }
 
     await layout.goToSubcategories();
-    await subcategories.deleteButton(subName).click();
+    await subcategories.deleteButton(IMPORT_SUBCATEGORY_NAME).click();
     await subcategories.confirmDelete();
-    await expect(page.getByText(/deleted/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('subcategories-snackbar')).toContainText(
+      /deleted/i,
+    );
 
     await layout.goToCategories();
-    await categories.deleteButton(categoryName).click();
+    await categories.deleteButton(IMPORT_CATEGORY_NAME).click();
     await categories.confirmDelete();
-    await expect(page.getByText('Category deleted')).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.getByTestId('categories-snackbar')).toContainText(
+      'Category deleted',
+    );
   });
 });

@@ -16,17 +16,20 @@ test.describe('Categories', () => {
     const name = `E2E Category ${Date.now()}`;
     await categories.fillCategoryName(name);
     await categories.submitForm();
-    await expect(page.getByText('Category created')).toBeVisible({
+    await expect(page.getByTestId('categories-snackbar')).toBeVisible({
       timeout: 5000,
     });
+    await expect(page.getByTestId('categories-snackbar')).toContainText(
+      'Category created',
+    );
 
     await expect(
-      page.getByRole('row', { name: new RegExp(name, 'i') }),
+      page.getByRole('row', { name: new RegExp(name, 'i') }).first(),
     ).toBeVisible();
     await categories.deleteButton(name).click();
     await categories.confirmDelete();
-    await expect(page.getByText('Category deleted')).toBeVisible({
-      timeout: 5000,
-    });
+    await expect(page.getByTestId('categories-snackbar')).toContainText(
+      'Category deleted',
+    );
   });
 });
