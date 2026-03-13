@@ -289,9 +289,14 @@ export function CategoriesTable({
           >
             {virtualItems.map((virtualRow) => {
               const row = rows[virtualRow.index];
+              const category = row.original;
               return (
                 <Box
                   key={row.id}
+                  component="div"
+                  role="row"
+                  aria-label={category.name}
+                  data-testid={`category-row-${category.id}`}
                   sx={{
                     position: 'absolute',
                     top: 0,

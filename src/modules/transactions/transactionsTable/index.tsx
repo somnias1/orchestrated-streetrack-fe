@@ -323,9 +323,14 @@ export function TransactionsTable({
           >
             {virtualItems.map((virtualRow) => {
               const row = rows[virtualRow.index];
+              const transaction = row.original;
               return (
                 <Box
                   key={row.id}
+                  component="div"
+                  role="row"
+                  aria-label={transaction.description}
+                  data-testid={`transaction-row-${transaction.id}`}
                   sx={{
                     position: 'absolute',
                     top: 0,

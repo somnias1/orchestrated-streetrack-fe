@@ -317,9 +317,14 @@ export function HangoutsTable({
           >
             {virtualItems.map((virtualRow) => {
               const row = rows[virtualRow.index];
+              const hangout = row.original;
               return (
                 <Box
                   key={row.id}
+                  component="div"
+                  role="row"
+                  aria-label={hangout.name}
+                  data-testid={`hangout-row-${hangout.id}`}
                   sx={{
                     position: 'absolute',
                     top: 0,

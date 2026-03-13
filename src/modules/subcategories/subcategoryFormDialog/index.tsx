@@ -191,6 +191,7 @@ export function SubcategoryFormDialog({
               MenuProps={{
                 PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
               }}
+              inputProps={{ 'data-testid': 'subcategory-form-category' }}
             >
               {categoryOptions.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
@@ -210,7 +211,10 @@ export function SubcategoryFormDialog({
             fullWidth
             error={Boolean(fieldErrors.name)}
             helperText={fieldErrors.name}
-            inputProps={{ 'aria-label': 'Subcategory name' }}
+            inputProps={{
+              'aria-label': 'Subcategory name',
+              'data-testid': 'subcategory-form-name',
+            }}
             sx={{
               '& .MuiInputBase-input': { color: themeTokens.textPrimary },
               '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
