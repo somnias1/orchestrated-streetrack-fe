@@ -1,9 +1,9 @@
 # TECHSPEC Audit Report
 
-**Date:** 2026-03-03 (re-run; includes Phase 04/07/08 bugfixes)  
-**Scope:** Compare project to TECHSPEC.md: §1.3 test mapping, §8.3 Definition of Done, all ROADMAP phases (01–16), post-Phase-16 bugfixes (virtual table sizing), README (§1.5, §8.3), coverage (§6.2).
+**Date:** 2026-03-09 (re-run; ROADMAP through Phase 24)  
+**Scope:** Compare project to TECHSPEC.md: §1.3 test mapping, §8.3 Definition of Done, all ROADMAP phases (01–24), post-Phase-16 bugfixes, README (§1.5, §8.3), coverage (§6.2).
 
-**Sources:** TECHSPEC.md, STATE.md, `.planning/phase-00-ROADMAP.md`, `.planning/phase-NN-SPEC.md`, `.planning/phase-NN-SUMMARY.md`, `.planning/phase-NN-SPEC-BUGFIX-*.md`, `.planning/phase-NN-SUMMARY-BUGFIX-*.md`, `.planning/VIRTUAL-TABLE-SIZING-FIX.md`, README.md, `npm test -- --coverage`.
+**Sources:** TECHSPEC.md, STATE.md, `.planning/phase-00-ROADMAP.md`, `.planning/phase-NN-SPEC.md`, `.planning/phase-NN-SUMMARY.md`, bugfix SPECs/SUMMARYs, `.planning/VIRTUAL-TABLE-SIZING-FIX.md`, README.md, `npm test -- --coverage`.
 
 ---
 
@@ -16,39 +16,38 @@ TECHSPEC §1.3 requires tests to validate (as applicable per phase):
 - **API client:** Bearer token attached to requests when user is authenticated.
 - **Navigation:** Layout shows Home and Categories links; routing matches `routes.ts`.
 
-Phase 16 extended the mapping to Subcategories, Transactions, and Hangouts list states (loading, success, error+retry, empty) per ROADMAP phases 06–08 and 14–15.
+Phase 16 extended the mapping to Subcategories, Transactions, and Hangouts list states. Phase 24 added Vitest for dashboard and transaction-manager services and full Playwright E2E (auth, navigation, dashboard, CRUD smoke, import/export).
 
-| §1.3 test case                                                                | Test file                                          | Describe / test(s)                                                                                                           | Covered |
-| ----------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **Auth:** Protected route redirects when not logged in                        | `src/modules/auth0/ProtectedRoute.test.tsx`        | "redirects to login when not authenticated"                                                                                  | ✓       |
-| **Auth:** After login, user can reach protected pages                         | `src/modules/auth0/ProtectedRoute.test.tsx`        | "renders children when authenticated"                                                                                        | ✓       |
-| **Categories list:** Renders loading                                          | `src/modules/categories/Categories.test.tsx`       | "shows loading spinner while fetching"                                                                                       | ✓       |
-| **Categories list:** Renders success (rows)                                   | `src/modules/categories/Categories.test.tsx`       | "shows virtualized rows when API returns categories"                                                                         | ✓       |
-| **Categories list:** Renders error (with retry)                               | `src/modules/categories/Categories.test.tsx`       | "shows error and Retry button on API failure"                                                                                | ✓       |
-| **Categories list:** Retry triggers refetch                                   | `src/modules/categories/Categories.test.tsx`       | "Retry button triggers refetch"                                                                                              | ✓       |
-| **Categories list:** Renders empty state                                      | `src/modules/categories/Categories.test.tsx`       | "shows empty state when API returns empty array"                                                                             | ✓       |
-| **API client:** Bearer token attached when authenticated                      | `src/utils/callbackApi/callbackApi.test.ts`        | "attaches Bearer token when token getter returns a token"                                                                    | ✓       |
-| **Navigation:** Layout shows Home and Categories; routing matches `routes.ts` | `src/modules/layout/Layout.test.tsx`               | "shows Home, Categories, Subcategories, Transactions, and Hangouts links with routes from routes.ts" (hrefs from `routes.*`) | ✓       |
-| **Subcategories list:** loading, success, error+retry, empty                  | `src/modules/subcategories/Subcategories.test.tsx` | Same pattern as Categories (MSW + QueryClientProvider)                                                                       | ✓       |
-| **Transactions list:** loading, success, error+retry, empty                   | `src/modules/transactions/Transactions.test.tsx`   | Same pattern                                                                                                                 | ✓       |
-| **Hangouts list:** loading, success, error+retry, empty                       | `src/modules/hangouts/Hangouts.test.tsx`           | Same pattern                                                                                                                 | ✓       |
+| §1.3 test case | Test file | Describe / test(s) | Covered |
+|----------------|-----------|--------------------|--------|
+| **Auth:** Protected route redirects when not logged in | `src/modules/auth0/ProtectedRoute.test.tsx` | "redirects to login when not authenticated" | ✓ |
+| **Auth:** After login, user can reach protected pages | `src/modules/auth0/ProtectedRoute.test.tsx`; E2E `navigation.spec.ts`, `dashboard.spec.ts` | "renders children when authenticated"; E2E nav + dashboard | ✓ |
+| **Categories list:** loading, success, error+retry, empty | `src/modules/categories/Categories.test.tsx`; `src/services/categories/categories.test.tsx` | Loading spinner, virtualized rows, error+Retry, empty; service param/response | ✓ |
+| **API client:** Bearer token when authenticated | `src/utils/callbackApi/callbackApi.test.ts` | "attaches Bearer token when token getter returns a token" | ✓ |
+| **Navigation:** Layout, routes from `routes.ts` | `src/modules/layout/Layout.test.tsx`; E2E `navigation.spec.ts` | Home, Categories, Subcategories, Transactions, Hangouts links + hrefs; E2E app shell nav | ✓ |
+| **Subcategories list:** loading, success, error+retry, empty | `src/modules/subcategories/Subcategories.test.tsx` | Same pattern as Categories (MSW + QueryClientProvider) | ✓ |
+| **Transactions list:** loading, success, error+retry, empty | `src/modules/transactions/Transactions.test.tsx` | Same pattern | ✓ |
+| **Hangouts list:** loading, success, error+retry, empty | `src/modules/hangouts/Hangouts.test.tsx` | Same pattern | ✓ |
+| **Finance stream: dashboard** | `src/services/dashboard/dashboard.test.ts` | useDashboardBalanceQuery, useDashboardMonthBalanceQuery, useDashboardDuePeriodicExpensesQuery (MSW) | ✓ |
+| **Finance stream: import/export (transaction manager)** | `src/services/transactionManager/transactionManager.test.ts` | useImportPreviewMutation (POST import preview); downloadCsvBlob (anchor + download) | ✓ |
+| **Finance stream: filters, bulk, periodic** | Categories/Subcategories/Transactions tests; E2E | is_income, filters, bulk create; E2E transactions.spec (import, export) | ✓ |
 
-**Summary:** All §1.3 test cases are covered by the test suite. Layout test asserts all current nav links (Home, Categories, Subcategories, Transactions, Hangouts) and that each uses `routes.ts`. Additional tests cover Categories CRUD and other resources’ list/CRUD flows per phase specs.
+**Summary:** All §1.3 test cases are covered by Vitest (unit/integration) and, where applicable, by Playwright E2E (auth, navigation, dashboard, CRUD smoke, import/export). Layout test and E2E navigation assert nav links and `routes.ts`. Phase 24 SUMMARY documents the extended §1.3 mapping.
 
 ---
 
 ## 2. §8.3 Definition of Done — Per-Bullet Assessment
 
-| Bullet                                                                                           | Met?                             | Evidence                                                                                                                                                                                                  |
-| ------------------------------------------------------------------------------------------------ | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Code matches the phase spec (spec committed before implementation).                              | **Met**                          | Phases 01–16 have `.planning/phase-NN-SPEC.md`; SUMMARYs reference specs and describe delivered work.                                                                                                     |
-| All §1.3 test cases that apply to the phase are covered; mapping table produced for test phases. | **Met**                          | §1.3 mapping in §1 above; Phase 05 and Phase 16 SUMMARYs (and phase-16-SPEC.md) document the mapping.                                                                                                     |
-| README documents how to run app and tests.                                                       | **Met**                          | README: Setup (`npm install`), dev (`npm run dev`), build (`npm run build`), preview (`npm run preview`), tests (`npm test`), coverage (`npm run test:coverage`), gate (`npm test && npx biome check .`). |
-| **Gitflow complete:** Phase branch merged into `main`.                                           | **Not verifiable from codebase** | STATE.md marks Phase 16 complete; audit cannot confirm merge history. Assumed met for completed phases.                                                                                                   |
-| **Lint gate:** Passed before every commit.                                                       | **Met**                          | Gate: `npm test && npx biome check .`; Vitest and Biome configured; test run (71 tests, 12 files) and coverage pass.                                                                                      |
-| **Phase SUMMARY:** `.planning/phase-NN-SUMMARY.md` committed before merge.                       | **Met**                          | phase-01-SUMMARY.md through phase-16-SUMMARY.md present.                                                                                                                                                  |
+| Bullet | Met? | Evidence |
+|--------|------|----------|
+| Code matches the phase spec (spec committed before implementation). | **Met** | Phases 01–24 have `.planning/phase-NN-SPEC.md`; SUMMARYs reference specs and describe delivered work. Bugfixes (04/07/08) have SPEC + SUMMARY. |
+| All §1.3 test cases that apply to the phase are covered; mapping table produced for test phases. | **Met** | §1.3 mapping in §1 above; Phase 05, 16, and 24 SUMMARYs (and phase-24-SPEC.md) document the mapping. |
+| README documents how to run app and tests. | **Met** | README: Setup, dev, build, preview, Vitest (`npm test`, `npm run test:coverage`), gate, **E2E section** (env vars, `npx playwright install chromium`, `npm run test:e2e`, `test:e2e:ui`). |
+| **Gitflow complete:** Phase branch merged into `main`. | **Not verifiable from codebase** | STATE.md marks Phase 24 complete; audit cannot confirm merge history. Assumed met for completed phases. |
+| **Lint gate:** Passed before every commit. | **Met** | Gate: `npm test && npx biome check .`. Vitest run: 14 files, 70 tests passed. Biome configured. |
+| **Phase SUMMARY:** `.planning/phase-NN-SUMMARY.md` committed before merge. | **Met** | phase-01-SUMMARY.md through phase-24-SUMMARY.md present. Bugfix SUMMARYs for phases 04, 07, 08. |
 
-**Overall:** All audit-able DoD items are met.
+**Overall:** All audit-able DoD items are met. **Coverage gate (§6.2)** fails on this run (see §5).
 
 ---
 
@@ -56,30 +55,38 @@ Phase 16 extended the mapping to Subcategories, Transactions, and Hangouts list 
 
 Source: `.planning/phase-00-ROADMAP.md`, STATE.md, `.planning/phase-NN-SPEC.md`, `.planning/phase-NN-SUMMARY.md`.
 
-| Phase               | Name (ROADMAP)                             | STATE.md     | SPEC | SUMMARY | Code alignment                                                                                                         |
-| ------------------- | ------------------------------------------ | ------------ | ---- | ------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **01**              | Foundation & Auth Setup                    | —            | ✓    | ✓       | config, routes, callbackApi, Auth0 (LoginRedirect, AuthCallback, ProtectedRoute), placeholders.                        |
-| **02**              | Layout & Protected Routes                  | —            | ✓    | ✓       | Layout shell, Home/Categories (and later subcategories, transactions, hangouts) nav from routes.                       |
-| **03**              | Categories Data & Store                    | —            | ✓    | ✓       | categories service, store, screen loading/error/empty/retry.                                                           |
-| **04**              | Categories Table & UX                      | —            | ✓    | ✓       | CategoriesTable (TanStack Table + Virtual), chips, states.                                                             |
-| **05**              | Tests & Verification                       | —            | ✓    | ✓       | Vitest, RTL, MSW; auth, categories, API client, Layout tests; coverage gate; §1.3 mapping.                             |
-| **06**              | Subcategories List & Virtual               | —            | ✓    | ✓       | subcategories service, store, screen, virtualized table, route + nav, tests.                                           |
-| **07**              | Transactions List & Virtual                | —            | ✓    | ✓       | transactions service, store, screen, virtualized table, route + nav, tests.                                            |
-| **08**              | Hangouts List & Virtual                    | —            | ✓    | ✓       | hangouts service, store, screen, virtualized table, route + nav, tests.                                                |
-| **09**              | Categories Full CRUD UI                    | —            | ✓    | ✓       | create/edit/delete Categories; form dialog, Zod; Categories.test.tsx CRUD flows.                                       |
-| **10**              | Subcategories Full CRUD UI                 | —            | ✓    | ✓       | create/edit/delete Subcategories; category picker; forms; tests.                                                       |
-| **11**              | Transactions Full CRUD UI                  | —            | ✓    | ✓       | create/edit/delete Transactions; subcategory/hangout pickers; tests.                                                   |
-| **12**              | Hangouts Full CRUD UI                      | —            | ✓    | ✓       | hangouts CRUD, form + delete dialogs, table Edit/Delete; tests.                                                        |
-| **13**              | React Query services                       | —            | ✓    | ✓       | TanStack React Query in services (hooks); modules use hooks; Zustand mirror via setFromQuery; retry CTA calls refetch. |
-| **14**              | Theme, Layout & Categories Table Alignment | —            | ✓    | ✓       | theme.css (tweakcn-style vars), light/dark toggle, theme store; table state row min height.                            |
-| **15**              | Remaining Screens & CRUD on shadcn         | —            | ✓    | ✓       | Subcategories/Transactions/Hangouts tables: unified state row min height; theme tokens verified.                       |
-| **16**              | Tests & coverage gate                      | **Complete** | ✓    | ✓       | §1.3 mapping documented; coverage gate verified (80% lines/stmts, 70% branches/funcs); 71 tests, 12 files.             |
+| Phase | Name (ROADMAP) | STATE.md | SPEC | SUMMARY | Code alignment |
+|-------|----------------|----------|------|---------|----------------|
+| **01** | Foundation & Auth Setup | — | ✓ | ✓ | config, routes, callbackApi, Auth0, placeholders. |
+| **02** | Layout & Protected Routes | — | ✓ | ✓ | Layout shell, nav from routes. |
+| **03** | Categories Data & Store | — | ✓ | ✓ | categories service, store, screen states. |
+| **04** | Categories Table & UX | — | ✓ | ✓ | CategoriesTable (TanStack Table + Virtual), chips, states. |
+| **05** | Tests & Verification | — | ✓ | ✓ | Vitest, RTL, MSW; auth, categories, API client, Layout; coverage gate; §1.3 mapping. |
+| **06** | Subcategories List & Virtual | — | ✓ | ✓ | subcategories service, store, screen, virtualized table, route + nav, tests. |
+| **07** | Transactions List & Virtual | — | ✓ | ✓ | transactions service, store, screen, virtualized table, route + nav, tests. |
+| **08** | Hangouts List & Virtual | — | ✓ | ✓ | hangouts service, store, screen, virtualized table, route + nav, tests. |
+| **09** | Categories Full CRUD UI | — | ✓ | ✓ | create/edit/delete Categories; form dialog, Zod; CRUD tests. |
+| **10** | Subcategories Full CRUD UI | — | ✓ | ✓ | create/edit/delete Subcategories; category picker; forms; tests. |
+| **11** | Transactions Full CRUD UI | — | ✓ | ✓ | create/edit/delete Transactions; subcategory/hangout pickers; tests. |
+| **12** | Hangouts Full CRUD UI | — | ✓ | ✓ | hangouts CRUD, form + delete dialogs, table Edit/Delete; tests. |
+| **13** | React Query services | — | ✓ | ✓ | TanStack React Query in services; modules use hooks; Zustand mirror; retry CTA refetch. |
+| **14** | Theme, Layout & Categories Table Alignment | — | ✓ | ✓ | theme.css, light/dark toggle, theme store; table state row min height. |
+| **15** | Remaining Screens & CRUD on shadcn | — | ✓ | ✓ | Subcategories/Transactions/Hangouts table state alignment; theme tokens. |
+| **16** | Tests & coverage gate | — | ✓ | ✓ | §1.3 mapping; coverage gate (80/70%); 71 tests, 12 files (at that time). |
+| **17** | List screens: category & transaction names | — | ✓ | ✓ | BE-provided names in Subcategories/Transactions lists; types, tables, MSW, tests. |
+| **18** | UX/UI improvements | — | ✓ | ✓ | Type as Chips; Transaction/Bulk menu; default current-month filter; Hangouts action colors. |
+| **19** | List filters and sort | — | ✓ | ✓ | Filters by type, category, date tree, subcategory, hangout; sort by date; default current month. |
+| **20** | Periodic expenses (subcategories) | — | ✓ | ✓ | is_periodic, due_day in types, form, list. |
+| **21** | Home dashboard | — | ✓ | ✓ | Dashboard API client and hooks; Home with balance, month balance, due periodic. |
+| **22** | Bulk transactions | — | ✓ | ✓ | POST /transactions/bulk; BulkTransactionsDialog with tree and bulk submit. |
+| **23** | Transaction manager import/export | — | ✓ | ✓ | Import (paste → preview → bulk); Export (date-filtered CSV download). |
+| **24** | Finance expansion tests and polish | **Complete** | ✓ | ✓ | Vitest: dashboard.test.ts, transactionManager.test.ts; Playwright E2E (auth, nav, dashboard, CRUD, import/export); §1.3 mapping; README E2E. |
 
-**STATE.md:** "Phase 16 — Tests & coverage gate (complete). **Phase 04, 07, 08 bugfixes** (categoriesTable, transactionsTable, hangoutsTable virtual table full-width alignment) complete. **Next:** Phase 17+ per ROADMAP / FRAMEWORK.md §6."
+**STATE.md:** "Phase 24 — Finance expansion tests and polish (complete)." "Finance stream Phases 18–24 complete." "Next: None. Optional: tune E2E timeout; add CI for E2E when desired."
 
-**Post-Phase-16 bugfixes (SPEC + SUMMARY):** Virtualized table full-width alignment applied to categoriesTable (Phase 04), transactionsTable (Phase 07), hangoutsTable (Phase 08). Each has a committed bugfix SPEC and SUMMARY: `phase-04-SPEC-BUGFIX-virtual-table-sizing.md`, `phase-04-SUMMARY-BUGFIX-virtual-table-sizing.md`, `phase-07-SPEC-BUGFIX-virtual-table-sizing.md`, `phase-07-SUMMARY-BUGFIX-virtual-table-sizing.md`, `phase-08-SPEC-BUGFIX-virtual-table-sizing.md`, `phase-08-SUMMARY-BUGFIX-virtual-table-sizing.md`. Master fix guide: `.planning/VIRTUAL-TABLE-SIZING-FIX.md`. Layout/sizing only; no new tests; gate passing.
+**Post-Phase-16 bugfixes:** Phase 04/07/08 virtual table full-width alignment (categoriesTable, transactionsTable, hangoutsTable) — SPEC + SUMMARY per phase; `.planning/VIRTUAL-TABLE-SIZING-FIX.md`. Layout/sizing only; gate passing where run.
 
-**Conclusion:** All 16 ROADMAP phases have SPEC + SUMMARY and align with described deliverables in code. STATE marks Phase 16 complete and Phase 04/07/08 bugfixes complete. Bugfix workflow (SPEC → implementation → SUMMARY) is documented and followed.
+**Conclusion:** All 24 ROADMAP phases have SPEC + SUMMARY and align with described deliverables in code. STATE marks Phase 24 complete. Bugfix workflow (SPEC → implementation → SUMMARY) documented and followed for 04/07/08.
 
 ---
 
@@ -87,57 +94,58 @@ Source: `.planning/phase-00-ROADMAP.md`, STATE.md, `.planning/phase-NN-SPEC.md`,
 
 ### §1.5 Repository Deliverables — README
 
-| Requirement                              | Met?        | Evidence                                                                                                                                             |
-| ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| How to run the app (dev, build, preview) | **Met**     | README: `npm run dev`, `npm run build`, `npm run preview` with short descriptions and localhost:3000.                                                |
-| How to run tests                         | **Met**     | README: `npm test`, `npm run test:coverage`; gate command and coverage gate (80% lines/statements, 70% branches/functions) noted.                    |
-| Key decisions and assumptions            | **Partial** | README points to TECHSPEC.md for "full technical spec"; key decisions (e.g. React Query + Zustand mirror, Rsbuild env) are in STATE.md and TECHSPEC. |
+| Requirement | Met? | Evidence |
+|-------------|------|----------|
+| How to run the app (dev, build, preview) | **Met** | README: `npm run dev`, `npm run build`, `npm run preview` with descriptions and localhost:3000. |
+| How to run tests | **Met** | README: `npm test`, `npm run test:coverage`; gate command and coverage gate (80% lines/statements, 70% branches/functions). **E2E:** env vars (`VITE_APP_URL`, `VITE_E2E_USER_EMAIL`, `VITE_E2E_USER_PASSWORD`), `npx playwright install chromium`, `npm run test:e2e`, `npm run test:e2e:ui`. |
+| Key decisions and assumptions | **Partial** | README points to TECHSPEC.md; key decisions in STATE.md and TECHSPEC. |
 
 ### §8.3 DoD — README
 
-- **Met.** README documents how to run app and tests (and gate).
+- **Met.** README documents how to run app, unit/integration tests, gate, and E2E tests.
 
 ---
 
 ## 5. Coverage vs §6.2 (80% minimum)
 
-**§6.2:** "Minimum coverage: Target **80%** for code touched by the phase (or overall, as decided per phase). Verify with `npm test -- --coverage` (or equivalent). Gate before merge."
+**§6.2:** "Minimum coverage: Target **80%** for code touched by the phase (or overall). Verify with `npm test -- --coverage`. Gate before merge."
 
-**Command run:** `npm test -- --coverage` (script uses `vitest run --no-file-parallelism`; coverage run includes `--coverage`).
+**Command run:** `npm test -- --coverage`.
 
 **Result (this audit run):**
 
-| Metric     | Threshold (vitest.config.ts) | Actual (All files) | Pass? |
-| ---------- | ---------------------------- | ------------------ | ----- |
-| Statements | 80%                          | **87.39%**         | ✓     |
-| Lines      | 80%                          | **89.77%**         | ✓     |
-| Branches   | 70%                          | **73.19%**         | ✓     |
-| Functions  | 70%                          | **88.42%**         | ✓     |
+| Metric | Threshold (vitest.config.ts) | Actual (All files) | Pass? |
+|--------|------------------------------|---------------------|-------|
+| Statements | 80% | **73.01%** | ✗ |
+| Lines | 80% | **75.16%** | ✗ |
+| Branches | 70% | **59.6%** | ✗ |
+| Functions | 70% | **71.98%** | ✓ |
 
-- **Test run:** 12 test files, 71 tests passed.
-- **Coverage gate:** **Passes** — all four metrics meet or exceed thresholds.
+- **Test run:** 14 test files, 70 tests passed.
+- **Coverage gate:** **Fails** — statements, lines, and branches below thresholds. New modules (e.g. transactions/BulkTransactionsDialog, transactionFormDialog/parsePaste, transactionManager UI, dashboard usage in Home) and expanded codebase have increased uncovered code; Phase 24 added dashboard and transactionManager service tests but coverage is computed over all included source.
 
-**Summary:** Coverage meets §6.2. Gate command `npm test && npx biome check .` is documented and passing.
+**Summary:** Coverage does **not** meet §6.2 on this run. To restore the gate: add or expand tests for low-coverage areas (e.g. bulk dialog, import dialog, parsePaste, Home dashboard), or adjust coverage excludes/thresholds per phase decision and document in TECHSPEC or phase SUMMARY.
 
 ---
 
 ## Summary
 
-| Area                    | Status                                                                                                                                   |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| §1.3 test cases         | All covered; mapping in §1; includes Auth, Categories list, API client, Navigation, and Subcategories/Transactions/Hangouts list states. |
-| §8.3 Definition of Done | All audit-able bullets met; Gitflow merge not verifiable from repo alone.                                                                |
-| Phases (ROADMAP 01–16)  | All 16 phases have SPEC + SUMMARY; code aligns; STATE: Phase 16 complete; Phase 04/07/08 bugfixes (virtual table sizing) have SPEC + SUMMARY. |
-| README (§1.5, §8.3)     | Run app and tests (and gate) documented; key decisions in TECHSPEC/STATE.                                                                |
-| Coverage (§6.2)         | **Met.** Statements 87.39%, Lines 89.77%, Branches 73.19%, Functions 88.42% (thresholds 80/80/70/70).                                    |
+| Area | Status |
+|------|--------|
+| §1.3 test cases | All covered; mapping in §1; includes Auth, Categories/Subcategories/Transactions/Hangouts lists, API client, Navigation, dashboard, transaction-manager (import/export), and E2E. |
+| §8.3 Definition of Done | All audit-able bullets met; Gitflow merge not verifiable from repo alone. |
+| Phases (ROADMAP 01–24) | All 24 phases have SPEC + SUMMARY; code aligns; STATE: Phase 24 complete; Phase 04/07/08 bugfixes have SPEC + SUMMARY. |
+| README (§1.5, §8.3) | Run app, unit/integration tests, gate, and E2E (env, playwright install, test:e2e) documented. |
+| Coverage (§6.2) | **Not met.** Statements 73.01%, Lines 75.16%, Branches 59.6%, Functions 71.98% (thresholds 80/80/70/70). |
 
-**Notes:** BACKLOG.md is present at repo root per §1.5. ROADMAP has 16 phases (01–16); Phase 17+ for future features (e.g. import/export, reports) per FRAMEWORK.md §6.
+**Notes:** BACKLOG.md at repo root per §1.5. ROADMAP has 24 phases (01–24); Phases 18–24 = finance stream (UX, filters, periodic, dashboard, bulk, import/export, tests). E2E excluded from Vitest coverage (`src/tests/e2e/**` in vitest.config.ts).
 
 ---
 
 ## Changelog (TECHSPEC-AUDIT.md)
 
-| Date       | Change |
-| ---------- | ------ |
+| Date | Change |
+|------|--------|
 | 2026-03-03 | Initial audit: §1.3 mapping, §8.3 DoD, phases 01–16, README, coverage; 12 files, 71 tests; coverage 87.24% stmts, 89.59% lines, 73.41% branch, 87.83% funcs. |
-| 2026-03-03 | Re-run: Scope extended to post-Phase-16 bugfixes. STATE.md reflects Phase 04/07/08 bugfixes (virtual table full-width alignment). Documented bugfix SPECs and SUMMARYs (phase-NN-SPEC-BUGFIX-virtual-table-sizing.md, phase-NN-SUMMARY-BUGFIX-virtual-table-sizing.md for N=04,07,08) and VIRTUAL-TABLE-SIZING-FIX.md. Fixed Phase 06 table row in §3. Coverage re-run: 87.39% stmts, 89.77% lines, 73.19% branch, 88.42% funcs. Added this Changelog. |
+| 2026-03-03 | Re-run: Scope extended to post-Phase-16 bugfixes. STATE.md Phase 04/07/08 bugfixes. Bugfix SPECs/SUMMARYs and VIRTUAL-TABLE-SIZING-FIX.md. Phase 06 table row fix. Coverage 87.39% stmts, 89.77% lines, 73.19% branch, 88.42% funcs. Changelog added. |
+| 2026-03-09 | Re-run: ROADMAP extended to Phase 24 (finance stream 18–24). §1.3 mapping extended (dashboard, transaction-manager, E2E per phase-24-SUMMARY). Phases table 01–24; STATE: Phase 24 complete. README E2E section. Coverage re-run: **fails** — 73.01% stmts, 75.16% lines, 59.6% branches, 71.98% funcs (below 80/80/70/70). Test run: 14 files, 70 tests passed. Changelog updated. |
