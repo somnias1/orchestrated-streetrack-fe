@@ -27,6 +27,8 @@ Users need a **personal finance / expense-tracking** application to manage **inc
   - **API client**: Bearer token is attached to requests when user is authenticated.
   - **Navigation**: Layout shows Home and Categories links; routing matches `routes.ts`.
   - **Finance stream (Phases 18–24):** Filters, dashboard, bulk transactions, import/export, and periodic subcategory behaviour covered by tests; §1.3 mapping in Phase 24.
+  - **List pagination (Phase 25):** List endpoints return a paginated envelope; UI uses classic MUI `TablePagination` (page size + `skip`/`limit`); tests/MSW match envelope and paging behaviour.
+  - **Searchable pickers (Phase 26):** Categories, subcategories, and hangouts list queries support optional `name` (icontains); pickers/filters use server-driven search (e.g. MUI `Autocomplete`); tests cover debounced search and selection.
 - Test suite runs and passes; coverage meets the gate in §6.2.
 
 ### 1.4 Out of Scope (v1 / current)
@@ -47,11 +49,11 @@ The **BACKLOG.md** at repo root is the single full-stack backlog (backend + fron
 | BACKLOG area | Frontend scope | TECHSPEC / phases |
 | ------------ | -------------- | ----------------- |
 | **Done** | Auth0, layout, all four resources (list + CRUD), React Query, theme, tests & coverage, names in lists (Phase 17) | §1.2, §3.4, §4.3, §4.4, §6 |
-| **High** | Phase 18 UX/UI (chips, Transaction/Bulk menu, current-month default, Hangouts actions); Phase 19 list filters and sort; Phase 20 periodic expenses; Phase 21 Home dashboard; Phase 22 bulk transactions; Phase 23 import/export UI; Phase 24 tests and polish | §3.4, §4.1, §4.3, §6; ROADMAP 18–24 |
+| **High** | Phase 18 UX/UI (chips, Transaction/Bulk menu, current-month default, Hangouts actions); Phase 19 list filters and sort; Phase 20 periodic expenses; Phase 21 Home dashboard; Phase 22 bulk transactions; Phase 23 import/export UI; Phase 24 tests and polish; **Phase 25** paginated list API + `TablePagination`; **Phase 26** `name` filter + Autocomplete pickers | §3.4, §4.1, §4.3, §6; ROADMAP 18–26 |
 | **Medium** | Loading/error refinements; layout and navigation polish | §3.4 |
 | **Later** | Import/export UI refinements (clipboard); reports/dashboards; optional PWA | §4.3; Phase 23 covers main import/export |
 
-Backend list endpoints support **`?skip`** and **`?limit`** (defaults 0, 50); use for pagination or “load more” when implementing virtualization at scale (BACKLOG: optional skip/limit). Keep BACKLOG and TECHSPEC in sync when adding new features: update BACKLOG Done, then add or update TECHSPEC sections and phase specs.
+Backend list endpoints for **categories, subcategories, transactions, and hangouts** return a **`PaginatedRead<T>`** JSON object: `items`, `total`, `skip`, `limit`, `has_more`, `next_skip` (see OpenAPI). Query params include **`skip`** and **`limit`** (defaults 0 and 50). Optional **`name`** (case-insensitive contains) on **categories**, **subcategories**, and **hangouts** list routes only (not transactions list). **Frontend UX:** classic **page-based** pagination only — MUI **`TablePagination`** driven by `total` and client-computed `skip`/`limit`; **do not** use `has_more` / `next_skip` for infinite scroll in Phases 25–26. Keep BACKLOG and TECHSPEC in sync when adding new features: update BACKLOG Done, then add or update TECHSPEC sections and phase specs.
 
 ---
 
@@ -307,13 +309,13 @@ All resources are **user-scoped**; `user_id` is set from the Auth0 token on the 
 | **HTTPValidationError** | `422` body: `{ detail: ValidationError[] }`. |
 | **ValidationError** | `loc` (array), `msg` (string), `type` (string); optional `input`, `ctx`. |
 
-Frontend types live in `src/services/<resource>/types.ts` (e.g. `categories/types.ts`). Export Read/Create/Update types and list response types (e.g. `GetCategoriesResponse = CategoryRead[]`) so they match the OpenAPI schemas above.
+Frontend types live in `src/services/<resource>/types.ts` (e.g. `categories/types.ts`). Export Read/Create/Update types and **list response types** as **`PaginatedRead<ResourceRead>`** (shared generic in `src/services/types.ts`: `items`, `total`, `skip`, `limit`, `has_more`, `next_skip`) so they match OpenAPI `PaginatedRead_*` schemas — not a bare array.
 
 ### 4.2 Storage
 
 | Concern           | Choice      | Notes                                      |
 | ----------------- | ----------- | ------------------------------------------ |
-| **Feature state** | **Zustand** (Phase 13+: global read mirror + UI) | Per-module; after Phase 13, server state in React Query; Zustand holds mirror (items, loading, error) synced from query for global read access, plus dialog open, selection, etc. |
+| **Feature state** | **Zustand** (Phase 13+: global read mirror + UI) | Per-module; after Phase 13, server state in React Query; Zustand holds mirror (items, loading, error) synced from query for global read access, plus dialog open, selection, etc. After Phase **25**, list mirrors hold **`items` for the current list page only** (paginated API); do not assume the full collection is in the store. |
 | **Server state**  | Backend + **React Query** (Phase 13+) | No offline DB in frontend; React Query caches and refetches; refetch on load/retry. |
 | **Session**       | Auth0 + localStorage | Persist auth so refresh doesn’t flash login. |
 
@@ -325,31 +327,33 @@ Frontend types live in `src/services/<resource>/types.ts` (e.g. `categories/type
 
 #### Endpoints (expanded from OpenAPI)
 
-List endpoints accept optional **`?skip`** and **`?limit`** (query; defaults 0 and 50). Filter/sort params below apply when backend supports them (Phases 18–24 / BE 11+). All IDs in paths are UUIDs.
+**Paginated list responses:** `GET /categories/`, `GET /subcategories/`, `GET /transactions/`, and `GET /hangouts/` return **200** with body **`PaginatedRead<T>`**: `items` (array of `T`), `total`, `skip`, `limit`, `has_more`, `next_skip`. The frontend implements **classic pagination** (MUI `TablePagination`) using `total` and request `skip`/`limit` only — not infinite scroll via `next_skip` (Phases 25–26).
+
+List endpoints accept optional **`?skip`** and **`?limit`** (query; defaults 0 and 50). Filter/sort params below apply per OpenAPI. All IDs in paths are UUIDs.
 
 | Method | Path | Request | Response | Errors |
 |--------|------|---------|----------|--------|
 | **Categories** |
-| GET | `/categories/` | query: skip?, limit?, is_income? | 200: CategoryRead[] | 401, 422 |
+| GET | `/categories/` | query: skip?, limit?, is_income?, name? (icontains) | 200: PaginatedRead&lt;CategoryRead&gt; | 401, 422 |
 | POST | `/categories/` | body: CategoryCreate | 201: CategoryRead | 401, 422 |
 | GET | `/categories/{category_id}` | path: category_id | 200: CategoryRead | 401, 404 |
 | PATCH | `/categories/{category_id}` | path + body: CategoryUpdate | 200: CategoryRead | 401, 404, 422 |
 | DELETE | `/categories/{category_id}` | path | 204 | 401, 404 |
 | **Subcategories** |
-| GET | `/subcategories/` | query: skip?, limit?, belongs_to_income?, category_id? | 200: SubcategoryRead[] (items include `category_name`, `is_periodic`, `due_day`) | 401, 422 |
+| GET | `/subcategories/` | query: skip?, limit?, belongs_to_income?, category_id?, name? (icontains) | 200: PaginatedRead&lt;SubcategoryRead&gt; (rows include `category_name`, `is_periodic`, `due_day`) | 401, 422 |
 | POST | `/subcategories/` | body: SubcategoryCreate | 201: SubcategoryRead | 401, 404, 422 |
 | GET | `/subcategories/{subcategory_id}` | path | 200: SubcategoryRead | 401, 404 |
 | PATCH | `/subcategories/{subcategory_id}` | path + body: SubcategoryUpdate | 200: SubcategoryRead | 401, 404, 422 |
 | DELETE | `/subcategories/{subcategory_id}` | path | 204 | 401, 404 |
 | **Transactions** |
-| GET | `/transactions/` | query: skip?, limit?, year?, month?, day?, subcategory_id?, hangout_id?; sort by date (newest first) default | 200: TransactionRead[] (items include `subcategory_name`, `hangout_name`) | 401, 422 |
+| GET | `/transactions/` | query: skip?, limit?, year?, month?, day?, subcategory_id?, hangout_id?; sort by date (newest first) default | 200: PaginatedRead&lt;TransactionRead&gt; (rows include `subcategory_name`, `hangout_name`) | 401, 422 |
 | POST | `/transactions/` | body: TransactionCreate | 201: TransactionRead | 401, 404, 422 |
 | POST | `/transactions/bulk` | body: TransactionBulkCreate | 201: TransactionRead[] | 401, 404, 422 |
 | GET | `/transactions/{transaction_id}` | path | 200: TransactionRead | 401, 404 |
 | PATCH | `/transactions/{transaction_id}` | path + body: TransactionUpdate | 200: TransactionRead | 401, 404, 422 |
 | DELETE | `/transactions/{transaction_id}` | path | 204 | 401, 404 |
 | **Hangouts** |
-| GET | `/hangouts/` | query: skip?, limit? | 200: HangoutRead[] | 401, 422 |
+| GET | `/hangouts/` | query: skip?, limit?, name? (icontains) | 200: PaginatedRead&lt;HangoutRead&gt; | 401, 422 |
 | POST | `/hangouts/` | body: HangoutCreate | 201: HangoutRead | 401, 422 |
 | GET | `/hangouts/{hangout_id}` | path | 200: HangoutRead | 401, 404 |
 | PATCH | `/hangouts/{hangout_id}` | path + body: HangoutUpdate | 200: HangoutRead | 401, 404, 422 |

@@ -61,6 +61,8 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 - [ ] **Phase 22 — Bulk transactions:** BulkTransactionsDialog and POST /transactions/bulk
 - [ ] **Phase 23 — Transaction manager import/export UI:** Import (paste → preview → bulk); Export (date-filtered CSV download)
 - [ ] **Phase 24 — Finance expansion tests and polish:** Tests for dashboard, bulk, import/export, filters, periodic; §1.3 mapping; coverage gate
+- [ ] **Phase 25 — List pagination (API + UI):** `PaginatedRead<T>` types and hooks; MUI `TablePagination` on all four resource list screens (classic pages only); Zustand page-scoped `items`; MSW + tests (see TECHSPEC §4.3, ROADMAP)
+- [ ] **Phase 26 — Searchable pickers:** Optional `name` (icontains) on categories/subcategories/hangouts lists; MUI `Autocomplete` for those pickers/filters; SubcategoryFormDialog vs categories store fix; Transactions picker query split (see ROADMAP)
 
 ---
 
@@ -68,7 +70,7 @@ Single backlog for **streetrack-be** (backend) and **streetrack-fe** (frontend).
 
 ### Backend
 
-- [ ] Pagination metadata (e.g. total count, next/prev) for list endpoints if needed
+- [ ] Pagination metadata for list endpoints — **OpenAPI (streetrack-be):** list routes return `PaginatedRead` (`items`, `total`, `skip`, `limit`, `has_more`, `next_skip`); optional `name` on categories/subcategories/hangouts. **Frontend:** implement in Phases **25–26** (see TECHSPEC §4.3, ROADMAP)
 - [ ] Consistent validation messages and error response shape for frontend
 - [ ] Optional: OpenAPI tags/descriptions for docs
 
