@@ -1,7 +1,7 @@
-import { defineConfig, loadEnv } from "@rsbuild/core";
-import { pluginReact } from "@rsbuild/plugin-react";
+import { defineConfig, loadEnv } from '@rsbuild/core';
+import { pluginReact } from '@rsbuild/plugin-react';
 
-const { publicVars } = loadEnv({ prefixes: ["VITE_"] });
+const { publicVars } = loadEnv({ prefixes: ['VITE_'] });
 
 // Docs: https://rsbuild.rs/config/
 export default defineConfig({
@@ -12,21 +12,21 @@ export default defineConfig({
     },
   },
   html: {
-    title: "Streetrack",
+    title: 'Streetrack',
     tags: [
       {
-        tag: "meta",
+        tag: 'meta',
         head: true,
         attrs: {
-          name: "description",
+          name: 'description',
           content:
-            "Streetrack is a personal finance / expense-tracking application to manage income and expenses in a structured way.",
+            'Streetrack is a personal finance / expense-tracking application to manage income and expenses in a structured way.',
         },
       },
       {
-        tag: "meta",
+        tag: 'meta',
         head: true,
-        attrs: { name: "application-name", content: "Streetrack" },
+        attrs: { name: 'application-name', content: 'Streetrack' },
       },
     ],
   },
