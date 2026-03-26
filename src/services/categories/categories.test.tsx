@@ -7,6 +7,7 @@ import ProviderWrapper from '../../utils/test/provider';
 import { toPaginatedRead } from '../pagination';
 import {
   useCategoriesQuery,
+  useCategoryQuery,
   useCreateCategoryMutation,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
@@ -86,6 +87,45 @@ describe('Categories services', () => {
         expect(result.current.isSuccess).toBe(true);
       });
       expect(capturedUrl).toContain('is_income=true');
+    });
+
+    it('sends name filter (icontains)', async () => {
+      const categories = categoriesMock(1);
+      let capturedUrl = '';
+      server.use(
+        http.get(`${baseURL}/${categoriesPaths.list}`, ({ request }) => {
+          capturedUrl = request.url;
+          return HttpResponse.json(toPaginatedRead(categories), {
+            status: 200,
+          });
+        }),
+      );
+      const { result } = renderHook(
+        () => useCategoriesQuery({ name: 'Office' }),
+        { wrapper: ProviderWrapper },
+      );
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+      expect(capturedUrl).toContain('name=Office');
+    });
+  });
+
+  describe('useCategoryQuery', () => {
+    it('GETs category by id', async () => {
+      const row = categoryMock();
+      server.use(
+        http.get(`${baseURL}/${categoriesPaths.get(row.id)}`, () =>
+          HttpResponse.json(row, { status: 200 }),
+        ),
+      );
+      const { result } = renderHook(() => useCategoryQuery(row.id), {
+        wrapper: ProviderWrapper,
+      });
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+      expect(result.current.data).toEqual(row);
     });
   });
 

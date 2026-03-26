@@ -37,6 +37,7 @@ export type SubcategoryUpdate = {
 export type SubcategoriesListParams = DefaultParams & {
   belongs_to_income?: boolean;
   category_id?: string;
+  name?: string | null;
 };
 
 /** GET /subcategories/ response */

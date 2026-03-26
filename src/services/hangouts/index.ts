@@ -37,6 +37,24 @@ export function useHangoutsQuery(
   });
 }
 
+export function useHangoutQuery(
+  id: string | undefined,
+  queryOptions?: Partial<UseQueryOptions<HangoutRead, Error, HangoutRead>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useQuery<HangoutRead, Error, HangoutRead>({
+    queryKey: [hangoutsQueryKey, 'detail', id],
+    queryFn: () =>
+      callbackApi<HangoutRead>(hangoutsPaths.get(id as string), {
+        baseURL,
+      }),
+    enabled: Boolean(id),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    ...queryOptions,
+  });
+}
+
 export function useCreateHangoutMutation(
   options?: Partial<UseMutationOptions<HangoutRead, Error, HangoutCreate>>,
 ) {

@@ -10,6 +10,7 @@ import {
   useCreateSubcategoryMutation,
   useDeleteSubcategoryMutation,
   useSubcategoriesQuery,
+  useSubcategoryQuery,
   useUpdateSubcategoryMutation,
 } from './index';
 import { subcategoriesMock, subcategoryMock } from './mocks';
@@ -73,6 +74,45 @@ describe('Subcategories services', () => {
       expect(capturedUrl).toContain('limit=20');
       expect(capturedUrl).toContain('belongs_to_income=false');
       expect(capturedUrl).toContain('category_id=cat-uuid');
+    });
+
+    it('sends name filter (icontains)', async () => {
+      const subcategories = subcategoriesMock(1);
+      let capturedUrl = '';
+      server.use(
+        http.get(`${baseURL}/${subcategoriesPaths.list}`, ({ request }) => {
+          capturedUrl = request.url;
+          return HttpResponse.json(toPaginatedRead(subcategories), {
+            status: 200,
+          });
+        }),
+      );
+      const { result } = renderHook(
+        () => useSubcategoriesQuery({ name: 'Groceries' }),
+        { wrapper: ProviderWrapper },
+      );
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+      expect(capturedUrl).toContain('name=Groceries');
+    });
+  });
+
+  describe('useSubcategoryQuery', () => {
+    it('GETs subcategory by id', async () => {
+      const row = subcategoryMock();
+      server.use(
+        http.get(`${baseURL}/${subcategoriesPaths.get(row.id)}`, () =>
+          HttpResponse.json(row, { status: 200 }),
+        ),
+      );
+      const { result } = renderHook(() => useSubcategoryQuery(row.id), {
+        wrapper: ProviderWrapper,
+      });
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+      expect(result.current.data).toEqual(row);
     });
   });
 

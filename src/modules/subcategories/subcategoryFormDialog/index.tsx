@@ -5,23 +5,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormControlLabel,
   FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
 } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useCategoriesQuery } from '../../../services/categories';
-import { PICKER_LIST_PARAMS } from '../../../services/types';
-import {
-  selectFormControlSx,
-  selectMenuPaperSx,
-  selectThemedSx,
-  themeTokens,
-} from '../../../theme/tailwind';
+import { useCallback, useEffect, useState } from 'react';
+import { CategoryAutocomplete } from '../../../components/pickers';
+import { useCategoryQuery } from '../../../services/categories';
+import { themeTokens } from '../../../theme/tailwind';
 import { type SubcategoryFormValues, subcategoryFormSchema } from './schema';
 import type {
   SubcategoryFormDialogProps,
@@ -47,25 +38,12 @@ export function SubcategoryFormDialog({
   submitError,
 }: SubcategoryFormDialogProps) {
   const isEdit = initialValues !== null;
-  const { data: categoriesData, isFetching } = useCategoriesQuery(
-    PICKER_LIST_PARAMS,
-    {
-      enabled: open,
-    },
-  );
-  const categories = categoriesData?.items;
-
-  const categoryOptions = useMemo(
-    () =>
-      (categories ?? []).map((category) => ({
-        id: category.id,
-        name: category.name,
-        is_income: category.is_income,
-      })),
-    [categories],
-  );
   const [category_id, setCategoryId] = useState(
     initialValues?.category_id ?? '',
+  );
+  const { data: selectedCategory } = useCategoryQuery(
+    category_id || undefined,
+    { enabled: open && Boolean(category_id) },
   );
   const [name, setName] = useState(initialValues?.name ?? '');
   const [description, setDescription] = useState(
@@ -98,12 +76,12 @@ export function SubcategoryFormDialog({
       e.preventDefault();
       const dueDayNum =
         due_day.trim() === '' ? null : Number.parseInt(due_day.trim(), 10);
+      const belongs_to_income = selectedCategory?.is_income ?? false;
       const raw = {
         category_id: category_id.trim(),
         name: name.trim(),
         description: description.trim() || null,
-        belongs_to_income:
-          categoryOptions.find((c) => c.id === category_id)?.is_income ?? false,
+        belongs_to_income,
         is_periodic,
         due_day: dueDayNum,
       };
@@ -143,7 +121,7 @@ export function SubcategoryFormDialog({
       due_day,
       onSubmit,
       onClose,
-      categoryOptions,
+      selectedCategory,
     ],
   );
 
@@ -174,34 +152,16 @@ export function SubcategoryFormDialog({
           data-testid="subcategory-form-dialog-content"
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <FormControl
-            fullWidth
+          <CategoryAutocomplete
+            label="Category"
+            value={category_id}
+            onChange={setCategoryId}
+            required
+            queryEnabled={open}
             error={Boolean(fieldErrors.category_id)}
-            sx={selectFormControlSx}
-          >
-            <InputLabel id="subcategory-category-label">Category</InputLabel>
-            <Select
-              labelId="subcategory-category-label"
-              value={category_id}
-              label="Category"
-              disabled={isFetching}
-              onChange={(e) => setCategoryId(e.target.value)}
-              sx={selectThemedSx}
-              MenuProps={{
-                PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
-              }}
-              inputProps={{ 'data-testid': 'subcategory-form-category' }}
-            >
-              {categoryOptions.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name} ({cat.is_income ? 'Income' : 'Expense'})
-                </MenuItem>
-              ))}
-            </Select>
-            {fieldErrors.category_id && (
-              <FormHelperText>{fieldErrors.category_id}</FormHelperText>
-            )}
-          </FormControl>
+            helperText={fieldErrors.category_id}
+            data-testid="subcategory-form-category"
+          />
           <TextField
             label="Name"
             value={name}

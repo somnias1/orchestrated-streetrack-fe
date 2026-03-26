@@ -4,20 +4,15 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  selectFormControlSx,
-  selectMenuPaperSx,
-  selectThemedSx,
-  themeTokens,
-} from '../../../theme/tailwind';
+  HangoutAutocomplete,
+  SubcategoryAutocomplete,
+} from '../../../components/pickers';
+import { themeTokens } from '../../../theme/tailwind';
 import { type TransactionFormValues, transactionFormSchema } from './schema';
 import type {
   TransactionFormDialogProps,
@@ -40,8 +35,6 @@ export function TransactionFormDialog({
   initialValues,
   onSubmit,
   submitError,
-  subcategoryOptions,
-  hangoutOptions,
 }: TransactionFormDialogProps) {
   const isEdit = initialValues !== null;
   const [subcategory_id, setSubcategoryId] = useState(
@@ -137,32 +130,15 @@ export function TransactionFormDialog({
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <FormControl
-            fullWidth
+          <SubcategoryAutocomplete
+            label="Subcategory"
+            value={subcategory_id}
+            onChange={setSubcategoryId}
+            required
+            queryEnabled={open}
             error={Boolean(fieldErrors.subcategory_id)}
-            sx={selectFormControlSx}
-          >
-            <InputLabel id="transaction-subcategory-label">
-              Subcategory
-            </InputLabel>
-            <Select
-              labelId="transaction-subcategory-label"
-              value={subcategory_id}
-              label="Subcategory"
-              onChange={(e) => setSubcategoryId(e.target.value)}
-              sx={selectThemedSx}
-              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
-            >
-              {subcategoryOptions.map((sub) => (
-                <MenuItem key={sub.id} value={sub.id}>
-                  {sub.name} ({sub.belongs_to_income ? 'Income' : 'Expense'})
-                </MenuItem>
-              ))}
-            </Select>
-            {fieldErrors.subcategory_id && (
-              <FormHelperText>{fieldErrors.subcategory_id}</FormHelperText>
-            )}
-          </FormControl>
+            helperText={fieldErrors.subcategory_id}
+          />
           <TextField
             label="Value"
             type="number"
@@ -203,33 +179,20 @@ export function TransactionFormDialog({
             helperText={fieldErrors.date}
             InputLabelProps={{ shrink: true }}
             inputProps={{ 'aria-label': 'Transaction date' }}
-            sx={selectFormControlSx}
+            sx={{
+              '& .MuiOutlinedInput-root': { color: themeTokens.textPrimary },
+              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+            }}
           />
-          <FormControl
-            fullWidth
+          <HangoutAutocomplete
+            label="Hangout"
+            value={hangout_id}
+            onChange={setHangoutId}
+            allowEmpty
+            queryEnabled={open}
             error={Boolean(fieldErrors.hangout_id)}
-            sx={selectFormControlSx}
-          >
-            <InputLabel id="transaction-hangout-label">Hangout</InputLabel>
-            <Select
-              labelId="transaction-hangout-label"
-              value={hangout_id}
-              label="Hangout"
-              onChange={(e) => setHangoutId(e.target.value)}
-              sx={selectThemedSx}
-              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
-            >
-              <MenuItem value="">None</MenuItem>
-              {hangoutOptions.map((h) => (
-                <MenuItem key={h.id} value={h.id}>
-                  {h.name}
-                </MenuItem>
-              ))}
-            </Select>
-            {fieldErrors.hangout_id && (
-              <FormHelperText>{fieldErrors.hangout_id}</FormHelperText>
-            )}
-          </FormControl>
+            helperText={fieldErrors.hangout_id}
+          />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
