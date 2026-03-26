@@ -2,6 +2,8 @@
  * Categories API types (TECHSPEC §4.1). Match backend OpenAPI schemas.
  */
 
+import type { PaginatedRead } from '../types';
+
 export type CategoryRead = {
   id: string;
   name: string;
@@ -23,4 +25,4 @@ export type CategoryUpdate = {
 };
 
 /** GET /categories/ response */
-export type GetCategoriesResponse = CategoryRead[];
+export type GetCategoriesResponse = PaginatedRead<CategoryRead>;

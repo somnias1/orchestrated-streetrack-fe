@@ -10,6 +10,7 @@ import {
   MenuItem,
   Select,
   Snackbar,
+  TablePagination,
   Typography,
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,6 +25,7 @@ import {
 } from '../../services/subcategories';
 import { subcategoriesQueryKey } from '../../services/subcategories/constants';
 import type { SubcategoryRead } from '../../services/subcategories/types';
+import { DEFAULT_LIST_LIMIT, PICKER_LIST_PARAMS } from '../../services/types';
 import {
   selectFormControlSx,
   selectMenuPaperSx,
@@ -48,27 +50,43 @@ export function Subcategories() {
     useState<SubcategoryTypeFilter>(DEFAULT_TYPE_FILTER);
   const [categoryIdFilter, setCategoryIdFilter] =
     useState<string>(DEFAULT_CATEGORY_ID);
-  const { data: categories = [] } = useCategoriesQuery();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+
+  const { data: categoriesData } = useCategoriesQuery(PICKER_LIST_PARAMS);
+  const categories = categoriesData?.items ?? [];
+
   const queryParams = useMemo(() => {
-    const params: { belongs_to_income?: boolean; category_id?: string } = {};
+    const params: {
+      belongs_to_income?: boolean;
+      category_id?: string;
+      skip: number;
+      limit: number;
+    } = {
+      skip: page * rowsPerPage,
+      limit: rowsPerPage,
+    };
     if (typeFilter !== 'all')
       params.belongs_to_income = typeFilter === 'income';
     if (categoryIdFilter) params.category_id = categoryIdFilter;
-    return Object.keys(params).length > 0 ? params : undefined;
-  }, [typeFilter, categoryIdFilter]);
+    return params;
+  }, [typeFilter, categoryIdFilter, page, rowsPerPage]);
 
   const clearFilters = useCallback(() => {
+    setPage(0);
     setTypeFilter(DEFAULT_TYPE_FILTER);
     setCategoryIdFilter(DEFAULT_CATEGORY_ID);
   }, []);
 
   const {
-    data: items = [],
+    data: listData,
     isLoading,
     isError,
     error,
     refetch,
   } = useSubcategoriesQuery(queryParams);
+  const items = listData?.items ?? [];
+  const total = listData?.total ?? 0;
   const setSubcategoriesFromQuery = useSubcategoriesStore(
     (s) => s.setFromQuery,
   );
@@ -224,7 +242,7 @@ export function Subcategories() {
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Subcategories
-          {items.length > 0 ? ` (${items.length})` : ''}
+          {total > 0 ? ` (${total})` : ''}
         </Typography>
         <Button
           variant="contained"
@@ -247,9 +265,10 @@ export function Subcategories() {
             id="subcategories-type-filter"
             value={typeFilter}
             label="Type"
-            onChange={(e) =>
-              setTypeFilter(e.target.value as SubcategoryTypeFilter)
-            }
+            onChange={(e) => {
+              setPage(0);
+              setTypeFilter(e.target.value as SubcategoryTypeFilter);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: selectMenuPaperSx },
@@ -272,7 +291,10 @@ export function Subcategories() {
             id="subcategories-category-filter"
             value={categoryIdFilter}
             label="Category"
-            onChange={(e) => setCategoryIdFilter(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setCategoryIdFilter(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
@@ -312,6 +334,22 @@ export function Subcategories() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+      />
+      <TablePagination
+        component="div"
+        count={total}
+        page={page}
+        onPageChange={(_, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(Number.parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        sx={{
+          color: themeTokens.textSecondary,
+          borderTop: `1px solid ${themeTokens.border}`,
+        }}
       />
       <SubcategoryFormDialog
         open={formOpen}

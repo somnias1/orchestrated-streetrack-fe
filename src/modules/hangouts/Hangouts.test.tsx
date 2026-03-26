@@ -5,6 +5,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import type React from 'react';
 import { config } from '../../config';
+import { toPaginatedRead } from '../../services/pagination';
 import { Hangouts } from './index';
 
 vi.mock('@tanstack/react-virtual', () => ({
@@ -50,7 +51,10 @@ describe('Hangouts screen', () => {
     server.use(
       http.get(hangoutsUrl, () => {
         return new Promise((resolve) =>
-          setTimeout(() => resolve(HttpResponse.json([])), 500),
+          setTimeout(
+            () => resolve(HttpResponse.json(toPaginatedRead([]))),
+            500,
+          ),
         );
       }),
     );
@@ -79,7 +83,9 @@ describe('Hangouts screen', () => {
         user_id: 'u1',
       },
     ];
-    server.use(http.get(hangoutsUrl, () => HttpResponse.json(items)));
+    server.use(
+      http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead(items))),
+    );
 
     renderWithQueryClient(<Hangouts />);
 
@@ -117,15 +123,17 @@ describe('Hangouts screen', () => {
           if (callCount === 1) {
             return HttpResponse.json({ detail: 'Error' }, { status: 500 });
           }
-          return HttpResponse.json([
-            {
-              id: '1',
-              name: 'Coffee',
-              description: null,
-              date: '2026-03-01',
-              user_id: 'u1',
-            },
-          ]);
+          return HttpResponse.json(
+            toPaginatedRead([
+              {
+                id: '1',
+                name: 'Coffee',
+                description: null,
+                date: '2026-03-01',
+                user_id: 'u1',
+              },
+            ]),
+          );
         },
       ),
     );
@@ -147,7 +155,9 @@ describe('Hangouts screen', () => {
   });
 
   it('shows empty state when API returns empty array', async () => {
-    server.use(http.get(hangoutsUrl, () => HttpResponse.json([])));
+    server.use(
+      http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
+    );
 
     renderWithQueryClient(<Hangouts />);
 
@@ -157,7 +167,9 @@ describe('Hangouts screen', () => {
   });
 
   it('has Create hangout button', async () => {
-    server.use(http.get(hangoutsUrl, () => HttpResponse.json([])));
+    server.use(
+      http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
+    );
 
     renderWithQueryClient(<Hangouts />);
 
@@ -179,7 +191,9 @@ describe('Hangouts screen', () => {
     const listAfterCreate = [created];
 
     server.use(
-      http.get(hangoutsUrl, () => HttpResponse.json(listAfterCreate)),
+      http.get(hangoutsUrl, () =>
+        HttpResponse.json(toPaginatedRead(listAfterCreate)),
+      ),
       http.post(hangoutsUrl, async ({ request }) => {
         const body = (await request.json()) as Record<string, unknown>;
         expect(body).toMatchObject({
@@ -240,7 +254,7 @@ describe('Hangouts screen', () => {
       },
     ];
     server.use(
-      http.get(hangoutsUrl, () => HttpResponse.json(items)),
+      http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead(items))),
       http.patch(`${API_URL}/hangouts/h-1`, async ({ request }) => {
         const body = (await request.json()) as Record<string, unknown>;
         expect(body).toMatchObject({ name: 'Updated brunch' });
@@ -284,7 +298,9 @@ describe('Hangouts screen', () => {
     server.use(
       http.get(hangoutsUrl, () => {
         getCallCount += 1;
-        return HttpResponse.json(getCallCount === 1 ? items : []);
+        return HttpResponse.json(
+          getCallCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
+        );
       }),
       http.delete(`${API_URL}/hangouts/h-1`, () =>
         HttpResponse.json(null, { status: 204 }),

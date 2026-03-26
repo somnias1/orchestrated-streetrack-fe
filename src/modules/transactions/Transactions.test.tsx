@@ -5,6 +5,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import type React from 'react';
 import { config } from '../../config';
+import { toPaginatedRead } from '../../services/pagination';
 import { Transactions } from './index';
 
 // Virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
@@ -33,8 +34,8 @@ function currentMonthDate(day = 1): string {
 }
 
 const defaultHandlers = [
-  http.get(subcategoriesUrl, () => HttpResponse.json([])),
-  http.get(hangoutsUrl, () => HttpResponse.json([])),
+  http.get(subcategoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
+  http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
 ];
 
 const server = setupServer(...defaultHandlers);
@@ -65,7 +66,10 @@ describe('Transactions screen', () => {
       ...defaultHandlers,
       http.get(transactionsUrl, () => {
         return new Promise((resolve) =>
-          setTimeout(() => resolve(HttpResponse.json([])), 500),
+          setTimeout(
+            () => resolve(HttpResponse.json(toPaginatedRead([]))),
+            500,
+          ),
         );
       }),
     );
@@ -104,7 +108,9 @@ describe('Transactions screen', () => {
     ];
     server.use(
       ...defaultHandlers,
-      http.get(transactionsUrl, () => HttpResponse.json(items)),
+      http.get(transactionsUrl, () =>
+        HttpResponse.json(toPaginatedRead(items)),
+      ),
     );
 
     renderWithQueryClient(<Transactions />);
@@ -143,19 +149,21 @@ describe('Transactions screen', () => {
         if (callCount === 1) {
           return HttpResponse.json({ detail: 'Error' }, { status: 500 });
         }
-        return HttpResponse.json([
-          {
-            id: '1',
-            subcategory_id: 'sub-1',
-            subcategory_name: 'Groceries',
-            value: 100,
-            description: 'Snack',
-            date: currentMonthDate(1),
-            hangout_id: null,
-            hangout_name: null,
-            user_id: 'u1',
-          },
-        ]);
+        return HttpResponse.json(
+          toPaginatedRead([
+            {
+              id: '1',
+              subcategory_id: 'sub-1',
+              subcategory_name: 'Groceries',
+              value: 100,
+              description: 'Snack',
+              date: currentMonthDate(1),
+              hangout_id: null,
+              hangout_name: null,
+              user_id: 'u1',
+            },
+          ]),
+        );
       }),
     );
 
@@ -178,7 +186,7 @@ describe('Transactions screen', () => {
   it('shows empty state when API returns empty array', async () => {
     server.use(
       ...defaultHandlers,
-      http.get(transactionsUrl, () => HttpResponse.json([])),
+      http.get(transactionsUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
     renderWithQueryClient(<Transactions />);
@@ -191,7 +199,7 @@ describe('Transactions screen', () => {
   it('has Add button with Transaction and Bulk menu', async () => {
     server.use(
       ...defaultHandlers,
-      http.get(transactionsUrl, () => HttpResponse.json([])),
+      http.get(transactionsUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
     renderWithQueryClient(<Transactions />);
@@ -237,9 +245,13 @@ describe('Transactions screen', () => {
     const listAfterCreate = [created];
 
     server.use(
-      http.get(subcategoriesUrl, () => HttpResponse.json(subcategories)),
-      http.get(hangoutsUrl, () => HttpResponse.json([])),
-      http.get(transactionsUrl, () => HttpResponse.json(listAfterCreate)),
+      http.get(subcategoriesUrl, () =>
+        HttpResponse.json(toPaginatedRead(subcategories)),
+      ),
+      http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
+      http.get(transactionsUrl, () =>
+        HttpResponse.json(toPaginatedRead(listAfterCreate)),
+      ),
       http.post(transactionsUrl, async ({ request }) => {
         const body = await request.json();
         expect(body).toMatchObject({
@@ -321,7 +333,9 @@ describe('Transactions screen', () => {
     ];
     server.use(
       ...defaultHandlers,
-      http.get(transactionsUrl, () => HttpResponse.json(items)),
+      http.get(transactionsUrl, () =>
+        HttpResponse.json(toPaginatedRead(items)),
+      ),
       http.patch(`${API_URL}/transactions/tx-1`, async ({ request }) => {
         const body = await request.json();
         expect(body).toMatchObject({ description: 'Updated coffee' });
@@ -370,7 +384,9 @@ describe('Transactions screen', () => {
       ...defaultHandlers,
       http.get(transactionsUrl, () => {
         getCallCount += 1;
-        return HttpResponse.json(getCallCount === 1 ? items : []);
+        return HttpResponse.json(
+          getCallCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
+        );
       }),
       http.delete(`${API_URL}/transactions/tx-1`, () =>
         HttpResponse.json(null, { status: 204 }),

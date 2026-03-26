@@ -4,6 +4,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { config } from '../../config';
 import ProviderWrapper from '../../utils/test/provider';
+import { toPaginatedRead } from '../pagination';
 import { hangoutsPaths } from './constants';
 import {
   useCreateHangoutMutation,
@@ -32,7 +33,7 @@ describe('Hangouts services', () => {
       const hangouts = hangoutsMock(3);
       server.use(
         http.get(`${baseURL}/${hangoutsPaths.list}`, () =>
-          HttpResponse.json(hangouts, { status: 200 }),
+          HttpResponse.json(toPaginatedRead(hangouts), { status: 200 }),
         ),
       );
       const { result } = renderHook(() => useHangoutsQuery(), {
@@ -41,7 +42,7 @@ describe('Hangouts services', () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
-      expect(result.current.data).toEqual(hangouts);
+      expect(result.current.data).toEqual(toPaginatedRead(hangouts));
     });
 
     it('sends skip and limit params', async () => {
@@ -50,7 +51,7 @@ describe('Hangouts services', () => {
       server.use(
         http.get(`${baseURL}/${hangoutsPaths.list}`, ({ request }) => {
           capturedUrl = request.url;
-          return HttpResponse.json(hangouts, { status: 200 });
+          return HttpResponse.json(toPaginatedRead(hangouts), { status: 200 });
         }),
       );
       const { result } = renderHook(

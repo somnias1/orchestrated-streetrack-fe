@@ -6,6 +6,7 @@ import { setupServer } from 'msw/node';
 import { config } from '../../config';
 import { categoriesPaths } from '../../services/categories/constants';
 import { categoriesMock, categoryMock } from '../../services/categories/mocks';
+import { toPaginatedRead } from '../../services/pagination';
 import { Auth0MockProvider } from '../../utils/test/auth0MockContext';
 import ProviderWrapper from '../../utils/test/provider';
 import { Categories } from './index';
@@ -38,7 +39,10 @@ describe('Categories screen', () => {
     server.use(
       http.get(categoriesUrl, () => {
         return new Promise((resolve) =>
-          setTimeout(() => resolve(HttpResponse.json([])), 500),
+          setTimeout(
+            () => resolve(HttpResponse.json(toPaginatedRead([]))),
+            500,
+          ),
         );
       }),
     );
@@ -56,7 +60,9 @@ describe('Categories screen', () => {
 
   it('shows virtualized rows when API returns categories', async () => {
     const items = categoriesMock(2);
-    server.use(http.get(categoriesUrl, () => HttpResponse.json(items)));
+    server.use(
+      http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead(items))),
+    );
 
     render(
       <ProviderWrapper>
@@ -102,7 +108,7 @@ describe('Categories screen', () => {
         if (callCount === 1) {
           return HttpResponse.json({ detail: 'Error' }, { status: 500 });
         }
-        return HttpResponse.json([categoryMock()]);
+        return HttpResponse.json(toPaginatedRead([categoryMock()]));
       }),
     );
 
@@ -131,7 +137,9 @@ describe('Categories screen', () => {
   });
 
   it('shows empty state when API returns empty array', async () => {
-    server.use(http.get(categoriesUrl, () => HttpResponse.json([])));
+    server.use(
+      http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
+    );
 
     render(
       <ProviderWrapper>
@@ -150,7 +158,9 @@ describe('Categories screen', () => {
     server.use(
       http.get(categoriesUrl, () => {
         listCalls += 1;
-        return HttpResponse.json(listCalls === 1 ? [] : [created]);
+        return HttpResponse.json(
+          listCalls === 1 ? toPaginatedRead([]) : toPaginatedRead([created]),
+        );
       }),
       http.post(categoriesUrl, async ({ request }) => {
         const body = (await request.json()) as { name: string };
@@ -195,7 +205,9 @@ describe('Categories screen', () => {
     const updated = categoryMock();
     let listData = [...items];
     server.use(
-      http.get(categoriesUrl, () => HttpResponse.json(listData)),
+      http.get(categoriesUrl, () =>
+        HttpResponse.json(toPaginatedRead(listData)),
+      ),
       http.patch(
         `${API_URL}/categories/${items[0].id}/`,
         async ({ request }) => {
@@ -242,7 +254,9 @@ describe('Categories screen', () => {
     server.use(
       http.get(categoriesUrl, () => {
         getCount += 1;
-        return HttpResponse.json(getCount === 1 ? items : []);
+        return HttpResponse.json(
+          getCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
+        );
       }),
       http.delete(`${API_URL}/categories/${items[0].id}`, () =>
         HttpResponse.json(null, { status: 204 }),

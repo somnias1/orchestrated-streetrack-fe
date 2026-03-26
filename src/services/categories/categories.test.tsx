@@ -4,6 +4,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { config } from '../../config';
 import ProviderWrapper from '../../utils/test/provider';
+import { toPaginatedRead } from '../pagination';
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
@@ -32,7 +33,7 @@ describe('Categories services', () => {
       const categories = categoriesMock(3);
       server.use(
         http.get(`${baseURL}/${categoriesPaths.list}`, () =>
-          HttpResponse.json(categories, { status: 200 }),
+          HttpResponse.json(toPaginatedRead(categories), { status: 200 }),
         ),
       );
       const { result } = renderHook(() => useCategoriesQuery(), {
@@ -41,7 +42,7 @@ describe('Categories services', () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
-      expect(result.current.data).toEqual(categories);
+      expect(result.current.data).toEqual(toPaginatedRead(categories));
     });
 
     it('sends skip and limit params', async () => {
@@ -50,7 +51,9 @@ describe('Categories services', () => {
       server.use(
         http.get(`${baseURL}/${categoriesPaths.list}`, ({ request }) => {
           capturedUrl = request.url;
-          return HttpResponse.json(categories, { status: 200 });
+          return HttpResponse.json(toPaginatedRead(categories), {
+            status: 200,
+          });
         }),
       );
       const { result } = renderHook(
@@ -70,7 +73,9 @@ describe('Categories services', () => {
       server.use(
         http.get(`${baseURL}/${categoriesPaths.list}`, ({ request }) => {
           capturedUrl = request.url;
-          return HttpResponse.json(categories, { status: 200 });
+          return HttpResponse.json(toPaginatedRead(categories), {
+            status: 200,
+          });
         }),
       );
       const { result } = renderHook(

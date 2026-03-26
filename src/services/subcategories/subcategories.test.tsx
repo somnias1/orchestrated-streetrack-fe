@@ -4,6 +4,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { config } from '../../config';
 import ProviderWrapper from '../../utils/test/provider';
+import { toPaginatedRead } from '../pagination';
 import { subcategoriesPaths } from './constants';
 import {
   useCreateSubcategoryMutation,
@@ -32,7 +33,7 @@ describe('Subcategories services', () => {
       const subcategories = subcategoriesMock(3);
       server.use(
         http.get(`${baseURL}/${subcategoriesPaths.list}`, () =>
-          HttpResponse.json(subcategories, { status: 200 }),
+          HttpResponse.json(toPaginatedRead(subcategories), { status: 200 }),
         ),
       );
       const { result } = renderHook(() => useSubcategoriesQuery(), {
@@ -41,7 +42,7 @@ describe('Subcategories services', () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
-      expect(result.current.data).toEqual(subcategories);
+      expect(result.current.data).toEqual(toPaginatedRead(subcategories));
     });
 
     it('sends skip, limit, belongs_to_income and category_id params', async () => {
@@ -50,7 +51,9 @@ describe('Subcategories services', () => {
       server.use(
         http.get(`${baseURL}/${subcategoriesPaths.list}`, ({ request }) => {
           capturedUrl = request.url;
-          return HttpResponse.json(subcategories, { status: 200 });
+          return HttpResponse.json(toPaginatedRead(subcategories), {
+            status: 200,
+          });
         }),
       );
       const { result } = renderHook(

@@ -2,7 +2,7 @@
  * Subcategories API types (TECHSPEC §4.1). Match backend OpenAPI schemas.
  */
 
-import type { DefaultParams } from '../types';
+import type { DefaultParams, PaginatedRead } from '../types';
 
 export type SubcategoryRead = {
   id: string;
@@ -40,4 +40,4 @@ export type SubcategoriesListParams = DefaultParams & {
 };
 
 /** GET /subcategories/ response */
-export type GetSubcategoriesResponse = SubcategoryRead[];
+export type GetSubcategoriesResponse = PaginatedRead<SubcategoryRead>;

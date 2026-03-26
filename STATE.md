@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 24 — Finance expansion tests and polish (complete). Next: Phase 25 — List pagination (see ROADMAP).
+Phase 25 — List pagination (complete). Next: Phase 26 — Searchable category/subcategory/hangout pickers (see ROADMAP).
 
 ## Last Task Completed
 
-Phase 24: Vitest tests for dashboard and transaction-manager; full Playwright E2E (real Auth0, real backend, page objects, auth setup, navigation, dashboard, CRUD smoke, import/export); §1.3 mapping; README E2E section.
+Phase 25: `PaginatedRead<T>` types, `TablePagination` on four list screens, Zustand mirrors for current page `items`, `PICKER_LIST_PARAMS` for Select pickers, MSW/tests updated; `.planning/phase-25-SPEC.md` + `phase-25-SUMMARY.md`.
 
 ## Next Task
 
-**Phase 25 (spec-first):** Commit `.planning/phase-25-SPEC.md`, then implement paginated list API types (`PaginatedRead<T>`), React Query hooks, and classic `TablePagination` on Categories, Subcategories, Transactions, and Hangouts (see TECHSPEC §4.3 and `.planning/phase-00-ROADMAP.md`). **Phase 26** follows: `name` filter + MUI Autocomplete pickers per ROADMAP.
+**Phase 26:** Optional `name` (icontains) on list queries; MUI `Autocomplete` + debounced server search for category/subcategory/hangout pickers; tests (see TECHSPEC §4.3 and ROADMAP).
 
 ## Key Decisions
 

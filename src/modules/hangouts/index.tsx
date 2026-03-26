@@ -1,7 +1,13 @@
 import AddRounded from '@mui/icons-material/AddRounded';
-import { Box, Button, Snackbar, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Snackbar,
+  TablePagination,
+  Typography,
+} from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   useCreateHangoutMutation,
   useDeleteHangoutMutation,
@@ -10,6 +16,7 @@ import {
 } from '../../services/hangouts';
 import { hangoutsQueryKey } from '../../services/hangouts/constants';
 import type { HangoutRead } from '../../services/hangouts/types';
+import { DEFAULT_LIST_LIMIT } from '../../services/types';
 import { themeTokens } from '../../theme/tailwind';
 import { DeleteHangoutDialog } from './deleteHangoutDialog';
 import { HangoutFormDialog } from './hangoutFormDialog';
@@ -18,13 +25,24 @@ import { useHangoutsStore } from './store';
 
 export function Hangouts() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+  const listParams = useMemo(
+    () => ({
+      skip: page * rowsPerPage,
+      limit: rowsPerPage,
+    }),
+    [page, rowsPerPage],
+  );
   const {
-    data: items = [],
+    data: listData,
     isLoading,
     isError,
     error,
     refetch,
-  } = useHangoutsQuery();
+  } = useHangoutsQuery(listParams);
+  const items = listData?.items ?? [];
+  const total = listData?.total ?? 0;
   const setFromQuery = useHangoutsStore((s) => s.setFromQuery);
   const [showSnackBar, setShowSnackBar] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState('');
@@ -162,7 +180,7 @@ export function Hangouts() {
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Hangouts
-          {items.length > 0 ? ` (${items.length})` : ''}
+          {total > 0 ? ` (${total})` : ''}
         </Typography>
         <Button
           variant="contained"
@@ -181,6 +199,22 @@ export function Hangouts() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+      />
+      <TablePagination
+        component="div"
+        count={total}
+        page={page}
+        onPageChange={(_, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(Number.parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        sx={{
+          color: themeTokens.textSecondary,
+          borderTop: `1px solid ${themeTokens.border}`,
+        }}
       />
       <HangoutFormDialog
         open={formOpen}

@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import type { CategoryRead } from '../../services/categories/types';
 
 /**
- * Global store for categories — synced from React Query in screens that use useCategoriesQuery.
- * Use this to read categories from anywhere (e.g. pickers, layout). React Query remains source of truth.
+ * Global store for categories — synced from the categories list query (current page only).
+ * React Query remains source of truth.
  */
 type CategoriesStore = {
   items: CategoryRead[];

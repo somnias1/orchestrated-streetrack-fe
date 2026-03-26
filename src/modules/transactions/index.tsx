@@ -13,6 +13,7 @@ import {
   MenuItem,
   Select,
   Snackbar,
+  TablePagination,
   Typography,
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
@@ -39,6 +40,7 @@ import type {
   TransactionRead,
   TransactionsListParams,
 } from '../../services/transactions/types';
+import { DEFAULT_LIST_LIMIT, PICKER_LIST_PARAMS } from '../../services/types';
 import {
   selectFormControlSx,
   selectMenuPaperSx,
@@ -51,7 +53,6 @@ import { useSubcategoriesStore } from '../subcategories/store';
 import { BulkTransactionsDialog } from './bulkTransactionsDialog';
 import {
   DAY_OPTIONS,
-  defaultTransactionsListParams,
   getDefaultMonth,
   getDefaultYear,
   MONTHS,
@@ -72,10 +73,13 @@ export function Transactions() {
   const [day, setDay] = useState<string>('');
   const [subcategoryId, setSubcategoryId] = useState('');
   const [hangoutId, setHangoutId] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+
   const listParams = useMemo<TransactionsListParams>(() => {
     const params: TransactionsListParams = {
-      skip: 0,
-      limit: defaultTransactionsListParams.limit ?? 50,
+      skip: page * rowsPerPage,
+      limit: rowsPerPage,
     };
     if (year !== '') params.year = Number(year);
     if (month !== '') params.month = Number(month);
@@ -83,7 +87,7 @@ export function Transactions() {
     if (subcategoryId) params.subcategory_id = subcategoryId;
     if (hangoutId) params.hangout_id = hangoutId;
     return params;
-  }, [year, month, day, subcategoryId, hangoutId]);
+  }, [year, month, day, subcategoryId, hangoutId, page, rowsPerPage]);
 
   const clearFilters = useCallback(() => {
     setYear('');
@@ -91,17 +95,23 @@ export function Transactions() {
     setDay('');
     setSubcategoryId('');
     setHangoutId('');
+    setPage(0);
   }, []);
 
   const {
-    data: items = [],
+    data: listData,
     isLoading,
     isError,
     error,
     refetch,
   } = useTransactionsQuery(listParams);
-  const { data: subcategories = [] } = useSubcategoriesQuery();
-  const { data: hangouts = [] } = useHangoutsQuery();
+  const items = listData?.items ?? [];
+  const total = listData?.total ?? 0;
+
+  const { data: subcategoriesData } = useSubcategoriesQuery(PICKER_LIST_PARAMS);
+  const { data: hangoutsData } = useHangoutsQuery(PICKER_LIST_PARAMS);
+  const subcategories = subcategoriesData?.items ?? [];
+  const hangouts = hangoutsData?.items ?? [];
   const setTransactionsFromQuery = useTransactionsStore((s) => s.setFromQuery);
   const setSubcategoriesFromQuery = useSubcategoriesStore(
     (s) => s.setFromQuery,
@@ -373,7 +383,7 @@ export function Transactions() {
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Transactions
-          {items.length > 0 ? ` (${items.length})` : ''}
+          {total > 0 ? ` (${total})` : ''}
         </Typography>
         <Button
           variant="contained"
@@ -420,7 +430,10 @@ export function Transactions() {
             id="transactions-year"
             value={year}
             label="Year"
-            onChange={(e) => setYear(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setYear(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
@@ -442,7 +455,10 @@ export function Transactions() {
             id="transactions-month"
             value={month}
             label="Month"
-            onChange={(e) => setMonth(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setMonth(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
@@ -461,7 +477,10 @@ export function Transactions() {
             id="transactions-day"
             value={day}
             label="Day"
-            onChange={(e) => setDay(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setDay(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
@@ -492,7 +511,10 @@ export function Transactions() {
             id="transactions-subcategory-filter"
             value={subcategoryId}
             label="Subcategory"
-            onChange={(e) => setSubcategoryId(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setSubcategoryId(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
@@ -516,7 +538,10 @@ export function Transactions() {
             id="transactions-hangout-filter"
             value={hangoutId}
             label="Hangout"
-            onChange={(e) => setHangoutId(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setHangoutId(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
@@ -554,6 +579,22 @@ export function Transactions() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+      />
+      <TablePagination
+        component="div"
+        count={total}
+        page={page}
+        onPageChange={(_, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(Number.parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        sx={{
+          color: themeTokens.textSecondary,
+          borderTop: `1px solid ${themeTokens.border}`,
+        }}
       />
       <TransactionFormDialog
         open={formOpen}
