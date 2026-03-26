@@ -7,7 +7,12 @@ import {
 } from '../../services/categories';
 import type { CategoryRead } from '../../services/categories/types';
 import { PICKER_LIST_PARAMS } from '../../services/types';
-import { themeTokens } from '../../theme/tailwind';
+import {
+  selectFormControlSx,
+  selectMenuPaperSx,
+  selectThemedSx,
+  themeTokens,
+} from '../../theme/tailwind';
 import { useDebouncedValue } from '../../utils/useDebouncedValue';
 import { PICKER_SEARCH_DEBOUNCE_MS } from './constants';
 
@@ -65,11 +70,16 @@ export function CategoryAutocomplete({
   const loading = isFetching || (Boolean(value) && !selected && fetchingDetail);
 
   return (
-    <Autocomplete<CategoryRead>
+    <Autocomplete<CategoryRead, false, boolean, false>
       fullWidth
       size="small"
       disabled={disabled}
       loading={loading}
+      slotProps={{
+        paper: {
+          sx: selectMenuPaperSx,
+        },
+      }}
       options={options}
       filterOptions={(x) => x}
       isOptionEqualToValue={(a, b) => a.id === b.id}
@@ -95,8 +105,13 @@ export function CategoryAutocomplete({
             ...(dataTestId ? { 'data-testid': dataTestId } : {}),
           }}
           sx={{
-            '& .MuiOutlinedInput-root': { color: themeTokens.textPrimary },
-            '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+            ...selectFormControlSx,
+            '& .MuiOutlinedInput-root': {
+              ...selectThemedSx,
+              '& .MuiAutocomplete-input': {
+                color: themeTokens.textPrimary,
+              },
+            },
           }}
         />
       )}

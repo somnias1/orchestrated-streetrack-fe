@@ -276,7 +276,7 @@ export function Subcategories() {
             <MenuItem value="expense">Expense</MenuItem>
           </Select>
         </FormControl>
-        <Box sx={{ minWidth: 260, flex: '1 1 220px', maxWidth: 420 }}>
+        <Box sx={{ minWidth: 200, flex: '0 1 200px', maxWidth: 320 }}>
           <CategoryAutocomplete
             label="Category"
             value={categoryIdFilter}

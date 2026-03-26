@@ -476,7 +476,7 @@ export function Transactions() {
           flexItem
           sx={{ borderColor: themeTokens.border }}
         />
-        <Box sx={{ minWidth: 220, flex: '1 1 200px', maxWidth: 400 }}>
+        <Box sx={{ minWidth: 200, flex: '0 1 200px', maxWidth: 320 }}>
           <SubcategoryAutocomplete
             label="Subcategory"
             value={subcategoryId}
@@ -487,7 +487,7 @@ export function Transactions() {
             allowEmpty
           />
         </Box>
-        <Box sx={{ minWidth: 200, flex: '1 1 180px', maxWidth: 360 }}>
+        <Box sx={{ minWidth: 180, flex: '0 1 180px', maxWidth: 280 }}>
           <HangoutAutocomplete
             label="Hangout"
             value={hangoutId}
