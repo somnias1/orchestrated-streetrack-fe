@@ -5,6 +5,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import type React from 'react';
 import { config } from '../../config';
+import { toPaginatedRead } from '../../services/pagination';
 import { Subcategories } from './index';
 
 // So virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
@@ -52,10 +53,13 @@ describe('Subcategories screen', () => {
     server.use(
       http.get(subcategoriesUrl, () => {
         return new Promise((resolve) =>
-          setTimeout(() => resolve(HttpResponse.json([])), 500),
+          setTimeout(
+            () => resolve(HttpResponse.json(toPaginatedRead([]))),
+            500,
+          ),
         );
       }),
-      http.get(categoriesUrl, () => HttpResponse.json([])),
+      http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
     renderWithQueryClient(<Subcategories />);
@@ -91,8 +95,10 @@ describe('Subcategories screen', () => {
       },
     ];
     server.use(
-      http.get(subcategoriesUrl, () => HttpResponse.json(items)),
-      http.get(categoriesUrl, () => HttpResponse.json([])),
+      http.get(subcategoriesUrl, () =>
+        HttpResponse.json(toPaginatedRead(items)),
+      ),
+      http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
     renderWithQueryClient(<Subcategories />);
@@ -110,7 +116,7 @@ describe('Subcategories screen', () => {
       http.get(subcategoriesUrl, () =>
         HttpResponse.json({ detail: 'Server error' }, { status: 500 }),
       ),
-      http.get(categoriesUrl, () => HttpResponse.json([])),
+      http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
     renderWithQueryClient(<Subcategories />);
@@ -130,21 +136,23 @@ describe('Subcategories screen', () => {
         if (callCount === 1) {
           return HttpResponse.json({ detail: 'Error' }, { status: 500 });
         }
-        return HttpResponse.json([
-          {
-            id: '1',
-            category_id: 'cat-1',
-            category_name: 'Food',
-            name: 'Groceries',
-            description: null,
-            belongs_to_income: false,
-            is_periodic: false,
-            due_day: null,
-            user_id: 'u1',
-          },
-        ]);
+        return HttpResponse.json(
+          toPaginatedRead([
+            {
+              id: '1',
+              category_id: 'cat-1',
+              category_name: 'Food',
+              name: 'Groceries',
+              description: null,
+              belongs_to_income: false,
+              is_periodic: false,
+              due_day: null,
+              user_id: 'u1',
+            },
+          ]),
+        );
       }),
-      http.get(categoriesUrl, () => HttpResponse.json([])),
+      http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
     renderWithQueryClient(<Subcategories />);
@@ -165,8 +173,8 @@ describe('Subcategories screen', () => {
 
   it('shows empty state when API returns empty array', async () => {
     server.use(
-      http.get(subcategoriesUrl, () => HttpResponse.json([])),
-      http.get(categoriesUrl, () => HttpResponse.json([])),
+      http.get(subcategoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
+      http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
     renderWithQueryClient(<Subcategories />);
@@ -188,13 +196,15 @@ describe('Subcategories screen', () => {
     ];
     let listCalls = 0;
     server.use(
-      http.get(categoriesUrl, () => HttpResponse.json(categories)),
+      http.get(categoriesUrl, () =>
+        HttpResponse.json(toPaginatedRead(categories)),
+      ),
       http.get(subcategoriesUrl, () => {
         listCalls += 1;
         return HttpResponse.json(
           listCalls === 1
-            ? []
-            : [
+            ? toPaginatedRead([])
+            : toPaginatedRead([
                 {
                   id: 'new-1',
                   category_id: 'cat-1',
@@ -206,7 +216,7 @@ describe('Subcategories screen', () => {
                   due_day: null,
                   user_id: 'u1',
                 },
-              ],
+              ]),
         );
       }),
       http.post(subcategoriesUrl, async ({ request }) => {
@@ -290,8 +300,12 @@ describe('Subcategories screen', () => {
     ];
     let listData = [...items];
     server.use(
-      http.get(categoriesUrl, () => HttpResponse.json(categories)),
-      http.get(subcategoriesUrl, () => HttpResponse.json(listData)),
+      http.get(categoriesUrl, () =>
+        HttpResponse.json(toPaginatedRead(categories)),
+      ),
+      http.get(subcategoriesUrl, () =>
+        HttpResponse.json(toPaginatedRead(listData)),
+      ),
       http.patch(`${API_URL}/subcategories/1`, async ({ request }) => {
         const body = (await request.json()) as { name?: string };
         const updated = {
@@ -360,10 +374,14 @@ describe('Subcategories screen', () => {
     ];
     let getCount = 0;
     server.use(
-      http.get(categoriesUrl, () => HttpResponse.json(categories)),
+      http.get(categoriesUrl, () =>
+        HttpResponse.json(toPaginatedRead(categories)),
+      ),
       http.get(subcategoriesUrl, () => {
         getCount += 1;
-        return HttpResponse.json(getCount === 1 ? items : []);
+        return HttpResponse.json(
+          getCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
+        );
       }),
       http.delete(`${API_URL}/subcategories/1`, () =>
         HttpResponse.json(null, { status: 204 }),

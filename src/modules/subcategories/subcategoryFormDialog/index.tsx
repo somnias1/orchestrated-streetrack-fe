@@ -15,13 +15,13 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCategoriesQuery } from '../../../services/categories';
+import { PICKER_LIST_PARAMS } from '../../../services/types';
 import {
   selectFormControlSx,
   selectMenuPaperSx,
   selectThemedSx,
   themeTokens,
 } from '../../../theme/tailwind';
-import { useCategoriesStore } from '../../categories/store';
 import { type SubcategoryFormValues, subcategoryFormSchema } from './schema';
 import type {
   SubcategoryFormDialogProps,
@@ -47,10 +47,13 @@ export function SubcategoryFormDialog({
   submitError,
 }: SubcategoryFormDialogProps) {
   const isEdit = initialValues !== null;
-  const { data: categories, isFetching } = useCategoriesQuery(undefined, {
-    enabled: open,
-  });
-  const setCategoriesFromQuery = useCategoriesStore((s) => s.setFromQuery);
+  const { data: categoriesData, isFetching } = useCategoriesQuery(
+    PICKER_LIST_PARAMS,
+    {
+      enabled: open,
+    },
+  );
+  const categories = categoriesData?.items;
 
   const categoryOptions = useMemo(
     () =>
@@ -76,10 +79,6 @@ export function SubcategoryFormDialog({
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    setCategoriesFromQuery(categories ?? [], false, null);
-  }, [categories, setCategoriesFromQuery]);
 
   useEffect(() => {
     if (open) {

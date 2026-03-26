@@ -10,6 +10,7 @@ import {
   MenuItem,
   Select,
   Snackbar,
+  TablePagination,
   Typography,
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
@@ -23,6 +24,7 @@ import {
 } from '../../services/categories';
 import { categoriesQueryKey } from '../../services/categories/constants';
 import type { CategoryRead } from '../../services/categories/types';
+import { DEFAULT_LIST_LIMIT } from '../../services/types';
 import {
   selectFormControlSx,
   selectMenuPaperSx,
@@ -41,9 +43,21 @@ export function Categories() {
   const [snackBarMessage, setSnackBarMessage] = useState('');
   const [typeFilter, setTypeFilter] =
     useState<CategoryTypeFilter>(DEFAULT_TYPE_FILTER);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+
   const queryParams = useMemo(() => {
-    if (typeFilter === 'all') return undefined;
-    return { is_income: typeFilter === 'income' };
+    const base = {
+      skip: page * rowsPerPage,
+      limit: rowsPerPage,
+    };
+    if (typeFilter === 'all') return base;
+    return { ...base, is_income: typeFilter === 'income' };
+  }, [typeFilter, page, rowsPerPage]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset list page when type filter changes
+  useEffect(() => {
+    setPage(0);
   }, [typeFilter]);
 
   const clearFilters = useCallback(() => {
@@ -51,12 +65,14 @@ export function Categories() {
   }, []);
 
   const {
-    data: items = [],
+    data: listData,
     isLoading,
     isError,
     error,
     refetch,
   } = useCategoriesQuery(queryParams);
+  const items = listData?.items ?? [];
+  const total = listData?.total ?? 0;
   const setFromQuery = useCategoriesStore((s) => s.setFromQuery);
 
   useEffect(() => {
@@ -200,7 +216,7 @@ export function Categories() {
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Categories
-          {items.length > 0 ? ` (${items.length})` : ''}
+          {total > 0 ? ` (${total})` : ''}
         </Typography>
         <Button
           variant="contained"
@@ -260,6 +276,22 @@ export function Categories() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+      />
+      <TablePagination
+        component="div"
+        count={total}
+        page={page}
+        onPageChange={(_, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(Number.parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        sx={{
+          color: themeTokens.textSecondary,
+          borderTop: `1px solid ${themeTokens.border}`,
+        }}
       />
       <CategoryFormDialog
         open={formOpen}

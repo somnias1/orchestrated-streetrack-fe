@@ -4,6 +4,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { config } from '../../config';
 import ProviderWrapper from '../../utils/test/provider';
+import { toPaginatedRead } from '../pagination';
 import { transactionsPaths } from './constants';
 import {
   useCreateTransactionMutation,
@@ -32,7 +33,7 @@ describe('Transactions services', () => {
       const transactions = transactionsMock(3);
       server.use(
         http.get(`${baseURL}/${transactionsPaths.list}`, () =>
-          HttpResponse.json(transactions, { status: 200 }),
+          HttpResponse.json(toPaginatedRead(transactions), { status: 200 }),
         ),
       );
       const { result } = renderHook(() => useTransactionsQuery(), {
@@ -41,7 +42,7 @@ describe('Transactions services', () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
-      expect(result.current.data).toEqual(transactions);
+      expect(result.current.data).toEqual(toPaginatedRead(transactions));
     });
 
     it('sends skip, limit, year and month params', async () => {
@@ -50,7 +51,9 @@ describe('Transactions services', () => {
       server.use(
         http.get(`${baseURL}/${transactionsPaths.list}`, ({ request }) => {
           capturedUrl = request.url;
-          return HttpResponse.json(transactions, { status: 200 });
+          return HttpResponse.json(toPaginatedRead(transactions), {
+            status: 200,
+          });
         }),
       );
       const { result } = renderHook(

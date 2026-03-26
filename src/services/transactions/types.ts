@@ -2,7 +2,7 @@
  * Transactions API types (TECHSPEC §4.1). Match backend OpenAPI schemas.
  */
 
-import type { DefaultParams } from '../types';
+import type { DefaultParams, PaginatedRead } from '../types';
 
 export type TransactionRead = {
   id: string;
@@ -41,7 +41,7 @@ export type TransactionsListParams = DefaultParams & {
 };
 
 /** GET /transactions/ response */
-export type GetTransactionsResponse = TransactionRead[];
+export type GetTransactionsResponse = PaginatedRead<TransactionRead>;
 
 /** POST /transactions/bulk request body (OpenAPI TransactionBulkCreate) */
 export type TransactionBulkCreate = {

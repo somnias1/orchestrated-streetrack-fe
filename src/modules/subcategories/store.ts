@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { SubcategoryRead } from '../../services/subcategories/types';
 
 /**
- * Global store for subcategories — synced from React Query in screens that use useSubcategoriesQuery.
+ * Global store for subcategories — synced from the subcategories list query (current page only).
  * Use this to read subcategories from anywhere. React Query remains source of truth.
  */
 type SubcategoriesStore = {
