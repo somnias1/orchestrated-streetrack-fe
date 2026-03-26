@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 25 — List pagination (complete). Next: Phase 26 — Searchable category/subcategory/hangout pickers (see ROADMAP).
+Phase 26 — Searchable category/subcategory/hangout pickers (complete).
 
 ## Last Task Completed
 
-Phase 25: `PaginatedRead<T>` types, `TablePagination` on four list screens, Zustand mirrors for current page `items`, `PICKER_LIST_PARAMS` for Select pickers, MSW/tests updated; `.planning/phase-25-SPEC.md` + `phase-25-SUMMARY.md`.
+Phase 26: optional `name` on list params; `CategoryAutocomplete` / `SubcategoryAutocomplete` / `HangoutAutocomplete` + debounced search; GET-by-id queries; Transactions picker/store split; SubcategoryFormDialog uses local category picker + `useCategoryQuery`; MSW and service tests; `.planning/phase-26-SPEC.md` + `phase-26-SUMMARY.md`.
 
 ## Next Task
 
-**Phase 26:** Optional `name` (icontains) on list queries; MUI `Autocomplete` + debounced server search for category/subcategory/hangout pickers; tests (see TECHSPEC §4.3 and ROADMAP).
+Merge `feature/phase-26-searchable-pickers` to `main` with `--no-ff` when ready, or continue with the next ROADMAP phase.
 
 ## Key Decisions
 

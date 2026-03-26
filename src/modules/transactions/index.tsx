@@ -18,10 +18,12 @@ import {
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  HangoutAutocomplete,
+  SubcategoryAutocomplete,
+} from '../../components/pickers';
 import { config } from '../../config';
 import { dashboardQueryKey } from '../../services/dashboard/constants';
-import { useHangoutsQuery } from '../../services/hangouts';
-import { useSubcategoriesQuery } from '../../services/subcategories';
 import {
   downloadCsvBlob,
   transactionManagerPaths,
@@ -40,7 +42,7 @@ import type {
   TransactionRead,
   TransactionsListParams,
 } from '../../services/transactions/types';
-import { DEFAULT_LIST_LIMIT, PICKER_LIST_PARAMS } from '../../services/types';
+import { DEFAULT_LIST_LIMIT } from '../../services/types';
 import {
   selectFormControlSx,
   selectMenuPaperSx,
@@ -48,8 +50,6 @@ import {
   themeTokens,
 } from '../../theme/tailwind';
 import useCallbackApi from '../../utils/callbackApi';
-import { useHangoutsStore } from '../hangouts/store';
-import { useSubcategoriesStore } from '../subcategories/store';
 import { BulkTransactionsDialog } from './bulkTransactionsDialog';
 import {
   DAY_OPTIONS,
@@ -108,15 +108,7 @@ export function Transactions() {
   const items = listData?.items ?? [];
   const total = listData?.total ?? 0;
 
-  const { data: subcategoriesData } = useSubcategoriesQuery(PICKER_LIST_PARAMS);
-  const { data: hangoutsData } = useHangoutsQuery(PICKER_LIST_PARAMS);
-  const subcategories = subcategoriesData?.items ?? [];
-  const hangouts = hangoutsData?.items ?? [];
   const setTransactionsFromQuery = useTransactionsStore((s) => s.setFromQuery);
-  const setSubcategoriesFromQuery = useSubcategoriesStore(
-    (s) => s.setFromQuery,
-  );
-  const setHangoutsFromQuery = useHangoutsStore((s) => s.setFromQuery);
 
   useEffect(() => {
     const err =
@@ -127,14 +119,6 @@ export function Transactions() {
           : null;
     setTransactionsFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setTransactionsFromQuery]);
-
-  useEffect(() => {
-    setSubcategoriesFromQuery(subcategories, false, null);
-  }, [subcategories, setSubcategoriesFromQuery]);
-
-  useEffect(() => {
-    setHangoutsFromQuery(hangouts, false, null);
-  }, [hangouts, setHangoutsFromQuery]);
 
   const handleInvalidateTransactions = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [transactionsQueryKey] });
@@ -362,13 +346,6 @@ export function Transactions() {
     [deleteMutation],
   );
 
-  const subcategoryOptions = subcategories.map((s) => ({
-    id: s.id,
-    name: s.name,
-    belongs_to_income: s.belongs_to_income,
-  }));
-  const hangoutOptions = hangouts.map((h) => ({ id: h.id, name: h.name }));
-
   return (
     <Box sx={{ py: 2 }}>
       <Box
@@ -499,62 +476,28 @@ export function Transactions() {
           flexItem
           sx={{ borderColor: themeTokens.border }}
         />
-        <FormControl
-          size="small"
-          sx={{ minWidth: 180, ...selectFormControlSx }}
-        >
-          <InputLabel id="transactions-subcategory-label">
-            Subcategory
-          </InputLabel>
-          <Select
-            labelId="transactions-subcategory-label"
-            id="transactions-subcategory-filter"
-            value={subcategoryId}
+        <Box sx={{ minWidth: 200, flex: '0 1 200px', maxWidth: 320 }}>
+          <SubcategoryAutocomplete
             label="Subcategory"
-            onChange={(e) => {
+            value={subcategoryId}
+            onChange={(id) => {
               setPage(0);
-              setSubcategoryId(e.target.value);
+              setSubcategoryId(id);
             }}
-            sx={selectThemedSx}
-            MenuProps={{
-              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
-            }}
-          >
-            <MenuItem value="">All</MenuItem>
-            {subcategories.map((s) => (
-              <MenuItem key={s.id} value={s.id}>
-                {s.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 160, ...selectFormControlSx }}
-        >
-          <InputLabel id="transactions-hangout-label">Hangout</InputLabel>
-          <Select
-            labelId="transactions-hangout-label"
-            id="transactions-hangout-filter"
-            value={hangoutId}
+            allowEmpty
+          />
+        </Box>
+        <Box sx={{ minWidth: 180, flex: '0 1 180px', maxWidth: 280 }}>
+          <HangoutAutocomplete
             label="Hangout"
-            onChange={(e) => {
+            value={hangoutId}
+            onChange={(id) => {
               setPage(0);
-              setHangoutId(e.target.value);
+              setHangoutId(id);
             }}
-            sx={selectThemedSx}
-            MenuProps={{
-              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
-            }}
-          >
-            <MenuItem value="">All</MenuItem>
-            {hangouts.map((h) => (
-              <MenuItem key={h.id} value={h.id}>
-                {h.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            allowEmpty
+          />
+        </Box>
         <Divider
           orientation="vertical"
           flexItem
@@ -602,8 +545,6 @@ export function Transactions() {
         initialValues={formInitial}
         onSubmit={handleFormSubmit}
         submitError={submitError}
-        subcategoryOptions={subcategoryOptions}
-        hangoutOptions={hangoutOptions}
       />
       <DeleteTransactionDialog
         open={deleteOpen}
@@ -623,8 +564,6 @@ export function Transactions() {
         onSubmit={handleBulkSubmit}
         submitError={bulkSubmitError}
         submitting={bulkCreateMutation.isPending}
-        subcategoryOptions={subcategoryOptions}
-        hangoutOptions={hangoutOptions}
       />
       <ImportTransactionsDialog
         open={importOpen}

@@ -2,7 +2,7 @@
  * Categories API types (TECHSPEC §4.1). Match backend OpenAPI schemas.
  */
 
-import type { PaginatedRead } from '../types';
+import type { DefaultParams, PaginatedRead } from '../types';
 
 export type CategoryRead = {
   id: string;
@@ -26,3 +26,9 @@ export type CategoryUpdate = {
 
 /** GET /categories/ response */
 export type GetCategoriesResponse = PaginatedRead<CategoryRead>;
+
+/** GET /categories/ query (TECHSPEC §4.3) */
+export type CategoriesListParams = DefaultParams & {
+  is_income?: boolean;
+  name?: string | null;
+};

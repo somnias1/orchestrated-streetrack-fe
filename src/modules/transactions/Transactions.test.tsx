@@ -33,9 +33,31 @@ function currentMonthDate(day = 1): string {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
+const subcategoryDetailRead = (id: string, name: string) => ({
+  id,
+  category_id: 'cat-1',
+  category_name: 'Food',
+  name,
+  description: null,
+  belongs_to_income: false,
+  is_periodic: false,
+  due_day: null,
+  user_id: 'u1',
+});
+
 const defaultHandlers = [
   http.get(subcategoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
   http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
+  http.get(`${API_URL}/subcategories/:id/`, ({ params }) => {
+    const id = params.id as string;
+    if (id === 'sub-1') {
+      return HttpResponse.json(subcategoryDetailRead('sub-1', 'Food'));
+    }
+    if (id === 'sub-a') {
+      return HttpResponse.json(subcategoryDetailRead('sub-a', 'Groceries'));
+    }
+    return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
+  }),
 ];
 
 const server = setupServer(...defaultHandlers);

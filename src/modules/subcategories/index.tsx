@@ -16,7 +16,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useCategoriesQuery } from '../../services/categories';
+import { CategoryAutocomplete } from '../../components/pickers';
 import {
   useCreateSubcategoryMutation,
   useDeleteSubcategoryMutation,
@@ -25,7 +25,7 @@ import {
 } from '../../services/subcategories';
 import { subcategoriesQueryKey } from '../../services/subcategories/constants';
 import type { SubcategoryRead } from '../../services/subcategories/types';
-import { DEFAULT_LIST_LIMIT, PICKER_LIST_PARAMS } from '../../services/types';
+import { DEFAULT_LIST_LIMIT } from '../../services/types';
 import {
   selectFormControlSx,
   selectMenuPaperSx,
@@ -52,9 +52,6 @@ export function Subcategories() {
     useState<string>(DEFAULT_CATEGORY_ID);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
-
-  const { data: categoriesData } = useCategoriesQuery(PICKER_LIST_PARAMS);
-  const categories = categoriesData?.items ?? [];
 
   const queryParams = useMemo(() => {
     const params: {
@@ -279,35 +276,17 @@ export function Subcategories() {
             <MenuItem value="expense">Expense</MenuItem>
           </Select>
         </FormControl>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 180, ...selectFormControlSx }}
-        >
-          <InputLabel id="subcategories-category-filter-label">
-            Category
-          </InputLabel>
-          <Select
-            labelId="subcategories-category-filter-label"
-            id="subcategories-category-filter"
-            value={categoryIdFilter}
+        <Box sx={{ minWidth: 200, flex: '0 1 200px', maxWidth: 320 }}>
+          <CategoryAutocomplete
             label="Category"
-            onChange={(e) => {
+            value={categoryIdFilter}
+            onChange={(id) => {
               setPage(0);
-              setCategoryIdFilter(e.target.value);
+              setCategoryIdFilter(id);
             }}
-            sx={selectThemedSx}
-            MenuProps={{
-              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
-            }}
-          >
-            <MenuItem value="">All</MenuItem>
-            {categories.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            allowEmpty
+          />
+        </Box>
         <Divider
           orientation="vertical"
           flexItem

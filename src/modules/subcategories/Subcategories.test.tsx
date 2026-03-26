@@ -239,6 +239,14 @@ describe('Subcategories screen', () => {
           { status: 201 },
         );
       }),
+      http.get(`${API_URL}/categories/:id/`, ({ params }) => {
+        const id = params.id as string;
+        const row = categories.find((c) => c.id === id);
+        if (!row) {
+          return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
+        }
+        return HttpResponse.json(row);
+      }),
     );
 
     renderWithQueryClient(<Subcategories />);
@@ -258,7 +266,9 @@ describe('Subcategories screen', () => {
     });
 
     const dialog = screen.getByRole('dialog', { name: /create subcategory/i });
-    await userEvent.click(within(dialog).getByLabelText(/^category$/i));
+    await userEvent.click(
+      within(dialog).getByTestId('subcategory-form-category'),
+    );
     const categoryOption = await screen.findByRole('option', {
       name: /Food/,
     });
@@ -321,6 +331,14 @@ describe('Subcategories screen', () => {
         };
         listData = [updated];
         return HttpResponse.json(updated);
+      }),
+      http.get(`${API_URL}/categories/:id/`, ({ params }) => {
+        const id = params.id as string;
+        const row = categories.find((c) => c.id === id);
+        if (!row) {
+          return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
+        }
+        return HttpResponse.json(row);
       }),
     );
 

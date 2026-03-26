@@ -20,10 +20,4 @@ export type BulkTransactionsDialogProps = Readonly<{
   }) => Promise<void>;
   submitError: string | null;
   submitting: boolean;
-  subcategoryOptions: {
-    id: string;
-    name: string;
-    belongs_to_income: boolean;
-  }[];
-  hangoutOptions: { id: string; name: string }[];
 }>;

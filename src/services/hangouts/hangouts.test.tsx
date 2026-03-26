@@ -9,6 +9,7 @@ import { hangoutsPaths } from './constants';
 import {
   useCreateHangoutMutation,
   useDeleteHangoutMutation,
+  useHangoutQuery,
   useHangoutsQuery,
   useUpdateHangoutMutation,
 } from './index';
@@ -63,6 +64,42 @@ describe('Hangouts services', () => {
       });
       expect(capturedUrl).toContain('skip=10');
       expect(capturedUrl).toContain('limit=20');
+    });
+
+    it('sends name filter (icontains)', async () => {
+      const hangouts = hangoutsMock(1);
+      let capturedUrl = '';
+      server.use(
+        http.get(`${baseURL}/${hangoutsPaths.list}`, ({ request }) => {
+          capturedUrl = request.url;
+          return HttpResponse.json(toPaginatedRead(hangouts), { status: 200 });
+        }),
+      );
+      const { result } = renderHook(() => useHangoutsQuery({ name: 'Team' }), {
+        wrapper: ProviderWrapper,
+      });
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+      expect(capturedUrl).toContain('name=Team');
+    });
+  });
+
+  describe('useHangoutQuery', () => {
+    it('GETs hangout by id', async () => {
+      const row = hangoutMock();
+      server.use(
+        http.get(`${baseURL}/${hangoutsPaths.get(row.id)}`, () =>
+          HttpResponse.json(row, { status: 200 }),
+        ),
+      );
+      const { result } = renderHook(() => useHangoutQuery(row.id), {
+        wrapper: ProviderWrapper,
+      });
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+      expect(result.current.data).toEqual(row);
     });
   });
 

@@ -37,6 +37,26 @@ export function useSubcategoriesQuery(
   });
 }
 
+export function useSubcategoryQuery(
+  id: string | undefined,
+  queryOptions?: Partial<
+    UseQueryOptions<SubcategoryRead, Error, SubcategoryRead>
+  >,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useQuery<SubcategoryRead, Error, SubcategoryRead>({
+    queryKey: [subcategoriesQueryKey, 'detail', id],
+    queryFn: () =>
+      callbackApi<SubcategoryRead>(subcategoriesPaths.get(id as string), {
+        baseURL,
+      }),
+    enabled: Boolean(id),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    ...queryOptions,
+  });
+}
+
 export function useCreateSubcategoryMutation(
   options?: Partial<
     UseMutationOptions<SubcategoryRead, Error, SubcategoryCreate>

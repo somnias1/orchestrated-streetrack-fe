@@ -27,4 +27,6 @@ export type HangoutUpdate = {
 /** GET /hangouts/ response */
 export type GetHangoutsResponse = PaginatedRead<HangoutRead>;
 
-export type HangoutsListParams = DefaultParams;
+export type HangoutsListParams = DefaultParams & {
+  name?: string | null;
+};

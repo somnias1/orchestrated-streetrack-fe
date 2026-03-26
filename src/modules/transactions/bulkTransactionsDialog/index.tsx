@@ -6,21 +6,16 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormHelperText,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
 } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  selectFormControlSx,
-  selectMenuPaperSx,
-  selectThemedSx,
-  themeTokens,
-} from '../../../theme/tailwind';
+  HangoutAutocomplete,
+  SubcategoryAutocomplete,
+} from '../../../components/pickers';
+import { themeTokens } from '../../../theme/tailwind';
 import { type BulkRowParsed, bulkRowSchema } from './schema';
 import type { BulkRowFormValues, BulkTransactionsDialogProps } from './types';
 
@@ -48,8 +43,6 @@ export function BulkTransactionsDialog({
   onSubmit,
   submitError,
   submitting,
-  subcategoryOptions,
-  hangoutOptions,
 }: BulkTransactionsDialogProps) {
   const nextIdRef = useRef(0);
   const [rows, setRows] = useState<BulkRowWithId[]>(() => [
@@ -191,7 +184,8 @@ export function BulkTransactionsDialog({
                 key={row.id}
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 1.2fr 1fr 100px 1.5fr auto',
+                  gridTemplateColumns:
+                    'minmax(140px,1fr) minmax(200px,1.3fr) minmax(160px,1fr) 100px minmax(120px,1.2fr) auto',
                   gap: 1,
                   alignItems: 'start',
                 }}
@@ -212,61 +206,22 @@ export function BulkTransactionsDialog({
                     },
                   }}
                 />
-                <FormControl
-                  size="small"
+                <SubcategoryAutocomplete
+                  label="Subcategory"
+                  value={row.subcategory_id}
+                  onChange={(id) => updateRow(index, 'subcategory_id', id)}
+                  required
+                  queryEnabled={open}
                   error={Boolean(rowErrors[`row_${index}_subcategory_id`])}
-                  sx={selectFormControlSx}
-                >
-                  <InputLabel>Subcategory</InputLabel>
-                  <Select
-                    value={row.subcategory_id}
-                    label="Subcategory"
-                    onChange={(e) =>
-                      updateRow(index, 'subcategory_id', e.target.value)
-                    }
-                    sx={selectThemedSx}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: { ...selectMenuPaperSx, maxHeight: 350 },
-                      },
-                    }}
-                  >
-                    {subcategoryOptions.map((sub) => (
-                      <MenuItem key={sub.id} value={sub.id}>
-                        {sub.name} (
-                        {sub.belongs_to_income ? 'Income' : 'Expense'})
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {rowErrors[`row_${index}_subcategory_id`] && (
-                    <FormHelperText>
-                      {rowErrors[`row_${index}_subcategory_id`]}
-                    </FormHelperText>
-                  )}
-                </FormControl>
-                <FormControl size="small" sx={selectFormControlSx}>
-                  <InputLabel>Hangout</InputLabel>
-                  <Select
-                    value={row.hangout_id}
-                    label="Hangout"
-                    onChange={(e) =>
-                      updateRow(index, 'hangout_id', e.target.value)
-                    }
-                    sx={selectThemedSx}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: { ...selectMenuPaperSx, maxHeight: 350 },
-                      },
-                    }}
-                  >
-                    <MenuItem value="">None</MenuItem>
-                    {hangoutOptions.map((h) => (
-                      <MenuItem key={h.id} value={h.id}>
-                        {h.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                  helperText={rowErrors[`row_${index}_subcategory_id`]}
+                />
+                <HangoutAutocomplete
+                  label="Hangout"
+                  value={row.hangout_id}
+                  onChange={(id) => updateRow(index, 'hangout_id', id)}
+                  allowEmpty
+                  queryEnabled={open}
+                />
                 <TextField
                   label="Value"
                   type="number"

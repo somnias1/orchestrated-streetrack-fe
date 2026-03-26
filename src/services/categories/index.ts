@@ -6,9 +6,9 @@ import {
 } from '@tanstack/react-query';
 import { config } from '../../config';
 import useCallbackApi from '../../utils/callbackApi';
-import type { DefaultParams } from '../types';
 import { categoriesPaths, categoriesQueryKey } from './constants';
 import type {
+  CategoriesListParams,
   CategoryCreate,
   CategoryRead,
   CategoryUpdate,
@@ -18,7 +18,7 @@ import type {
 const baseURL = config.apiUrl;
 
 export function useCategoriesQuery(
-  params?: DefaultParams & { is_income?: boolean },
+  params?: CategoriesListParams,
   queryOptions?: Partial<
     UseQueryOptions<GetCategoriesResponse, Error, GetCategoriesResponse>
   >,
@@ -27,6 +27,24 @@ export function useCategoriesQuery(
   return useQuery<GetCategoriesResponse, Error, GetCategoriesResponse>({
     queryKey: [categoriesQueryKey, params ?? {}],
     queryFn: () => callbackApi(categoriesPaths.list, { params, baseURL }),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    ...queryOptions,
+  });
+}
+
+export function useCategoryQuery(
+  id: string | undefined,
+  queryOptions?: Partial<UseQueryOptions<CategoryRead, Error, CategoryRead>>,
+) {
+  const { callbackApi } = useCallbackApi();
+  return useQuery<CategoryRead, Error, CategoryRead>({
+    queryKey: [categoriesQueryKey, 'detail', id],
+    queryFn: () =>
+      callbackApi<CategoryRead>(categoriesPaths.get(id as string), {
+        baseURL,
+      }),
+    enabled: Boolean(id),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     ...queryOptions,
