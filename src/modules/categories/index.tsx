@@ -55,12 +55,8 @@ export function Categories() {
     return { ...base, is_income: typeFilter === 'income' };
   }, [typeFilter, page, rowsPerPage]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset list page when type filter changes
-  useEffect(() => {
-    setPage(0);
-  }, [typeFilter]);
-
   const clearFilters = useCallback(() => {
+    setPage(0);
     setTypeFilter(DEFAULT_TYPE_FILTER);
   }, []);
 
@@ -239,9 +235,10 @@ export function Categories() {
             id="categories-type-filter"
             value={typeFilter}
             label="Type"
-            onChange={(e) =>
-              setTypeFilter(e.target.value as CategoryTypeFilter)
-            }
+            onChange={(e) => {
+              setPage(0);
+              setTypeFilter(e.target.value as CategoryTypeFilter);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: selectMenuPaperSx },

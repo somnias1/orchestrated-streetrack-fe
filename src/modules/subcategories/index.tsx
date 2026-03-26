@@ -72,12 +72,8 @@ export function Subcategories() {
     return params;
   }, [typeFilter, categoryIdFilter, page, rowsPerPage]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset list page when list filters change
-  useEffect(() => {
-    setPage(0);
-  }, [typeFilter, categoryIdFilter]);
-
   const clearFilters = useCallback(() => {
+    setPage(0);
     setTypeFilter(DEFAULT_TYPE_FILTER);
     setCategoryIdFilter(DEFAULT_CATEGORY_ID);
   }, []);
@@ -269,9 +265,10 @@ export function Subcategories() {
             id="subcategories-type-filter"
             value={typeFilter}
             label="Type"
-            onChange={(e) =>
-              setTypeFilter(e.target.value as SubcategoryTypeFilter)
-            }
+            onChange={(e) => {
+              setPage(0);
+              setTypeFilter(e.target.value as SubcategoryTypeFilter);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: selectMenuPaperSx },
@@ -294,7 +291,10 @@ export function Subcategories() {
             id="subcategories-category-filter"
             value={categoryIdFilter}
             label="Category"
-            onChange={(e) => setCategoryIdFilter(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setCategoryIdFilter(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },

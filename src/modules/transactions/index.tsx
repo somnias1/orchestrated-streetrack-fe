@@ -89,11 +89,6 @@ export function Transactions() {
     return params;
   }, [year, month, day, subcategoryId, hangoutId, page, rowsPerPage]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset list page when transaction filters change
-  useEffect(() => {
-    setPage(0);
-  }, [year, month, day, subcategoryId, hangoutId]);
-
   const clearFilters = useCallback(() => {
     setYear('');
     setMonth('');
@@ -435,7 +430,10 @@ export function Transactions() {
             id="transactions-year"
             value={year}
             label="Year"
-            onChange={(e) => setYear(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setYear(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
@@ -457,7 +455,10 @@ export function Transactions() {
             id="transactions-month"
             value={month}
             label="Month"
-            onChange={(e) => setMonth(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setMonth(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
           >
@@ -476,7 +477,10 @@ export function Transactions() {
             id="transactions-day"
             value={day}
             label="Day"
-            onChange={(e) => setDay(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setDay(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
@@ -507,7 +511,10 @@ export function Transactions() {
             id="transactions-subcategory-filter"
             value={subcategoryId}
             label="Subcategory"
-            onChange={(e) => setSubcategoryId(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setSubcategoryId(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
@@ -531,7 +538,10 @@ export function Transactions() {
             id="transactions-hangout-filter"
             value={hangoutId}
             label="Hangout"
-            onChange={(e) => setHangoutId(e.target.value)}
+            onChange={(e) => {
+              setPage(0);
+              setHangoutId(e.target.value);
+            }}
             sx={selectThemedSx}
             MenuProps={{
               PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
