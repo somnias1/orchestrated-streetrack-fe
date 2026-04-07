@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 26 — Searchable category/subcategory/hangout pickers (complete).
+Phase 27 — react-hook-form migration + bulk dialog optimization (in progress)
 
 ## Last Task Completed
 
@@ -10,7 +10,7 @@ Phase 26: optional `name` on list params; `CategoryAutocomplete` / `SubcategoryA
 
 ## Next Task
 
-Merge `feature/phase-26-searchable-pickers` to `main` with `--no-ff` when ready, or continue with the next ROADMAP phase.
+Create branch feature/phase-27-rhf-migration. Install react-hook-form + @hookform/resolvers. Migrate all form dialogs to useForm + zodResolver. Refactor BulkTransactionsDialog with useFieldArray, memoized rows, and lifted picker queries.
 
 ## Key Decisions
 
@@ -18,7 +18,7 @@ Merge `feature/phase-26-searchable-pickers` to `main` with `--no-ff` when ready,
 - **Rsbuild env**: Use `loadEnv({ prefixes: ['VITE_'] })` and `source.define: { ...publicVars }` so env vars from .env (or venv/shell) are available at build time; app config reads `process.env.VITE_*`.
 - **.env**: Added to .gitignore so secrets are not committed.
 - **Testing**: Vitest 4 + React Testing Library + MSW; coverage excludes app shell, auth redirect/callback, home, theme, and presentational chip so gate applies to §1.3-touched code.
-- **Next phases**: ROADMAP includes Phases **25–26** after 24 — Phase 25 list pagination (API envelope + `TablePagination`); Phase 26 searchable comboboxes for category/subcategory/hangout pickers — see `.planning/phase-00-ROADMAP.md` and TECHSPEC §4.3.
+- **Phase 27**: Introduce react-hook-form + @hookform/resolvers for all form dialogs. BulkTransactionsDialog optimized via useFieldArray (row-level re-renders), React.memo on BulkRow, and lifted picker queries (externalOptions prop on Autocomplete pickers).
 
 ## Blockers
 

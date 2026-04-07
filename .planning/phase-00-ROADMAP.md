@@ -31,6 +31,7 @@ Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and 
 | 24    | Finance expansion tests and polish         | Tests for dashboard, bulk, import/export, filters, periodic; §1.3 mapping; coverage gate.                                                                                    | §1.3, §6.1, §6.2, §8.3                         | 21–23      |
 | 25    | List pagination (API envelope + UI)        | `PaginatedRead<T>` types and hooks; Categories, Subcategories, Transactions, Hangouts list screens: classic MUI `TablePagination` (no infinite scroll); Zustand mirrors hold current page `items`; MSW + tests. | §4.1, §4.3, §3.3, §3.4, §1.3, §6.1, §8.3       | 24         |
 | 26    | Searchable category/subcategory/hangout pickers | Optional `name` (icontains) on list queries; replace MUI `Select` with `Autocomplete` + debounced server search for those resources; fix SubcategoryFormDialog vs categories store; split Transactions picker queries from table query; tests. | §4.3, §3.4, §3.5, §1.3, §6.1, §8.3             | 25         |
+| 27    | react-hook-form migration + bulk dialog optimization | Install react-hook-form + @hookform/resolvers; migrate all 4 form dialogs (Category, Subcategory, Transaction, BulkTransactions) to useForm + zodResolver; BulkTransactionsDialog: useFieldArray + React.memo rows + lifted picker queries (externalOptions prop on pickers). | §2.2, §3.5, §3.4, §5.1 | 26         |
 
 
 ## Phase sizing guidance
@@ -38,5 +39,5 @@ Derived from TECHSPEC.md on 2026-03-03. Extended 2026-03-03 from BACKLOG.md and 
 - Each phase targets **one chat session** worth of work.
 - If a phase feels too large (>8 atomic commits), split it.
 - If two phases are very small (<2 commits each), consider merging them.
-- New features after Phase 17 continue from Phase 18 (see above). Finance stream (filters, dashboard, bulk, import/export) through Phase 24 (FRAMEWORK.md §6). Paginated lists and searchable pickers: Phases **25–26** (after Phase 24).
+- New features after Phase 17 continue from Phase 18 (see above). Finance stream (filters, dashboard, bulk, import/export) through Phase 24 (FRAMEWORK.md §6). Paginated lists and searchable pickers: Phases **25–26** (after Phase 24). Form refactor and bulk optimization: Phase **27**.
 

@@ -87,6 +87,8 @@ Pin **exact** versions in `package.json` (no `^` or `~`). Reference values from 
 | @mui/material               | 7.3.8   | UI components                        |
 | tailwindcss                  | 4.1.18  | Utility CSS (with theme helper)      |
 | zod                         | 3.25.76 | Validation (forms, etc.)             |
+| react-hook-form             | (pin at install) | Form state: useForm, useFieldArray, Controller (Phase 27+) |
+| @hookform/resolvers         | (pin at install) | Zod resolver for react-hook-form (Phase 27+) |
 | typescript                  | 5.9.3   | Type safety                          |
 | @biomejs/biome              | 2.3.8   | Lint + format                        |
 | @rsbuild/core               | 1.7.1   | Build                                |
@@ -185,8 +187,10 @@ All paths are defined in `src/routes.ts`.
 
 ### 3.5 Form Validation
 
-- When forms are added (e.g. Category create/edit), use **Zod** for schema validation. Display inline errors per field; submit only when valid.
-- (No form screens in current scope; this section reserved for future CRUD forms.)
+- All form dialogs use **react-hook-form** with **zodResolver** (from `@hookform/resolvers/zod`) for schema validation. Zod schemas live in each dialog's `schema.ts`. Display inline errors per field via `formState.errors`; submit only when valid.
+- Plain fields (TextField) use `register()`; MUI components without standard ref/onChange (Select, Checkbox, Autocomplete pickers) use `Controller`.
+- **Bulk forms** use `useFieldArray` for dynamic row management with per-row render isolation. Row components are wrapped in `React.memo`.
+- **Picker optimization**: Autocomplete pickers (`SubcategoryAutocomplete`, `HangoutAutocomplete`) accept an optional `externalOptions` prop. When provided, the picker skips its internal query and uses client-side filtering from the given options. Bulk dialogs lift picker queries to the parent and pass options down to avoid N×query subscriptions.
 
 ### 3.6 Complexity Exceptions
 
