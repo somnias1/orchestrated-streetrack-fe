@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
   Dialog,
@@ -11,7 +12,8 @@ import {
   Select,
   TextField,
 } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   selectFormControlSx,
   selectMenuPaperSx,
@@ -24,7 +26,8 @@ import type { CategoryFormDialogProps, CategoryFormPayload } from './types';
 function toPayload(values: CategoryFormValues): CategoryFormPayload {
   return {
     name: values.name.trim(),
-    description: values.description?.trim() || null,
+    description:
+      values.description.trim() === '' ? null : values.description.trim(),
     is_income: values.is_income,
   };
 }
@@ -37,62 +40,47 @@ export function CategoryFormDialog({
   submitError,
 }: CategoryFormDialogProps) {
   const isEdit = initialValues !== null;
-  const [name, setName] = useState(initialValues?.name ?? '');
-  const [description, setDescription] = useState(
-    initialValues?.description ?? '',
-  );
-  const [is_income, setIsIncome] = useState(initialValues?.is_income ?? false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const form = useForm<CategoryFormValues>({
+    resolver: zodResolver(categoryFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      is_income: false,
+    },
+  });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
     if (open) {
-      setName(initialValues?.name ?? '');
-      setDescription(initialValues?.description ?? '');
-      setIsIncome(initialValues?.is_income ?? false);
-      setFieldErrors({});
-    }
-  }, [open, initialValues]);
-
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const raw = {
-        name: name.trim(),
-        description: description.trim() || null,
-        is_income,
-      };
-      const parsed = categoryFormSchema.safeParse({
-        name: raw.name,
-        description: raw.description === '' ? null : raw.description,
-        is_income: raw.is_income,
+      reset({
+        name: initialValues?.name ?? '',
+        description: initialValues?.description ?? '',
+        is_income: initialValues?.is_income ?? false,
       });
-      if (!parsed.success) {
-        const errors: Record<string, string> = {};
-        for (const issue of parsed.error.issues) {
-          const path = issue.path[0]?.toString() ?? 'form';
-          if (!errors[path]) errors[path] = issue.message;
-        }
-        setFieldErrors(errors);
-        return;
-      }
-      setFieldErrors({});
-      setSubmitting(true);
+    }
+  }, [open, initialValues, reset]);
+
+  const onValid = useCallback(
+    async (values: CategoryFormValues) => {
       try {
-        await onSubmit(toPayload(parsed.data));
+        await onSubmit(toPayload(values));
         onClose();
       } catch {
         // Store sets error; parent can pass submitError
-      } finally {
-        setSubmitting(false);
       }
     },
-    [name, description, is_income, onSubmit, onClose],
+    [onSubmit, onClose],
   );
 
   const handleClose = useCallback(() => {
-    if (!submitting) onClose();
-  }, [onClose, submitting]);
+    if (!isSubmitting) onClose();
+  }, [onClose, isSubmitting]);
 
   return (
     <Dialog
@@ -108,7 +96,7 @@ export function CategoryFormDialog({
         },
       }}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onValid)}>
         <DialogTitle sx={{ color: themeTokens.textPrimary }}>
           {isEdit ? 'Edit category' : 'Create category'}
         </DialogTitle>
@@ -116,56 +104,73 @@ export function CategoryFormDialog({
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <TextField
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            fullWidth
-            error={Boolean(fieldErrors.name)}
-            helperText={fieldErrors.name}
-            inputProps={{ 'aria-label': 'Category name' }}
-            sx={selectFormControlSx}
-          />
-          <TextField
-            label="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            fullWidth
-            multiline
-            minRows={2}
-            error={Boolean(fieldErrors.description)}
-            helperText={fieldErrors.description}
-            inputProps={{ 'aria-label': 'Category description' }}
-            sx={selectFormControlSx}
-          />
-          <FormControl
-            fullWidth
-            error={Boolean(fieldErrors.is_income)}
-            sx={selectFormControlSx}
-          >
-            <InputLabel id="category-type-label">Type</InputLabel>
-            <Select
-              labelId="category-type-label"
-              value={is_income ? 'income' : 'expense'}
-              label="Type"
-              onChange={(e) => setIsIncome(e.target.value === 'income')}
-              sx={selectThemedSx}
-              MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
-            >
-              <MenuItem value="expense">Expense</MenuItem>
-              <MenuItem value="income">Income</MenuItem>
-            </Select>
-            {fieldErrors.is_income && (
-              <FormHelperText>{fieldErrors.is_income}</FormHelperText>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="Name"
+                required
+                fullWidth
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+                inputProps={{ 'aria-label': 'Category name' }}
+                sx={selectFormControlSx}
+              />
             )}
-          </FormControl>
+          />
+          <Controller
+            name="description"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ''}
+                label="Description"
+                fullWidth
+                multiline
+                minRows={2}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+                inputProps={{ 'aria-label': 'Category description' }}
+                sx={selectFormControlSx}
+              />
+            )}
+          />
+          <Controller
+            name="is_income"
+            control={control}
+            render={({ field, fieldState }) => (
+              <FormControl
+                fullWidth
+                error={Boolean(fieldState.error)}
+                sx={selectFormControlSx}
+              >
+                <InputLabel id="category-type-label">Type</InputLabel>
+                <Select
+                  labelId="category-type-label"
+                  value={field.value ? 'income' : 'expense'}
+                  label="Type"
+                  onChange={(e) => field.onChange(e.target.value === 'income')}
+                  sx={selectThemedSx}
+                  MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
+                >
+                  <MenuItem value="expense">Expense</MenuItem>
+                  <MenuItem value="income">Income</MenuItem>
+                </Select>
+                {fieldState.error && (
+                  <FormHelperText>{fieldState.error.message}</FormHelperText>
+                )}
+              </FormControl>
+            )}
+          />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
             type="button"
             onClick={handleClose}
-            disabled={submitting}
+            disabled={isSubmitting}
             sx={{ color: themeTokens.textSecondary }}
           >
             Cancel
@@ -173,10 +178,10 @@ export function CategoryFormDialog({
           <Button
             type="submit"
             variant="contained"
-            disabled={submitting}
+            disabled={isSubmitting}
             sx={{ backgroundColor: themeTokens.primary }}
           >
-            {submitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
+            {isSubmitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
           </Button>
         </DialogActions>
       </form>

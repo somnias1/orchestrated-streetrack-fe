@@ -28,6 +28,11 @@ type SubcategoryAutocompleteProps = Readonly<{
   value: string;
   onChange: (id: string) => void;
   listParams?: Omit<SubcategoriesListParams, 'skip' | 'limit' | 'name'>;
+  /**
+   * When set, list items come from the parent (e.g. bulk dialog single fetch).
+   * Search filters this list client-side; the internal list query is skipped.
+   */
+  externalOptions?: SubcategoryRead[];
   allowEmpty?: boolean;
   disabled?: boolean;
   error?: boolean;
@@ -42,6 +47,7 @@ export function SubcategoryAutocomplete({
   value,
   onChange,
   listParams,
+  externalOptions,
   allowEmpty = false,
   disabled,
   error,
@@ -52,13 +58,14 @@ export function SubcategoryAutocomplete({
 }: SubcategoryAutocompleteProps) {
   const [search, setSearch] = useState('');
   const debouncedName = useDebouncedValue(search, PICKER_SEARCH_DEBOUNCE_MS);
+  const useInternalList = externalOptions === undefined;
   const { data, isFetching } = useSubcategoriesQuery(
     {
       ...PICKER_LIST_PARAMS,
       ...listParams,
       name: debouncedName.trim() || undefined,
     },
-    { enabled: queryEnabled },
+    { enabled: queryEnabled && useInternalList },
   );
   const { data: detail, isFetching: fetchingDetail } = useSubcategoryQuery(
     value || undefined,
@@ -66,7 +73,17 @@ export function SubcategoryAutocomplete({
       enabled: queryEnabled && Boolean(value),
     },
   );
-  const options = data?.items ?? [];
+  const fetchedItems = data?.items ?? [];
+  const options = useMemo(() => {
+    if (!useInternalList) {
+      const q = debouncedName.trim().toLowerCase();
+      if (!q) return externalOptions ?? [];
+      return (externalOptions ?? []).filter((o) =>
+        subcategoryOptionLabel(o).toLowerCase().includes(q),
+      );
+    }
+    return fetchedItems;
+  }, [useInternalList, externalOptions, fetchedItems, debouncedName]);
   const selected = useMemo(() => {
     if (!value) return null;
     return options.find((o) => o.id === value) ?? detail ?? null;
