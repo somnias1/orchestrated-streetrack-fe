@@ -1,7 +1,7 @@
-import AddRounded from '@mui/icons-material/AddRounded';
-import ArrowDropDownRounded from '@mui/icons-material/ArrowDropDownRounded';
-import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
-import FilterAltOff from '@mui/icons-material/FilterAltOff';
+import AddRounded from "@mui/icons-material/AddRounded";
+import ArrowDropDownRounded from "@mui/icons-material/ArrowDropDownRounded";
+import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
+import FilterAltOff from "@mui/icons-material/FilterAltOff";
 import {
   Box,
   Button,
@@ -15,64 +15,64 @@ import {
   Snackbar,
   TablePagination,
   Typography,
-} from '@mui/material';
-import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+} from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   HangoutAutocomplete,
   SubcategoryAutocomplete,
-} from '../../components/pickers';
-import { config } from '../../config';
-import { dashboardQueryKey } from '../../services/dashboard/constants';
+} from "../../components/pickers";
+import { config } from "../../config";
+import { dashboardQueryKey } from "../../services/dashboard/constants";
 import {
   downloadCsvBlob,
   transactionManagerPaths,
   useImportPreviewMutation,
-} from '../../services/transactionManager';
+} from "../../services/transactionManager";
 import {
   useBulkCreateTransactionsMutation,
   useCreateTransactionMutation,
   useDeleteTransactionMutation,
   useTransactionsQuery,
   useUpdateTransactionMutation,
-} from '../../services/transactions';
-import { transactionsQueryKey } from '../../services/transactions/constants';
+} from "../../services/transactions";
+import { transactionsQueryKey } from "../../services/transactions/constants";
 import type {
   TransactionBulkCreate,
   TransactionRead,
   TransactionsListParams,
-} from '../../services/transactions/types';
-import { DEFAULT_LIST_LIMIT } from '../../services/types';
+} from "../../services/transactions/types";
+import { DEFAULT_LIST_LIMIT } from "../../services/types";
 import {
   selectFormControlSx,
   selectMenuPaperSx,
   selectThemedSx,
   themeTokens,
-} from '../../theme/tailwind';
-import useCallbackApi from '../../utils/callbackApi';
-import { BulkTransactionsDialog } from './bulkTransactionsDialog';
+} from "../../theme/tailwind";
+import useCallbackApi from "../../utils/callbackApi";
+import { BulkTransactionsDialog } from "./bulkTransactionsDialog";
 import {
   DAY_OPTIONS,
   getDefaultMonth,
   getDefaultYear,
   MONTHS,
   YEAR_OPTIONS,
-} from './constants';
-import { DeleteTransactionDialog } from './deleteTransactionDialog';
-import { ImportTransactionsDialog } from './importTransactionsDialog';
-import { useTransactionsStore } from './store';
-import { TransactionFormDialog } from './transactionFormDialog';
-import { TransactionsTable } from './transactionsTable';
+} from "./constants";
+import { DeleteTransactionDialog } from "./deleteTransactionDialog";
+import { ImportTransactionsDialog } from "./importTransactionsDialog";
+import { useTransactionsStore } from "./store";
+import { TransactionFormDialog } from "./transactionFormDialog";
+import { TransactionsTable } from "./transactionsTable";
 
 export function Transactions() {
   const queryClient = useQueryClient();
   const [showSnackBar, setShowSnackBar] = useState(false);
-  const [snackBarMessage, setSnackBarMessage] = useState('');
+  const [snackBarMessage, setSnackBarMessage] = useState("");
   const [year, setYear] = useState(getDefaultYear);
   const [month, setMonth] = useState(getDefaultMonth);
-  const [day, setDay] = useState<string>('');
-  const [subcategoryId, setSubcategoryId] = useState('');
-  const [hangoutId, setHangoutId] = useState('');
+  const [day, setDay] = useState<string>("");
+  const [subcategoryId, setSubcategoryId] = useState("");
+  const [hangoutId, setHangoutId] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
 
@@ -81,20 +81,20 @@ export function Transactions() {
       skip: page * rowsPerPage,
       limit: rowsPerPage,
     };
-    if (year !== '') params.year = Number(year);
-    if (month !== '') params.month = Number(month);
-    if (day !== '') params.day = Number(day);
+    if (year !== "") params.year = Number(year);
+    if (month !== "") params.month = Number(month);
+    if (day !== "") params.day = Number(day);
     if (subcategoryId) params.subcategory_id = subcategoryId;
     if (hangoutId) params.hangout_id = hangoutId;
     return params;
   }, [year, month, day, subcategoryId, hangoutId, page, rowsPerPage]);
 
   const clearFilters = useCallback(() => {
-    setYear('');
-    setMonth('');
-    setDay('');
-    setSubcategoryId('');
-    setHangoutId('');
+    setYear("");
+    setMonth("");
+    setDay("");
+    setSubcategoryId("");
+    setHangoutId("");
     setPage(0);
   }, []);
 
@@ -115,7 +115,7 @@ export function Transactions() {
       isError && error instanceof Error
         ? error.message
         : isError
-          ? 'Failed to load transactions'
+          ? "Failed to load transactions"
           : null;
     setTransactionsFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setTransactionsFromQuery]);
@@ -129,28 +129,28 @@ export function Transactions() {
     onSuccess: () => {
       handleInvalidateTransactions();
       setShowSnackBar(true);
-      setSnackBarMessage('Transaction created');
+      setSnackBarMessage("Transaction created");
     },
   });
   const updateMutation = useUpdateTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
       setShowSnackBar(true);
-      setSnackBarMessage('Transaction updated');
+      setSnackBarMessage("Transaction updated");
     },
   });
   const deleteMutation = useDeleteTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
       setShowSnackBar(true);
-      setSnackBarMessage('Transaction deleted');
+      setSnackBarMessage("Transaction deleted");
     },
   });
   const bulkCreateMutation = useBulkCreateTransactionsMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
       setShowSnackBar(true);
-      setSnackBarMessage('Transactions bulk created');
+      setSnackBarMessage("Transactions bulk created");
     },
   });
 
@@ -187,7 +187,7 @@ export function Transactions() {
     isError && error instanceof Error
       ? error.message
       : isError
-        ? 'Failed to load transactions'
+        ? "Failed to load transactions"
         : null;
 
   const openCreate = useCallback(() => {
@@ -217,14 +217,14 @@ export function Transactions() {
 
   const handleImportPreview = useCallback(
     async (
-      rows: import('../../services/transactionManager/types').TransactionImportRow[],
+      rows: import("../../services/transactionManager/types").TransactionImportRow[],
     ) => {
       setImportPreviewError(null);
       try {
         return await importPreviewMutation.mutateAsync({ rows });
       } catch (err) {
         setImportPreviewError(
-          err instanceof Error ? err.message : 'Preview failed',
+          err instanceof Error ? err.message : "Preview failed",
         );
         throw err;
       }
@@ -240,7 +240,7 @@ export function Transactions() {
         setImportOpen(false);
       } catch (err) {
         setImportSubmitError(
-          err instanceof Error ? err.message : 'Import create failed',
+          err instanceof Error ? err.message : "Import create failed",
         );
         throw err;
       }
@@ -266,7 +266,7 @@ export function Transactions() {
         callbackApi<Blob>(transactionManagerPaths.export, {
           params: exportParams,
           baseURL: config.apiUrl,
-          responseType: 'blob',
+          responseType: "blob",
         }),
       );
     } finally {
@@ -282,7 +282,7 @@ export function Transactions() {
         setBulkOpen(false);
       } catch (err) {
         setBulkSubmitError(
-          err instanceof Error ? err.message : 'Bulk create failed',
+          err instanceof Error ? err.message : "Bulk create failed",
         );
         throw err;
       }
@@ -329,7 +329,7 @@ export function Transactions() {
         setFormOpen(false);
       } catch (err) {
         setSubmitError(
-          err instanceof Error ? err.message : 'Something went wrong',
+          err instanceof Error ? err.message : "Something went wrong",
         );
         throw err;
       }
@@ -350,56 +350,58 @@ export function Transactions() {
     <Box sx={{ py: 2 }}>
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           mb: 2,
-          flexWrap: 'wrap',
+          flexWrap: "wrap",
           gap: 1,
         }}
       >
         <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
           Transactions
-          {total > 0 ? ` (${total})` : ''}
+          {total > 0 ? ` (${total})` : ""}
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddRounded />}
-          endIcon={<ArrowDropDownRounded />}
-          onClick={(e) => setAddMenuAnchor(e.currentTarget)}
-          aria-haspopup="menu"
-          aria-expanded={Boolean(addMenuAnchor)}
-          sx={{ backgroundColor: themeTokens.primary }}
-          data-testid="transactions-add-button"
-        >
-          Add
-        </Button>
-        <Menu
-          anchorEl={addMenuAnchor}
-          open={Boolean(addMenuAnchor)}
-          onClose={() => setAddMenuAnchor(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <MenuItem onClick={openCreate}>Transaction</MenuItem>
-          <MenuItem onClick={openBulk}>Bulk</MenuItem>
-          <MenuItem onClick={openImport}>Import</MenuItem>
-        </Menu>
-        <Button
-          variant="outlined"
-          startIcon={<FileDownloadOutlined />}
-          onClick={handleExport}
-          disabled={exporting}
-          sx={{
-            borderColor: themeTokens.border,
-            color: themeTokens.textPrimary,
-          }}
-          data-testid="transactions-export-csv-button"
-        >
-          {exporting ? 'Exporting…' : 'Export CSV'}
-        </Button>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddRounded />}
+            endIcon={<ArrowDropDownRounded />}
+            onClick={(e) => setAddMenuAnchor(e.currentTarget)}
+            aria-haspopup="menu"
+            aria-expanded={Boolean(addMenuAnchor)}
+            sx={{ backgroundColor: themeTokens.primary }}
+            data-testid="transactions-add-button"
+          >
+            Add
+          </Button>
+          <Menu
+            anchorEl={addMenuAnchor}
+            open={Boolean(addMenuAnchor)}
+            onClose={() => setAddMenuAnchor(null)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+          >
+            <MenuItem onClick={openCreate}>Transaction</MenuItem>
+            <MenuItem onClick={openBulk}>Bulk</MenuItem>
+            <MenuItem onClick={openImport}>Import</MenuItem>
+          </Menu>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadOutlined />}
+            onClick={handleExport}
+            disabled={exporting}
+            sx={{
+              borderColor: themeTokens.border,
+              color: themeTokens.textPrimary,
+            }}
+            data-testid="transactions-export-csv-button"
+          >
+            {exporting ? "Exporting…" : "Export CSV"}
+          </Button>
+        </Box>
       </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 2 }}>
         <FormControl size="small" sx={{ minWidth: 90, ...selectFormControlSx }}>
           <InputLabel id="transactions-year-label">Year</InputLabel>
           <Select
@@ -476,7 +478,7 @@ export function Transactions() {
           flexItem
           sx={{ borderColor: themeTokens.border }}
         />
-        <Box sx={{ minWidth: 200, flex: '0 1 200px', maxWidth: 320 }}>
+        <Box sx={{ minWidth: 200, flex: "0 1 200px", maxWidth: 320 }}>
           <SubcategoryAutocomplete
             label="Subcategory"
             value={subcategoryId}
@@ -487,7 +489,7 @@ export function Transactions() {
             allowEmpty
           />
         </Box>
-        <Box sx={{ minWidth: 180, flex: '0 1 180px', maxWidth: 280 }}>
+        <Box sx={{ minWidth: 180, flex: "0 1 180px", maxWidth: 280 }}>
           <HangoutAutocomplete
             label="Hangout"
             value={hangoutId}
@@ -506,9 +508,9 @@ export function Transactions() {
         <IconButton
           onClick={clearFilters}
           sx={{
-            alignSelf: 'flex-start',
+            alignSelf: "flex-start",
             color: themeTokens.textSecondary,
-            '&.Mui-disabled': { color: themeTokens.disabled },
+            "&.Mui-disabled": { color: themeTokens.disabled },
           }}
           disabled={!year && !month && !day && !subcategoryId && !hangoutId}
         >

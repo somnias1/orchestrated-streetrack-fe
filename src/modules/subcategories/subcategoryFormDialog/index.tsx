@@ -8,16 +8,16 @@ import {
   FormControlLabel,
   FormHelperText,
   TextField,
-} from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
-import { CategoryAutocomplete } from '../../../components/pickers';
-import { useCategoryQuery } from '../../../services/categories';
-import { themeTokens } from '../../../theme/tailwind';
-import { type SubcategoryFormValues, subcategoryFormSchema } from './schema';
+} from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import { CategoryAutocomplete } from "../../../components/pickers";
+import { useCategoryQuery } from "../../../services/categories";
+import { themeTokens } from "../../../theme/tailwind";
+import { type SubcategoryFormValues, subcategoryFormSchema } from "./schema";
 import type {
   SubcategoryFormDialogProps,
   SubcategoryFormPayload,
-} from './types';
+} from "./types";
 
 function toPayload(values: SubcategoryFormValues): SubcategoryFormPayload {
   return {
@@ -39,33 +39,33 @@ export function SubcategoryFormDialog({
 }: SubcategoryFormDialogProps) {
   const isEdit = initialValues !== null;
   const [category_id, setCategoryId] = useState(
-    initialValues?.category_id ?? '',
+    initialValues?.category_id ?? "",
   );
   const { data: selectedCategory } = useCategoryQuery(
     category_id || undefined,
     { enabled: open && Boolean(category_id) },
   );
-  const [name, setName] = useState(initialValues?.name ?? '');
+  const [name, setName] = useState(initialValues?.name ?? "");
   const [description, setDescription] = useState(
-    initialValues?.description ?? '',
+    initialValues?.description ?? "",
   );
   const [is_periodic, setIsPeriodic] = useState(
     initialValues?.is_periodic ?? false,
   );
   const [due_day, setDueDay] = useState<string>(
-    initialValues?.due_day != null ? String(initialValues.due_day) : '',
+    initialValues?.due_day != null ? String(initialValues.due_day) : "",
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setCategoryId(initialValues?.category_id ?? '');
-      setName(initialValues?.name ?? '');
-      setDescription(initialValues?.description ?? '');
+      setCategoryId(initialValues?.category_id ?? "");
+      setName(initialValues?.name ?? "");
+      setDescription(initialValues?.description ?? "");
       setIsPeriodic(initialValues?.is_periodic ?? false);
       setDueDay(
-        initialValues?.due_day != null ? String(initialValues.due_day) : '',
+        initialValues?.due_day != null ? String(initialValues.due_day) : "",
       );
       setFieldErrors({});
     }
@@ -75,7 +75,7 @@ export function SubcategoryFormDialog({
     async (e: React.FormEvent) => {
       e.preventDefault();
       const dueDayNum =
-        due_day.trim() === '' ? null : Number.parseInt(due_day.trim(), 10);
+        due_day.trim() === "" ? null : Number.parseInt(due_day.trim(), 10);
       const belongs_to_income = selectedCategory?.is_income ?? false;
       const raw = {
         category_id: category_id.trim(),
@@ -88,7 +88,7 @@ export function SubcategoryFormDialog({
       const parsed = subcategoryFormSchema.safeParse({
         category_id: raw.category_id,
         name: raw.name,
-        description: raw.description === '' ? null : raw.description,
+        description: raw.description === "" ? null : raw.description,
         belongs_to_income: raw.belongs_to_income,
         is_periodic: raw.is_periodic,
         due_day: raw.due_day,
@@ -96,7 +96,7 @@ export function SubcategoryFormDialog({
       if (!parsed.success) {
         const errors: Record<string, string> = {};
         for (const issue of parsed.error.issues) {
-          const path = issue.path[0]?.toString() ?? 'form';
+          const path = issue.path[0]?.toString() ?? "form";
           if (!errors[path]) errors[path] = issue.message;
         }
         setFieldErrors(errors);
@@ -145,10 +145,10 @@ export function SubcategoryFormDialog({
     >
       <form onSubmit={handleSubmit} data-testid="subcategory-form-dialog-form">
         <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-          {isEdit ? 'Edit subcategory' : 'Create subcategory'}
+          {isEdit ? "Edit subcategory" : "Create subcategory"}
         </DialogTitle>
         <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           data-testid="subcategory-form-dialog-content"
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
@@ -171,12 +171,12 @@ export function SubcategoryFormDialog({
             error={Boolean(fieldErrors.name)}
             helperText={fieldErrors.name}
             inputProps={{
-              'aria-label': 'Subcategory name',
-              'data-testid': 'subcategory-form-name',
+              "aria-label": "Subcategory name",
+              "data-testid": "subcategory-form-name",
             }}
             sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+              "& .MuiInputBase-input": { color: themeTokens.textPrimary },
+              "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
             }}
           />
           <TextField
@@ -188,32 +188,34 @@ export function SubcategoryFormDialog({
             minRows={2}
             error={Boolean(fieldErrors.description)}
             helperText={fieldErrors.description}
-            inputProps={{ 'aria-label': 'Subcategory description' }}
+            inputProps={{ "aria-label": "Subcategory description" }}
             sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+              "& .MuiInputBase-input": { color: themeTokens.textPrimary },
+              "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
             }}
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={is_periodic}
-                onChange={(e) => setIsPeriodic(e.target.checked)}
-                sx={{
-                  color: themeTokens.textSecondary,
-                  '&.Mui-checked': { color: themeTokens.primary },
-                }}
-              />
-            }
-            label="Periodic expense"
-            sx={{ color: themeTokens.textPrimary }}
-          />
+          {selectedCategory && !selectedCategory.is_income && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={is_periodic}
+                  onChange={(e) => setIsPeriodic(e.target.checked)}
+                  sx={{
+                    color: themeTokens.textSecondary,
+                    "&.Mui-checked": { color: themeTokens.primary },
+                  }}
+                />
+              }
+              label="Periodic expense"
+              sx={{ color: themeTokens.textPrimary }}
+            />
+          )}
           {is_periodic && (
             <TextField
               label="Due day (1–31)"
               value={due_day}
               onChange={(e) =>
-                setDueDay(e.target.value.replace(/\D/g, '').slice(0, 2))
+                setDueDay(e.target.value.replace(/\D/g, "").slice(0, 2))
               }
               fullWidth
               type="text"
@@ -221,14 +223,14 @@ export function SubcategoryFormDialog({
               error={Boolean(fieldErrors.due_day)}
               helperText={fieldErrors.due_day}
               inputProps={{
-                'aria-label': 'Due day (1–31)',
+                "aria-label": "Due day (1–31)",
                 min: 1,
                 max: 31,
-                placeholder: 'e.g. 15',
+                placeholder: "e.g. 15",
               }}
               sx={{
-                '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-                '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+                "& .MuiInputBase-input": { color: themeTokens.textPrimary },
+                "& .MuiInputLabel-root": { color: themeTokens.textSecondary },
               }}
             />
           )}
@@ -248,7 +250,7 @@ export function SubcategoryFormDialog({
             disabled={submitting}
             sx={{ backgroundColor: themeTokens.primary }}
           >
-            {submitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
+            {submitting ? "Saving…" : isEdit ? "Save" : "Create"}
           </Button>
         </DialogActions>
       </form>
