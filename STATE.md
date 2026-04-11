@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 27 — Complete (pending merge to main)
+Phase 27 — Complete
 
 ## Last Task Completed
 
-Phase 27: react-hook-form + @hookform/resolvers; Category, Subcategory, Transaction, and BulkTransactions dialogs migrated to RHF + zodResolver; BulkTransactionsDialog uses useFieldArray, memoized BulkTransactionRow, lifted subcategory/hangout queries via `externalOptions` on pickers; `.planning/phase-27-SPEC.md` + `phase-27-SUMMARY.md`.
+Phase 27 merged to `main`: react-hook-form + @hookform/resolvers; Category, Subcategory, Transaction, and BulkTransactions dialogs on RHF + zodResolver; bulk dialog uses useFieldArray, memoized rows, lifted picker lists via `externalOptions`; SPEC + SUMMARY committed.
 
 ## Next Task
 
-Merge `feature/phase-27-rhf-migration` into `main` with `--no-ff`, or start the next ROADMAP phase when defined.
+Define or start the next ROADMAP phase when ready.
 
 ## Key Decisions
 
