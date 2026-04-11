@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 27 — react-hook-form migration + bulk dialog optimization (in progress)
+Phase 27 — Complete (pending merge to main)
 
 ## Last Task Completed
 
-Phase 26: optional `name` on list params; `CategoryAutocomplete` / `SubcategoryAutocomplete` / `HangoutAutocomplete` + debounced search; GET-by-id queries; Transactions picker/store split; SubcategoryFormDialog uses local category picker + `useCategoryQuery`; MSW and service tests; `.planning/phase-26-SPEC.md` + `phase-26-SUMMARY.md`.
+Phase 27: react-hook-form + @hookform/resolvers; Category, Subcategory, Transaction, and BulkTransactions dialogs migrated to RHF + zodResolver; BulkTransactionsDialog uses useFieldArray, memoized BulkTransactionRow, lifted subcategory/hangout queries via `externalOptions` on pickers; `.planning/phase-27-SPEC.md` + `phase-27-SUMMARY.md`.
 
 ## Next Task
 
-Create branch feature/phase-27-rhf-migration. Install react-hook-form + @hookform/resolvers. Migrate all form dialogs to useForm + zodResolver. Refactor BulkTransactionsDialog with useFieldArray, memoized rows, and lifted picker queries.
+Merge `feature/phase-27-rhf-migration` into `main` with `--no-ff`, or start the next ROADMAP phase when defined.
 
 ## Key Decisions
 

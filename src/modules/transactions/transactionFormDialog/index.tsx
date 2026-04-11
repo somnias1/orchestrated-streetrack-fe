@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
   Dialog,
@@ -7,25 +8,32 @@ import {
   FormHelperText,
   TextField,
 } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   HangoutAutocomplete,
   SubcategoryAutocomplete,
 } from '../../../components/pickers';
 import { themeTokens } from '../../../theme/tailwind';
-import { type TransactionFormValues, transactionFormSchema } from './schema';
+import {
+  type TransactionDialogFormValues,
+  transactionDialogFormSchema,
+} from './schema';
 import type {
   TransactionFormDialogProps,
   TransactionFormPayload,
 } from './types';
 
-function toPayload(values: TransactionFormValues): TransactionFormPayload {
+function toPayload(
+  values: TransactionDialogFormValues,
+): TransactionFormPayload {
   return {
-    subcategory_id: values.subcategory_id,
-    value: values.value,
+    subcategory_id: values.subcategory_id.trim(),
+    value: Number(values.value),
     description: values.description.trim(),
-    date: values.date,
-    hangout_id: values.hangout_id === '' ? null : values.hangout_id,
+    date: values.date.trim(),
+    hangout_id:
+      values.hangout_id.trim() === '' ? null : values.hangout_id.trim(),
   };
 }
 
@@ -37,76 +45,48 @@ export function TransactionFormDialog({
   submitError,
 }: TransactionFormDialogProps) {
   const isEdit = initialValues !== null;
-  const [subcategory_id, setSubcategoryId] = useState(
-    initialValues?.subcategory_id ?? '',
-  );
-  const [value, setValue] = useState(
-    initialValues?.value !== undefined ? String(initialValues.value) : '',
-  );
-  const [description, setDescription] = useState(
-    initialValues?.description ?? '',
-  );
-  const [date, setDate] = useState(initialValues?.date ?? '');
-  const [hangout_id, setHangoutId] = useState(initialValues?.hangout_id ?? '');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const form = useForm<TransactionDialogFormValues>({
+    resolver: zodResolver(transactionDialogFormSchema),
+    defaultValues: {
+      subcategory_id: '',
+      value: '',
+      description: '',
+      date: '',
+      hangout_id: '',
+    },
+  });
+
+  const { control, handleSubmit, reset, formState } = form;
+  const { isSubmitting } = formState;
 
   useEffect(() => {
     if (open) {
-      setSubcategoryId(initialValues?.subcategory_id ?? '');
-      setValue(
-        initialValues?.value !== undefined ? String(initialValues.value) : '',
-      );
-      setDescription(initialValues?.description ?? '');
-      setDate(initialValues?.date ?? '');
-      setHangoutId(initialValues?.hangout_id ?? '');
-      setFieldErrors({});
-    }
-  }, [open, initialValues]);
-
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const raw = {
-        subcategory_id: subcategory_id.trim(),
-        value: value.trim() === '' ? NaN : Number(value),
-        description: description.trim(),
-        date: date.trim(),
-        hangout_id: hangout_id.trim() === '' ? null : hangout_id.trim(),
-      };
-      const parsed = transactionFormSchema.safeParse({
-        subcategory_id: raw.subcategory_id,
-        value: raw.value,
-        description: raw.description,
-        date: raw.date,
-        hangout_id: raw.hangout_id,
+      reset({
+        subcategory_id: initialValues?.subcategory_id ?? '',
+        value:
+          initialValues?.value !== undefined ? String(initialValues.value) : '',
+        description: initialValues?.description ?? '',
+        date: initialValues?.date ?? '',
+        hangout_id: initialValues?.hangout_id ?? '',
       });
-      if (!parsed.success) {
-        const errors: Record<string, string> = {};
-        for (const issue of parsed.error.issues) {
-          const path = issue.path[0]?.toString() ?? 'form';
-          if (!errors[path]) errors[path] = issue.message;
-        }
-        setFieldErrors(errors);
-        return;
-      }
-      setFieldErrors({});
-      setSubmitting(true);
+    }
+  }, [open, initialValues, reset]);
+
+  const onValid = useCallback(
+    async (values: TransactionDialogFormValues) => {
       try {
-        await onSubmit(toPayload(parsed.data));
+        await onSubmit(toPayload(values));
         onClose();
       } catch {
         // Store sets error; parent can pass submitError
-      } finally {
-        setSubmitting(false);
       }
     },
-    [subcategory_id, value, description, date, hangout_id, onSubmit, onClose],
+    [onSubmit, onClose],
   );
 
   const handleClose = useCallback(() => {
-    if (!submitting) onClose();
-  }, [onClose, submitting]);
+    if (!isSubmitting) onClose();
+  }, [onClose, isSubmitting]);
 
   return (
     <Dialog
@@ -122,7 +102,7 @@ export function TransactionFormDialog({
         },
       }}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onValid)}>
         <DialogTitle sx={{ color: themeTokens.textPrimary }}>
           {isEdit ? 'Edit transaction' : 'Create transaction'}
         </DialogTitle>
@@ -130,75 +110,104 @@ export function TransactionFormDialog({
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <SubcategoryAutocomplete
-            label="Subcategory"
-            value={subcategory_id}
-            onChange={setSubcategoryId}
-            required
-            queryEnabled={open}
-            error={Boolean(fieldErrors.subcategory_id)}
-            helperText={fieldErrors.subcategory_id}
+          <Controller
+            name="subcategory_id"
+            control={control}
+            render={({ field, fieldState }) => (
+              <SubcategoryAutocomplete
+                label="Subcategory"
+                value={field.value}
+                onChange={field.onChange}
+                required
+                queryEnabled={open}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
           />
-          <TextField
-            label="Value"
-            type="number"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            required
-            fullWidth
-            error={Boolean(fieldErrors.value)}
-            helperText={fieldErrors.value}
-            inputProps={{ 'aria-label': 'Transaction value', step: 1 }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
+          <Controller
+            name="value"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="Value"
+                type="number"
+                required
+                fullWidth
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+                inputProps={{ 'aria-label': 'Transaction value', step: 1 }}
+                sx={{
+                  '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+                  '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+                }}
+              />
+            )}
           />
-          <TextField
-            label="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            fullWidth
-            error={Boolean(fieldErrors.description)}
-            helperText={fieldErrors.description}
-            inputProps={{ 'aria-label': 'Transaction description' }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
+          <Controller
+            name="description"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="Description"
+                required
+                fullWidth
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+                inputProps={{ 'aria-label': 'Transaction description' }}
+                sx={{
+                  '& .MuiInputBase-input': { color: themeTokens.textPrimary },
+                  '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+                }}
+              />
+            )}
           />
-          <TextField
-            label="Date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            fullWidth
-            error={Boolean(fieldErrors.date)}
-            helperText={fieldErrors.date}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ 'aria-label': 'Transaction date' }}
-            sx={{
-              '& .MuiOutlinedInput-root': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
+          <Controller
+            name="date"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="Date"
+                type="date"
+                required
+                fullWidth
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ 'aria-label': 'Transaction date' }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    color: themeTokens.textPrimary,
+                  },
+                  '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
+                }}
+              />
+            )}
           />
-          <HangoutAutocomplete
-            label="Hangout"
-            value={hangout_id}
-            onChange={setHangoutId}
-            allowEmpty
-            queryEnabled={open}
-            error={Boolean(fieldErrors.hangout_id)}
-            helperText={fieldErrors.hangout_id}
+          <Controller
+            name="hangout_id"
+            control={control}
+            render={({ field, fieldState }) => (
+              <HangoutAutocomplete
+                label="Hangout"
+                value={field.value}
+                onChange={field.onChange}
+                allowEmpty
+                queryEnabled={open}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
             type="button"
             onClick={handleClose}
-            disabled={submitting}
+            disabled={isSubmitting}
             sx={{ color: themeTokens.textSecondary }}
           >
             Cancel
@@ -206,10 +215,10 @@ export function TransactionFormDialog({
           <Button
             type="submit"
             variant="contained"
-            disabled={submitting}
+            disabled={isSubmitting}
             sx={{ backgroundColor: themeTokens.primary }}
           >
-            {submitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
+            {isSubmitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
           </Button>
         </DialogActions>
       </form>

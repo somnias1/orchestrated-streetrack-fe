@@ -17,6 +17,11 @@ type HangoutAutocompleteProps = Readonly<{
   label: string;
   value: string;
   onChange: (id: string) => void;
+  /**
+   * When set, list items come from the parent; client-side filter by debounced input.
+   * Internal list query is skipped.
+   */
+  externalOptions?: HangoutRead[];
   allowEmpty?: boolean;
   disabled?: boolean;
   error?: boolean;
@@ -30,6 +35,7 @@ export function HangoutAutocomplete({
   label,
   value,
   onChange,
+  externalOptions,
   allowEmpty = false,
   disabled,
   error,
@@ -40,12 +46,13 @@ export function HangoutAutocomplete({
 }: HangoutAutocompleteProps) {
   const [search, setSearch] = useState('');
   const debouncedName = useDebouncedValue(search, PICKER_SEARCH_DEBOUNCE_MS);
+  const useInternalList = externalOptions === undefined;
   const { data, isFetching } = useHangoutsQuery(
     {
       ...PICKER_LIST_PARAMS,
       name: debouncedName.trim() || undefined,
     },
-    { enabled: queryEnabled },
+    { enabled: queryEnabled && useInternalList },
   );
   const { data: detail, isFetching: fetchingDetail } = useHangoutQuery(
     value || undefined,
@@ -53,7 +60,17 @@ export function HangoutAutocomplete({
       enabled: queryEnabled && Boolean(value),
     },
   );
-  const options = data?.items ?? [];
+  const fetchedItems = data?.items ?? [];
+  const options = useMemo(() => {
+    if (!useInternalList) {
+      const q = debouncedName.trim().toLowerCase();
+      if (!q) return externalOptions ?? [];
+      return (externalOptions ?? []).filter((h) =>
+        h.name.toLowerCase().includes(q),
+      );
+    }
+    return fetchedItems;
+  }, [useInternalList, externalOptions, fetchedItems, debouncedName]);
   const selected = useMemo(() => {
     if (!value) return null;
     return options.find((o) => o.id === value) ?? detail ?? null;
