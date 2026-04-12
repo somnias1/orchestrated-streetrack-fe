@@ -189,6 +189,8 @@ export function HangoutsTable({
         border: `1px solid ${themeTokens.border}`,
         borderRadius: 1,
         overflow: 'hidden',
+        height: '67vh',
+        maxHeight: '67vh',
       }}
     >
       {/* Header outside scroll area so it never scrolls away */}

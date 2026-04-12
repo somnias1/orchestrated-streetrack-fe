@@ -202,6 +202,8 @@ export function SubcategoriesTable({
         border: `1px solid ${themeTokens.border}`,
         borderRadius: 1,
         overflow: 'hidden',
+        height: '67vh',
+        maxHeight: '67vh',
       }}
     >
       {/* Header outside scroll area so it never scrolls away */}
@@ -249,6 +251,7 @@ export function SubcategoriesTable({
           overflow: 'auto',
           minHeight: TABLE_MIN_HEIGHT,
           maxHeight: '67vh',
+          height: '67vh',
         }}
       >
         <Table

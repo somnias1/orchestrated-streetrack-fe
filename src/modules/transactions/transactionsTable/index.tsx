@@ -195,6 +195,8 @@ export function TransactionsTable({
         border: `1px solid ${themeTokens.border}`,
         borderRadius: 1,
         overflow: 'hidden',
+        height: '70vh',
+        maxHeight: '70vh',
       }}
     >
       {/* Header outside scroll area so it never scrolls away */}
@@ -241,7 +243,8 @@ export function TransactionsTable({
         sx={{
           overflow: 'auto',
           minHeight: TABLE_MIN_HEIGHT,
-          maxHeight: '67vh',
+          maxHeight: '70vh',
+          height: '70vh',
         }}
       >
         <Table

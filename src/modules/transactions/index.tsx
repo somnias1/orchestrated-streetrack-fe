@@ -347,7 +347,7 @@ export function Transactions() {
   );
 
   return (
-    <Box sx={{ py: 2 }}>
+    <Box sx={{ py: 2, height: '80vh', maxHeight: '80vh' }}>
       <Box
         sx={{
           display: 'flex',
