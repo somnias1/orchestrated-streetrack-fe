@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { routes } from '../../routes';
 import { CategoriesPage } from './pages/CategoriesPage';
@@ -10,9 +8,26 @@ import { TransactionsPage } from './pages/TransactionsPage';
 const IMPORT_CATEGORY_NAME = 'E2E Import Category';
 const IMPORT_SUBCATEGORY_NAME = 'E2E Import Subcategory';
 
-function loadImportFixture(): string {
-  const path = join(process.cwd(), 'src/tests/e2e/fixtures/import-paste.txt');
-  return readFileSync(path, 'utf-8').trim();
+function buildImportPasteFixture(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const mm = String(m).padStart(2, '0');
+  const d = (day: number) => `${String(day).padStart(2, '0')}/${mm}/${y}`;
+
+  const line = (date: string, amount: string, note: string) =>
+    `${date}\t$\t${amount}\t${IMPORT_CATEGORY_NAME}\t${IMPORT_SUBCATEGORY_NAME}\t${note}`;
+
+  return [
+    line(d(7), '130.000,00', 'Gift'),
+    line(d(8), '221.799,00', 'Outing'),
+    line(d(9), '39.899,00', 'Phone plan'),
+    line(d(9), '78.294,00', 'Gas'),
+    line(d(9), '59.700,00', 'Water'),
+    line(d(9), '81.650,00', 'Utilities'),
+    line(d(9), '1.153.000,00', 'Credit card'),
+    line(d(9), '340.000,00', 'Loan payment'),
+  ].join('\n');
 }
 
 test.describe('Transactions', () => {
@@ -56,7 +71,7 @@ test.describe('Transactions', () => {
     await layout.goToTransactions();
     const transactions = new TransactionsPage(page);
     await transactions.clickImport();
-    const pasteData = loadImportFixture();
+    const pasteData = buildImportPasteFixture();
     await transactions.importPasteArea.fill(pasteData);
     await transactions.importPreviewButton.click();
     await expect(page.getByText(/Valid:\s*8/)).toBeVisible({ timeout: 10000 });
