@@ -1,12 +1,19 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import type React from 'react';
 import { config } from '../../config';
 import { toPaginatedRead } from '../../services/pagination';
 import { Subcategories } from './index';
+import { subcategoriesPaths } from '../../services/subcategories/constants';
+import { categoriesPaths } from '../../services/categories/constants';
+import ProviderWrapper from '../../utils/test/provider';
+import {
+  subcategoryMock,
+  subcategoriesMock,
+} from '../../services/subcategories/mocks';
+import { categoriesMock } from '../../services/categories/mocks';
 
 // So virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
 vi.mock('@tanstack/react-virtual', () => ({
@@ -22,27 +29,18 @@ vi.mock('@tanstack/react-virtual', () => ({
   }),
 }));
 
+const queryClientConfig: ConstructorParameters<typeof QueryClient>[0] = {
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+};
+
 const API_URL = config.apiUrl;
-const subcategoriesUrl = `${API_URL}/subcategories`;
-const categoriesUrl = `${API_URL}/categories`;
+const subcategoriesUrl = `${API_URL}/${subcategoriesPaths.list}`;
+const categoriesUrl = `${API_URL}/${categoriesPaths.list}`;
 
 const server = setupServer();
-
-function createTestQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
-}
-
-function renderWithQueryClient(ui: React.ReactElement) {
-  const queryClient = createTestQueryClient();
-  return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
-  );
-}
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -62,7 +60,11 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -70,30 +72,7 @@ describe('Subcategories screen', () => {
   });
 
   it('shows virtualized rows when API returns subcategories', async () => {
-    const items = [
-      {
-        id: '1',
-        category_id: 'cat-a',
-        category_name: 'Food',
-        name: 'Groceries',
-        description: 'Food shopping',
-        belongs_to_income: false,
-        is_periodic: false,
-        due_day: null,
-        user_id: 'u1',
-      },
-      {
-        id: '2',
-        category_id: 'cat-b',
-        category_name: 'Income',
-        name: 'Salary',
-        description: null,
-        belongs_to_income: true,
-        is_periodic: false,
-        due_day: null,
-        user_id: 'u1',
-      },
-    ];
+    const items = subcategoriesMock(2);
     server.use(
       http.get(subcategoriesUrl, () =>
         HttpResponse.json(toPaginatedRead(items)),
@@ -101,7 +80,11 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Subcategories\s+\(2\)/)).toBeInTheDocument();
@@ -119,7 +102,11 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -136,26 +123,16 @@ describe('Subcategories screen', () => {
         if (callCount === 1) {
           return HttpResponse.json({ detail: 'Error' }, { status: 500 });
         }
-        return HttpResponse.json(
-          toPaginatedRead([
-            {
-              id: '1',
-              category_id: 'cat-1',
-              category_name: 'Food',
-              name: 'Groceries',
-              description: null,
-              belongs_to_income: false,
-              is_periodic: false,
-              due_day: null,
-              user_id: 'u1',
-            },
-          ]),
-        );
+        return HttpResponse.json(toPaginatedRead(subcategoriesMock(1)));
       }),
       http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -177,7 +154,11 @@ describe('Subcategories screen', () => {
       http.get(categoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
@@ -185,15 +166,12 @@ describe('Subcategories screen', () => {
   });
 
   it('create flow: open dialog, fill form, submit, list includes new subcategory', async () => {
-    const categories = [
-      {
-        id: 'cat-1',
-        name: 'Food',
-        description: null,
-        is_income: false,
-        user_id: 'u1',
-      },
-    ];
+    const categories = categoriesMock(1);
+    const created = subcategoryMock({
+      name: 'New Sub',
+      category_id: categories[0].id,
+      category_name: categories[0].name,
+    });
     let listCalls = 0;
     server.use(
       http.get(categoriesUrl, () =>
@@ -202,54 +180,24 @@ describe('Subcategories screen', () => {
       http.get(subcategoriesUrl, () => {
         listCalls += 1;
         return HttpResponse.json(
-          listCalls === 1
-            ? toPaginatedRead([])
-            : toPaginatedRead([
-                {
-                  id: 'new-1',
-                  category_id: 'cat-1',
-                  category_name: 'Food',
-                  name: 'New Sub',
-                  description: null,
-                  belongs_to_income: false,
-                  is_periodic: false,
-                  due_day: null,
-                  user_id: 'u1',
-                },
-              ]),
+          listCalls === 1 ? toPaginatedRead([]) : toPaginatedRead([created]),
         );
       }),
       http.post(subcategoriesUrl, async ({ request }) => {
         const body = (await request.json()) as { name: string };
-        if (body.name !== 'New Sub') {
-          return HttpResponse.json({ detail: 'Bad' }, { status: 422 });
-        }
-        return HttpResponse.json(
-          {
-            id: 'new-1',
-            category_id: 'cat-1',
-            category_name: 'Food',
-            name: 'New Sub',
-            description: null,
-            belongs_to_income: false,
-            is_periodic: false,
-            due_day: null,
-            user_id: 'u1',
-          },
-          { status: 201 },
-        );
+        expect(body.name).toBe(created.name);
+        return HttpResponse.json(created, { status: 201 });
       }),
-      http.get(`${API_URL}/categories/:id/`, ({ params }) => {
-        const id = params.id as string;
-        const row = categories.find((c) => c.id === id);
-        if (!row) {
-          return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
-        }
-        return HttpResponse.json(row);
-      }),
+      http.get(`${API_URL}/${categoriesPaths.get(categories[0].id)}`, () =>
+        HttpResponse.json(categories[0]),
+      ),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText('No subcategories found.')).toBeInTheDocument();
@@ -266,11 +214,12 @@ describe('Subcategories screen', () => {
     });
 
     const dialog = screen.getByRole('dialog', { name: /create subcategory/i });
-    await userEvent.click(
-      within(dialog).getByTestId('subcategory-form-category'),
+    const categoryInput = within(dialog).getByTestId(
+      'subcategory-form-category',
     );
+    await userEvent.type(categoryInput, categories[0].name);
     const categoryOption = await screen.findByRole('option', {
-      name: /Food/,
+      name: new RegExp(categories[0].name, 'i'),
     });
     await userEvent.click(categoryOption);
     await userEvent.type(
@@ -286,28 +235,15 @@ describe('Subcategories screen', () => {
   });
 
   it('edit flow: click Edit, change name, submit, list updated', async () => {
-    const categories = [
-      {
-        id: 'cat-1',
-        name: 'Food',
-        description: null,
-        is_income: false,
-        user_id: 'u1',
-      },
-    ];
+    const categories = categoriesMock(1);
     const items = [
-      {
-        id: '1',
-        category_id: 'cat-1',
-        category_name: 'Food',
+      subcategoryMock({
         name: 'Groceries',
-        description: null,
-        belongs_to_income: false,
-        is_periodic: false,
-        due_day: null,
-        user_id: 'u1',
-      },
+        category_id: categories[0].id,
+        category_name: categories[0].name,
+      }),
     ];
+    const updated = { ...items[0], name: 'Groceries Updated' };
     let listData = [...items];
     server.use(
       http.get(categoriesUrl, () =>
@@ -316,33 +252,25 @@ describe('Subcategories screen', () => {
       http.get(subcategoriesUrl, () =>
         HttpResponse.json(toPaginatedRead(listData)),
       ),
-      http.patch(`${API_URL}/subcategories/1`, async ({ request }) => {
-        const body = (await request.json()) as { name?: string };
-        const updated = {
-          id: '1',
-          category_id: 'cat-1',
-          category_name: 'Food',
-          name: body.name ?? 'Groceries',
-          description: null,
-          belongs_to_income: false,
-          is_periodic: false,
-          due_day: null,
-          user_id: 'u1',
-        };
-        listData = [updated];
-        return HttpResponse.json(updated);
-      }),
-      http.get(`${API_URL}/categories/:id/`, ({ params }) => {
-        const id = params.id as string;
-        const row = categories.find((c) => c.id === id);
-        if (!row) {
-          return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
-        }
-        return HttpResponse.json(row);
-      }),
+      http.patch(
+        `${API_URL}/${subcategoriesPaths.update(items[0].id)}`,
+        async ({ request }) => {
+          const body = (await request.json()) as { name?: string };
+          expect(body.name).toBe('Groceries Updated');
+          listData = [updated];
+          return HttpResponse.json(updated);
+        },
+      ),
+      http.get(`${API_URL}/${categoriesPaths.get(categories[0].id)}`, () =>
+        HttpResponse.json(categories[0]),
+      ),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText('Groceries')).toBeInTheDocument();
@@ -368,27 +296,13 @@ describe('Subcategories screen', () => {
   });
 
   it('delete flow: click Delete, confirm, list no longer contains subcategory', async () => {
-    const categories = [
-      {
-        id: 'cat-1',
-        name: 'Food',
-        description: null,
-        is_income: false,
-        user_id: 'u1',
-      },
-    ];
+    const categories = categoriesMock(1);
     const items = [
-      {
-        id: '1',
-        category_id: 'cat-1',
-        category_name: 'Food',
+      subcategoryMock({
         name: 'ToDelete',
-        description: null,
-        belongs_to_income: false,
-        is_periodic: false,
-        due_day: null,
-        user_id: 'u1',
-      },
+        category_id: categories[0].id,
+        category_name: categories[0].name,
+      }),
     ];
     let getCount = 0;
     server.use(
@@ -401,23 +315,31 @@ describe('Subcategories screen', () => {
           getCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
         );
       }),
-      http.delete(`${API_URL}/subcategories/1`, () =>
+      http.delete(`${API_URL}/${subcategoriesPaths.delete(items[0].id)}`, () =>
         HttpResponse.json(null, { status: 204 }),
       ),
     );
 
-    renderWithQueryClient(<Subcategories />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Subcategories />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText('ToDelete')).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByLabelText(/delete todelete/i);
+    const deleteButtons = screen.getAllByLabelText(
+      new RegExp(`delete ${items[0].name}`, 'i'),
+    );
     await userEvent.click(deleteButtons[0]);
 
     await waitFor(() => {
       expect(
-        screen.getByText(/delete subcategory «todelete»\?/i),
+        screen.getByText(
+          new RegExp(`Delete subcategory «${items[0].name}»?`, 'i'),
+        ),
       ).toBeInTheDocument();
     });
 

@@ -1,12 +1,17 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import type React from 'react';
 import { config } from '../../config';
 import { toPaginatedRead } from '../../services/pagination';
 import { Transactions } from './index';
+import { transactionsPaths } from '../../services/transactions/constants';
+import { hangoutsPaths } from '../../services/hangouts/constants';
+import { subcategoriesPaths } from '../../services/subcategories/constants';
+import { subcategoryMock } from '../../services/subcategories/mocks';
+import ProviderWrapper from '../../utils/test/provider';
+import { transactionMock } from '../../services/transactions/mocks';
 
 // Virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
 vi.mock('@tanstack/react-virtual', () => ({
@@ -23,9 +28,9 @@ vi.mock('@tanstack/react-virtual', () => ({
 }));
 
 const API_URL = config.apiUrl;
-const transactionsUrl = `${API_URL}/transactions`;
-const subcategoriesUrl = `${API_URL}/subcategories`;
-const hangoutsUrl = `${API_URL}/hangouts`;
+const transactionsUrl = `${API_URL}/${transactionsPaths.list}`;
+const subcategoriesUrl = `${API_URL}/${subcategoriesPaths.list}`;
+const hangoutsUrl = `${API_URL}/${hangoutsPaths.list}`;
 
 /** Transaction date in current year-month so default filter includes it */
 function currentMonthDate(day = 1): string {
@@ -33,50 +38,41 @@ function currentMonthDate(day = 1): string {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-const subcategoryDetailRead = (id: string, name: string) => ({
-  id,
-  category_id: 'cat-1',
-  category_name: 'Food',
-  name,
-  description: null,
-  belongs_to_income: false,
-  is_periodic: false,
-  due_day: null,
-  user_id: 'u1',
-});
+const subcategoryDetailRead = (id: string, name: string) =>
+  subcategoryMock({ id, name });
+
+const defaultSubCategoryId1 = 'sub-1';
+const defaultSubCategoryName1 = 'Food';
+const defaultSubCategoryId2 = 'sub-a';
+const defaultSubCategoryName2 = 'Groceries';
+
+const queryClientConfig: ConstructorParameters<typeof QueryClient>[0] = {
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+};
 
 const defaultHandlers = [
   http.get(subcategoriesUrl, () => HttpResponse.json(toPaginatedRead([]))),
   http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
   http.get(`${API_URL}/subcategories/:id/`, ({ params }) => {
     const id = params.id as string;
-    if (id === 'sub-1') {
-      return HttpResponse.json(subcategoryDetailRead('sub-1', 'Food'));
+    if (id === defaultSubCategoryId1) {
+      return HttpResponse.json(
+        subcategoryDetailRead(defaultSubCategoryId1, defaultSubCategoryName1),
+      );
     }
-    if (id === 'sub-a') {
-      return HttpResponse.json(subcategoryDetailRead('sub-a', 'Groceries'));
+    if (id === defaultSubCategoryId2) {
+      return HttpResponse.json(
+        subcategoryDetailRead(defaultSubCategoryId2, defaultSubCategoryName2),
+      );
     }
     return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
   }),
 ];
 
 const server = setupServer(...defaultHandlers);
-
-function createTestQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
-}
-
-function renderWithQueryClient(ui: React.ReactElement) {
-  const queryClient = createTestQueryClient();
-  return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
-  );
-}
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -96,7 +92,11 @@ describe('Transactions screen', () => {
       }),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -105,28 +105,18 @@ describe('Transactions screen', () => {
 
   it('shows virtualized rows when API returns transactions', async () => {
     const items = [
-      {
-        id: '1',
-        subcategory_id: 'sub-a',
-        subcategory_name: 'Groceries',
+      transactionMock({
+        subcategory_id: defaultSubCategoryId2,
+        subcategory_name: defaultSubCategoryName2,
         value: 1000,
         description: 'Coffee',
-        date: currentMonthDate(1),
-        hangout_id: null,
-        hangout_name: null,
-        user_id: 'u1',
-      },
-      {
-        id: '2',
-        subcategory_id: 'sub-b',
-        subcategory_name: 'Dining',
+      }),
+      transactionMock({
+        subcategory_id: defaultSubCategoryId1,
+        subcategory_name: defaultSubCategoryName1,
         value: -500,
         description: 'Lunch',
-        date: currentMonthDate(2),
-        hangout_id: 'hang-1',
-        hangout_name: 'Team Lunch',
-        user_id: 'u1',
-      },
+      }),
     ];
     server.use(
       ...defaultHandlers,
@@ -135,7 +125,11 @@ describe('Transactions screen', () => {
       ),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Transactions\s+\(2\)/)).toBeInTheDocument();
@@ -153,7 +147,11 @@ describe('Transactions screen', () => {
       ),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -173,23 +171,22 @@ describe('Transactions screen', () => {
         }
         return HttpResponse.json(
           toPaginatedRead([
-            {
-              id: '1',
-              subcategory_id: 'sub-1',
-              subcategory_name: 'Groceries',
+            transactionMock({
+              subcategory_id: defaultSubCategoryId2,
+              subcategory_name: defaultSubCategoryName2,
               value: 100,
               description: 'Snack',
-              date: currentMonthDate(1),
-              hangout_id: null,
-              hangout_name: null,
-              user_id: 'u1',
-            },
+            }),
           ]),
         );
       }),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -211,7 +208,11 @@ describe('Transactions screen', () => {
       http.get(transactionsUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText('No transactions found.')).toBeInTheDocument();
@@ -224,7 +225,11 @@ describe('Transactions screen', () => {
       http.get(transactionsUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument();
@@ -243,27 +248,18 @@ describe('Transactions screen', () => {
 
   it('create flow: open dialog, submit creates and refetches list', async () => {
     const subcategories = [
-      {
-        id: 'sub-1',
-        category_id: 'cat-1',
-        category_name: 'Food',
-        name: 'Food',
-        description: null,
-        belongs_to_income: false,
-        user_id: 'u1',
-      },
+      subcategoryMock({
+        id: defaultSubCategoryId1,
+        name: defaultSubCategoryName1,
+      }),
     ];
-    const created = {
-      id: 'tx-new',
-      subcategory_id: 'sub-1',
-      subcategory_name: 'Food',
+    const created = transactionMock({
+      subcategory_id: subcategories[0].id,
+      subcategory_name: subcategories[0].name,
       value: 500,
       description: 'Lunch',
       date: currentMonthDate(1),
-      hangout_id: null,
-      hangout_name: null,
-      user_id: 'u1',
-    };
+    });
     const listAfterCreate = [created];
 
     server.use(
@@ -286,7 +282,11 @@ describe('Transactions screen', () => {
       }),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument();
@@ -341,34 +341,37 @@ describe('Transactions screen', () => {
 
   it('edit flow: edit button opens dialog with prefilled data', async () => {
     const items = [
-      {
-        id: 'tx-1',
-        subcategory_id: 'sub-a',
-        subcategory_name: 'Groceries',
+      transactionMock({
+        subcategory_id: defaultSubCategoryId2,
+        subcategory_name: defaultSubCategoryName2,
         value: 1000,
         description: 'Coffee',
         date: currentMonthDate(1),
-        hangout_id: null,
-        hangout_name: null,
-        user_id: 'u1',
-      },
+      }),
     ];
     server.use(
       ...defaultHandlers,
       http.get(transactionsUrl, () =>
         HttpResponse.json(toPaginatedRead(items)),
       ),
-      http.patch(`${API_URL}/transactions/tx-1`, async ({ request }) => {
-        const body = await request.json();
-        expect(body).toMatchObject({ description: 'Updated coffee' });
-        return HttpResponse.json({
-          ...items[0],
-          description: 'Updated coffee',
-        });
-      }),
+      http.patch(
+        `${API_URL}/${transactionsPaths.update(items[0].id)}`,
+        async ({ request }) => {
+          const body = await request.json();
+          expect(body).toMatchObject({ description: 'Updated coffee' });
+          return HttpResponse.json({
+            ...items[0],
+            description: 'Updated coffee',
+          });
+        },
+      ),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Transactions\s+\(1\)/)).toBeInTheDocument();
@@ -389,17 +392,13 @@ describe('Transactions screen', () => {
 
   it('delete flow: delete button opens confirm dialog, confirm deletes', async () => {
     const items = [
-      {
-        id: 'tx-1',
-        subcategory_id: 'sub-a',
-        subcategory_name: 'Groceries',
+      transactionMock({
+        subcategory_id: defaultSubCategoryId2,
+        subcategory_name: defaultSubCategoryName2,
         value: 1000,
         description: 'Coffee',
         date: currentMonthDate(1),
-        hangout_id: null,
-        hangout_name: null,
-        user_id: 'u1',
-      },
+      }),
     ];
     let getCallCount = 0;
     server.use(
@@ -410,12 +409,16 @@ describe('Transactions screen', () => {
           getCallCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
         );
       }),
-      http.delete(`${API_URL}/transactions/tx-1`, () =>
+      http.delete(`${API_URL}/${transactionsPaths.delete(items[0].id)}`, () =>
         HttpResponse.json(null, { status: 204 }),
       ),
     );
 
-    renderWithQueryClient(<Transactions />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Transactions />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Transactions\s+\(1\)/)).toBeInTheDocument();

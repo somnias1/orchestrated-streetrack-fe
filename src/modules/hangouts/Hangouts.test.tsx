@@ -1,12 +1,22 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import type React from 'react';
 import { config } from '../../config';
 import { toPaginatedRead } from '../../services/pagination';
+import { hangoutsPaths } from '../../services/hangouts/constants';
+import { hangoutMock, hangoutsMock } from '../../services/hangouts/mocks';
+import ProviderWrapper from '../../utils/test/provider';
 import { Hangouts } from './index';
+import type { HangoutCreate } from '../../services/hangouts/types';
+
+const queryClientConfig: ConstructorParameters<typeof QueryClient>[0] = {
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+};
 
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: (opts: { count: number }) => ({
@@ -21,26 +31,10 @@ vi.mock('@tanstack/react-virtual', () => ({
   }),
 }));
 
-const API_URL = config.apiUrl;
-const hangoutsUrl = `${API_URL}/hangouts`;
+const API_URL = config.apiUrl as string;
+const hangoutsUrl = `${API_URL}/${hangoutsPaths.list}` as const;
 
 const server = setupServer();
-
-function createTestQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
-}
-
-function renderWithQueryClient(ui: React.ReactElement) {
-  const queryClient = createTestQueryClient();
-  return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
-  );
-}
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -59,7 +53,11 @@ describe('Hangouts screen', () => {
       }),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -67,27 +65,16 @@ describe('Hangouts screen', () => {
   });
 
   it('shows virtualized rows when API returns hangouts', async () => {
-    const items = [
-      {
-        id: '1',
-        name: 'Brunch',
-        description: 'Weekend brunch',
-        date: '2026-03-01',
-        user_id: 'u1',
-      },
-      {
-        id: '2',
-        name: 'Movie night',
-        description: null,
-        date: '2026-03-02',
-        user_id: 'u1',
-      },
-    ];
+    const items = hangoutsMock(2);
     server.use(
       http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead(items))),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Hangouts\s+\(2\)/)).toBeInTheDocument();
@@ -102,7 +89,11 @@ describe('Hangouts screen', () => {
       ),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -123,22 +114,16 @@ describe('Hangouts screen', () => {
           if (callCount === 1) {
             return HttpResponse.json({ detail: 'Error' }, { status: 500 });
           }
-          return HttpResponse.json(
-            toPaginatedRead([
-              {
-                id: '1',
-                name: 'Coffee',
-                description: null,
-                date: '2026-03-01',
-                user_id: 'u1',
-              },
-            ]),
-          );
+          return HttpResponse.json(toPaginatedRead(hangoutsMock(1)));
         },
       ),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -159,7 +144,11 @@ describe('Hangouts screen', () => {
       http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText('No hangouts found.')).toBeInTheDocument();
@@ -171,7 +160,11 @@ describe('Hangouts screen', () => {
       http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead([]))),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -181,13 +174,7 @@ describe('Hangouts screen', () => {
   });
 
   it('create flow: open dialog, submit creates and refetches list', async () => {
-    const created = {
-      id: 'h-new',
-      name: 'Brunch',
-      description: 'Weekend brunch',
-      date: '2026-03-01',
-      user_id: 'u1',
-    };
+    const created = hangoutMock();
     const listAfterCreate = [created];
 
     server.use(
@@ -195,17 +182,21 @@ describe('Hangouts screen', () => {
         HttpResponse.json(toPaginatedRead(listAfterCreate)),
       ),
       http.post(hangoutsUrl, async ({ request }) => {
-        const body = (await request.json()) as Record<string, unknown>;
+        const body = (await request.json()) as HangoutCreate;
         expect(body).toMatchObject({
-          name: 'Brunch',
-          date: '2026-03-01',
-          description: 'Weekend brunch',
+          name: created.name,
+          date: created.date,
+          description: created.description,
         });
         return HttpResponse.json(created, { status: 201 });
       }),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(
@@ -226,12 +217,12 @@ describe('Hangouts screen', () => {
     const dialog = screen.getByRole('dialog', { name: /create hangout/i });
     await userEvent.type(
       within(dialog).getByLabelText(/hangout name/i),
-      'Brunch',
+      created.name,
     );
-    await userEvent.type(within(dialog).getByLabelText(/date/i), '2026-03-01');
+    await userEvent.type(within(dialog).getByLabelText(/date/i), created.date);
     await userEvent.type(
       within(dialog).getByLabelText(/description/i),
-      'Weekend brunch',
+      created.description ?? '',
     );
     await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
 
@@ -244,35 +235,35 @@ describe('Hangouts screen', () => {
   });
 
   it('edit flow: edit button opens dialog with prefilled data', async () => {
-    const items = [
-      {
-        id: 'h-1',
-        name: 'Brunch',
-        description: 'Weekend brunch',
-        date: '2026-03-01',
-        user_id: 'u1',
-      },
-    ];
+    const items = hangoutsMock(1);
+    const updated = hangoutMock();
     server.use(
       http.get(hangoutsUrl, () => HttpResponse.json(toPaginatedRead(items))),
-      http.patch(`${API_URL}/hangouts/h-1`, async ({ request }) => {
-        const body = (await request.json()) as Record<string, unknown>;
-        expect(body).toMatchObject({ name: 'Updated brunch' });
-        return HttpResponse.json({
-          ...items[0],
-          name: 'Updated brunch',
-        });
-      }),
+      http.patch(
+        `${API_URL}/${hangoutsPaths.update(items[0].id)}`,
+        async ({ request }) => {
+          const body = (await request.json()) as Record<string, unknown>;
+          expect(body).toMatchObject({ name: updated.name });
+          return HttpResponse.json({
+            ...items[0],
+            name: updated.name,
+          });
+        },
+      ),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
     });
 
     const editButton = screen.getByRole('button', {
-      name: /edit brunch/i,
+      name: new RegExp(`edit ${items[0].name}`, 'i'),
     });
     await userEvent.click(editButton);
 
@@ -281,19 +272,11 @@ describe('Hangouts screen', () => {
         screen.getByRole('dialog', { name: /edit hangout/i }),
       ).toBeInTheDocument();
     });
-    expect(screen.getByLabelText(/hangout name/i)).toHaveValue('Brunch');
+    expect(screen.getByLabelText(/hangout name/i)).toHaveValue(items[0].name);
   });
 
   it('delete flow: delete button opens confirm dialog, confirm deletes', async () => {
-    const items = [
-      {
-        id: 'h-1',
-        name: 'Brunch',
-        description: null,
-        date: '2026-03-01',
-        user_id: 'u1',
-      },
-    ];
+    const items = hangoutsMock(1);
     let getCallCount = 0;
     server.use(
       http.get(hangoutsUrl, () => {
@@ -302,19 +285,23 @@ describe('Hangouts screen', () => {
           getCallCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
         );
       }),
-      http.delete(`${API_URL}/hangouts/h-1`, () =>
+      http.delete(`${API_URL}/${hangoutsPaths.delete(items[0].id)}`, () =>
         HttpResponse.json(null, { status: 204 }),
       ),
     );
 
-    renderWithQueryClient(<Hangouts />);
+    render(
+      <ProviderWrapper queryClientConfig={queryClientConfig}>
+        <Hangouts />
+      </ProviderWrapper>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Hangouts\s+\(1\)/)).toBeInTheDocument();
     });
 
     const deleteButton = screen.getByRole('button', {
-      name: /delete brunch/i,
+      name: new RegExp(`delete ${items[0].name}`, 'i'),
     });
     await userEvent.click(deleteButton);
 

@@ -25,8 +25,8 @@ vi.mock('@tanstack/react-virtual', () => ({
   }),
 }));
 
-const API_URL = config.apiUrl;
-const categoriesUrl = `${API_URL}/${categoriesPaths.list}`;
+const API_URL = config.apiUrl as string;
+const categoriesUrl = `${API_URL}/${categoriesPaths.list}` as const;
 
 const server = setupServer();
 
@@ -209,7 +209,7 @@ describe('Categories screen', () => {
         HttpResponse.json(toPaginatedRead(listData)),
       ),
       http.patch(
-        `${API_URL}/categories/${items[0].id}/`,
+        `${API_URL}/${categoriesPaths.update(items[0].id)}`,
         async ({ request }) => {
           const body = (await request.json()) as { name?: string };
           const updated = categoryMock({ name: body.name ?? items[0].name });
@@ -258,7 +258,7 @@ describe('Categories screen', () => {
           getCount === 1 ? toPaginatedRead(items) : toPaginatedRead([]),
         );
       }),
-      http.delete(`${API_URL}/categories/${items[0].id}`, () =>
+      http.delete(`${API_URL}/${categoriesPaths.delete(items[0].id)}`, () =>
         HttpResponse.json(null, { status: 204 }),
       ),
     );
