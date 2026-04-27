@@ -214,14 +214,18 @@ describe('Subcategories screen', () => {
     });
 
     const dialog = screen.getByRole('dialog', { name: /create subcategory/i });
-    const categoryInput = within(dialog).getByTestId(
-      'subcategory-form-category',
+
+    // Open category combobox and select category
+    await userEvent.click(within(dialog).getByTestId('subcategory-form-category'));
+    await userEvent.type(
+      screen.getByPlaceholderText('Search category…'),
+      categories[0].name,
     );
-    await userEvent.type(categoryInput, categories[0].name);
     const categoryOption = await screen.findByRole('option', {
       name: new RegExp(categories[0].name, 'i'),
     });
     await userEvent.click(categoryOption);
+
     await userEvent.type(
       within(dialog).getByLabelText(/subcategory name/i),
       'New Sub',

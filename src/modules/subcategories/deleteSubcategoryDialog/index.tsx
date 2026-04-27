@@ -1,12 +1,13 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from '@mui/material';
 import { useState } from 'react';
-import { themeTokens } from '../../../theme/tailwind';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import type { DeleteSubcategoryDialogProps } from './types';
 
 export function DeleteSubcategoryDialog({
@@ -35,42 +36,23 @@ export function DeleteSubcategoryDialog({
   const name = subcategory?.name ?? '';
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="xs"
-      fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: themeTokens.surface,
-          border: `1px solid ${themeTokens.border}`,
-          color: themeTokens.textPrimary,
-        },
-      }}
-    >
-      <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-        Delete subcategory
-      </DialogTitle>
-      <DialogContent sx={{ color: themeTokens.textSecondary }}>
-        Delete subcategory «{name}»? This cannot be undone.
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button
-          onClick={handleClose}
-          disabled={deleting}
-          sx={{ color: themeTokens.textSecondary }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleConfirm}
-          disabled={deleting}
-          sx={{ backgroundColor: themeTokens.error }}
-        >
-          {deleting ? 'Deleting…' : 'Delete'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <AlertDialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete subcategory</AlertDialogTitle>
+        </AlertDialogHeader>
+        <p className="text-sm text-muted-foreground">
+          Delete subcategory «{name}»? This cannot be undone.
+        </p>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting} onClick={handleClose}>
+            Cancel
+          </AlertDialogCancel>
+          <Button variant="destructive" onClick={handleConfirm} disabled={deleting}>
+            {deleting ? 'Deleting…' : 'Delete'}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
