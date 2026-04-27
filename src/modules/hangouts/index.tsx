@@ -1,13 +1,8 @@
-import AddRounded from '@mui/icons-material/AddRounded';
-import {
-  Box,
-  Button,
-  Snackbar,
-  TablePagination,
-  Typography,
-} from '@mui/material';
+import { Plus } from 'lucide-react';
+import type { PaginationState } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import {
   useCreateHangoutMutation,
   useDeleteHangoutMutation,
@@ -17,7 +12,7 @@ import {
 import { hangoutsQueryKey } from '../../services/hangouts/constants';
 import type { HangoutRead } from '../../services/hangouts/types';
 import { DEFAULT_LIST_LIMIT } from '../../services/types';
-import { themeTokens } from '../../theme/tailwind';
+import { Button } from '@/components/ui/button';
 import { DeleteHangoutDialog } from './deleteHangoutDialog';
 import { HangoutFormDialog } from './hangoutFormDialog';
 import { HangoutsTable } from './hangoutsTable';
@@ -25,15 +20,19 @@ import { useHangoutsStore } from './store';
 
 export function Hangouts() {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_LIST_LIMIT,
+  });
+
   const listParams = useMemo(
     () => ({
-      skip: page * rowsPerPage,
-      limit: rowsPerPage,
+      skip: pagination.pageIndex * pagination.pageSize,
+      limit: pagination.pageSize,
     }),
-    [page, rowsPerPage],
+    [pagination],
   );
+
   const {
     data: listData,
     isLoading,
@@ -41,11 +40,10 @@ export function Hangouts() {
     error,
     refetch,
   } = useHangoutsQuery(listParams);
+
   const items = listData?.items ?? [];
   const total = listData?.total ?? 0;
   const setFromQuery = useHangoutsStore((s) => s.setFromQuery);
-  const [showSnackBar, setShowSnackBar] = useState(false);
-  const [snackBarMessage, setSnackBarMessage] = useState('');
 
   useEffect(() => {
     const err =
@@ -61,29 +59,22 @@ export function Hangouts() {
     queryClient.invalidateQueries({ queryKey: [hangoutsQueryKey] });
   }, [queryClient]);
 
-  const handleCloseSnackBar = useCallback(() => {
-    setShowSnackBar(false);
-  }, []);
-
   const createMutation = useCreateHangoutMutation({
     onSuccess: () => {
       handleInvalidateHangouts();
-      setShowSnackBar(true);
-      setSnackBarMessage('Hangout created');
+      toast.success('Hangout created');
     },
   });
   const updateMutation = useUpdateHangoutMutation({
     onSuccess: () => {
       handleInvalidateHangouts();
-      setShowSnackBar(true);
-      setSnackBarMessage('Hangout updated');
+      toast.success('Hangout updated');
     },
   });
   const deleteMutation = useDeleteHangoutMutation({
     onSuccess: () => {
       handleInvalidateHangouts();
-      setShowSnackBar(true);
-      setSnackBarMessage('Hangout deleted');
+      toast.success('Hangout deleted');
     },
   });
 
@@ -95,9 +86,7 @@ export function Hangouts() {
     description: string | null;
   } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [hangoutToDelete, setHangoutToDelete] = useState<HangoutRead | null>(
-    null,
-  );
+  const [hangoutToDelete, setHangoutToDelete] = useState<HangoutRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const errorMessage =
@@ -131,26 +120,17 @@ export function Hangouts() {
   }, []);
 
   const handleFormSubmit = useCallback(
-    async (data: {
-      name: string;
-      date: string;
-      description: string | null;
-    }) => {
+    async (data: { name: string; date: string; description: string | null }) => {
       setSubmitError(null);
       try {
         if (editingHangoutId === null) {
           await createMutation.mutateAsync(data);
         } else {
-          await updateMutation.mutateAsync({
-            id: editingHangoutId,
-            body: data,
-          });
+          await updateMutation.mutateAsync({ id: editingHangoutId, body: data });
         }
         setFormOpen(false);
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : 'Something went wrong',
-        );
+        setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
         throw err;
       }
     },
@@ -167,31 +147,17 @@ export function Hangouts() {
   );
 
   return (
-    <Box sx={{ py: 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-          flexWrap: 'wrap',
-          gap: 1,
-        }}
-      >
-        <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
-          Hangouts
-          {total > 0 ? ` (${total})` : ''}
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddRounded />}
-          onClick={openCreate}
-          sx={{ backgroundColor: themeTokens.primary }}
-          data-testid="hangouts-add-button"
-        >
+    <div className="py-2 space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-lg font-semibold text-foreground">
+          Hangouts{total > 0 ? ` (${total})` : ''}
+        </h2>
+        <Button onClick={openCreate} data-testid="hangouts-add-button">
+          <Plus className="h-4 w-4 mr-1" />
           Create hangout
         </Button>
-      </Box>
+      </div>
+
       <HangoutsTable
         items={items}
         loading={isLoading}
@@ -199,23 +165,12 @@ export function Hangouts() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+        total={total}
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        onPaginationChange={setPagination}
       />
-      <TablePagination
-        component="div"
-        count={total}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(Number.parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[10, 25, 50, 100]}
-        sx={{
-          color: themeTokens.textSecondary,
-          borderTop: `1px solid ${themeTokens.border}`,
-        }}
-      />
+
       <HangoutFormDialog
         open={formOpen}
         onClose={() => setFormOpen(false)}
@@ -223,6 +178,7 @@ export function Hangouts() {
         onSubmit={handleFormSubmit}
         submitError={submitError}
       />
+
       <DeleteHangoutDialog
         open={deleteOpen}
         onClose={() => {
@@ -232,13 +188,6 @@ export function Hangouts() {
         hangout={hangoutToDelete}
         onConfirm={handleDeleteConfirm}
       />
-      <Snackbar
-        open={showSnackBar}
-        onClose={handleCloseSnackBar}
-        message={snackBarMessage}
-        autoHideDuration={1500}
-        data-testid="hangouts-snackbar"
-      />
-    </Box>
+    </div>
   );
 }

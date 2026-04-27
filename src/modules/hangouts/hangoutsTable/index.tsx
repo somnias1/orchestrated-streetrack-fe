@@ -1,152 +1,112 @@
-import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
-import EditRounded from '@mui/icons-material/EditRounded';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { Pencil, Trash2 } from 'lucide-react';
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { TablePagination } from '@/components/TablePagination';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import type { HangoutRead } from '../../../services/hangouts/types';
-import { themeTokens } from '../../../theme/tailwind';
 import { formatDate } from '../../../utils';
-import {
-  COLUMN_SIZES,
-  GRID_TEMPLATE_FR,
-  ROW_HEIGHT,
-  STATE_ROW_MIN_HEIGHT,
-  TABLE_MIN_HEIGHT,
-  TABLE_WIDTH,
-} from './constants';
+import { GRID_TEMPLATE_FR, ROW_HEIGHT, TABLE_MIN_HEIGHT } from './constants';
 import type { HangoutsTableProps } from './types';
 
+const SKELETON_ROWS = 5;
+
 function createColumns(
-  onEdit: (hangout: HangoutRead) => void,
-  onDelete: (hangout: HangoutRead) => void,
+  onEdit: (h: HangoutRead) => void,
+  onDelete: (h: HangoutRead) => void,
 ): ColumnDef<HangoutRead>[] {
   return [
     {
       accessorKey: 'name',
       header: 'Name',
-      size: COLUMN_SIZES[0],
       cell: (info) => {
         const value = info.getValue<string>();
         const truncated = value.length > 36 ? `${value.slice(0, 36)}…` : value;
-        const cell = (
-          <Typography
-            variant="body2"
-            sx={{
-              color: themeTokens.textPrimary,
-              maxWidth: 180,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
+        return (
+          <span
+            className="text-sm text-foreground truncate block"
+            title={value.length > 36 ? value : undefined}
           >
             {truncated}
-          </Typography>
-        );
-        return value.length > 36 ? (
-          <Tooltip title={value} placement="top-start">
-            {cell}
-          </Tooltip>
-        ) : (
-          cell
+          </span>
         );
       },
     },
     {
       accessorKey: 'description',
       header: 'Description',
-      size: COLUMN_SIZES[1],
       cell: (info) => {
         const value = info.getValue<string | null>();
         if (!value) {
-          return (
-            <Typography
-              variant="body2"
-              sx={{ color: themeTokens.textSecondary }}
-            >
-              —
-            </Typography>
-          );
+          return <span className="text-sm text-muted-foreground">—</span>;
         }
         const truncated = value.length > 50 ? `${value.slice(0, 50)}…` : value;
-        const cell = (
-          <Typography
-            variant="body2"
-            sx={{
-              color: themeTokens.textPrimary,
-              maxWidth: 260,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
+        return (
+          <span
+            className="text-sm text-muted-foreground truncate block"
+            title={value.length > 50 ? value : undefined}
           >
             {truncated}
-          </Typography>
-        );
-        return value.length > 50 ? (
-          <Tooltip title={value} placement="top-start">
-            {cell}
-          </Tooltip>
-        ) : (
-          cell
+          </span>
         );
       },
     },
     {
       accessorKey: 'date',
       header: 'Date',
-      size: COLUMN_SIZES[2],
       cell: (info) => (
-        <Typography variant="body2" sx={{ color: themeTokens.textSecondary }}>
+        <span className="text-sm text-muted-foreground">
           {formatDate(info.getValue<string>())}
-        </Typography>
+        </span>
       ),
     },
     {
       id: 'actions',
       header: 'Actions',
-      size: COLUMN_SIZES[3],
       cell: (info) => {
         const hangout = info.row.original;
         return (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Tooltip title="Edit">
-              <IconButton
-                size="small"
-                onClick={() => onEdit(hangout)}
-                aria-label={`Edit ${hangout.name}`}
-                sx={{ color: themeTokens.primary }}
-              >
-                <EditRounded fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton
-                size="small"
-                onClick={() => onDelete(hangout)}
-                aria-label={`Delete ${hangout.name}`}
-                sx={{ color: themeTokens.error }}
-              >
-                <DeleteOutlineRounded fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
+          <TooltipProvider delayDuration={0}>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary"
+                    onClick={() => onEdit(hangout)}
+                    aria-label={`Edit ${hangout.name}`}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Edit</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive"
+                    onClick={() => onDelete(hangout)}
+                    aria-label={`Delete ${hangout.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         );
       },
     },
@@ -160,14 +120,23 @@ export function HangoutsTable({
   onRetry,
   onEdit,
   onDelete,
+  total,
+  pageIndex,
+  pageSize,
+  onPaginationChange,
 }: HangoutsTableProps) {
-  const columns = createColumns(onEdit, onDelete);
   const parentRef = useRef<HTMLDivElement>(null);
+  const columns = createColumns(onEdit, onDelete);
 
   const table = useReactTable({
     data: items,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    rowCount: total,
+    state: { pagination: { pageIndex, pageSize } },
+    onPaginationChange,
   });
 
   const { rows } = table.getRowModel();
@@ -183,191 +152,95 @@ export function HangoutsTable({
   const showVirtualBody = !loading && !error && items.length > 0;
 
   return (
-    <Box
-      sx={{
-        backgroundColor: themeTokens.surface,
-        border: `1px solid ${themeTokens.border}`,
-        borderRadius: 1,
-        overflow: 'hidden',
-        height: '67vh',
-        maxHeight: '67vh',
-      }}
-    >
-      {/* Header outside scroll area so it never scrolls away */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: GRID_TEMPLATE_FR,
-          width: '100%',
-          minWidth: TABLE_WIDTH,
-          backgroundColor: themeTokens.surface,
-          borderBottom: `1px solid ${themeTokens.border}`,
-          boxSizing: 'border-box',
-        }}
+    <div className="rounded-md border border-border bg-card overflow-hidden flex flex-col">
+      {/* Header */}
+      <div
+        className="grid border-b border-border bg-card"
+        style={{ gridTemplateColumns: GRID_TEMPLATE_FR }}
       >
         {table.getHeaderGroups().flatMap((group) =>
           group.headers.map((header) => (
-            <Box
+            <div
               key={header.id}
-              component="div"
               role="columnheader"
-              sx={{
-                px: 2,
-                py: 1.5,
-                textAlign: 'left',
-                backgroundColor: themeTokens.surface,
-                color: themeTokens.textPrimary,
-                fontWeight: 600,
-                minWidth: 0,
-                border: 0,
-              }}
+              className="px-3 py-2.5 text-sm font-semibold text-foreground"
             >
               {header.isPlaceholder
                 ? null
-                : flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
-            </Box>
+                : flexRender(header.column.columnDef.header, header.getContext())}
+            </div>
           )),
         )}
-      </Box>
-      <Box
+      </div>
+
+      {/* Body */}
+      <div
         ref={parentRef}
-        sx={{
-          overflow: 'auto',
-          minHeight: TABLE_MIN_HEIGHT,
-          maxHeight: '67vh',
-        }}
+        className="overflow-auto flex-1"
+        style={{ minHeight: TABLE_MIN_HEIGHT, maxHeight: '60vh' }}
       >
-        <Table
-          sx={{
-            width: '100%',
-            minWidth: TABLE_WIDTH,
-            tableLayout: 'fixed',
-          }}
-        >
-          <TableBody>
-            {loading && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  sx={{
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    py: 6,
-                    textAlign: 'center',
-                    minHeight: STATE_ROW_MIN_HEIGHT,
-                    verticalAlign: 'middle',
-                  }}
-                >
-                  <CircularProgress sx={{ color: themeTokens.primary }} />
-                </TableCell>
-              </TableRow>
-            )}
-            {!loading && error && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  sx={{
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    py: 3,
-                    textAlign: 'center',
-                    minHeight: STATE_ROW_MIN_HEIGHT,
-                    verticalAlign: 'middle',
-                  }}
-                >
-                  <Typography sx={{ color: themeTokens.error, mb: 2 }}>
-                    {error}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    onClick={onRetry}
-                    sx={{ backgroundColor: themeTokens.primary }}
-                  >
-                    Retry
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-            {!loading && !error && items.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  align="center"
-                  sx={{
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    py: 3,
-                    color: themeTokens.textSecondary,
-                    minHeight: STATE_ROW_MIN_HEIGHT,
-                    verticalAlign: 'middle',
-                  }}
-                >
-                  No hangouts found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        {showVirtualBody && (
-          <Box
-            sx={{
-              position: 'relative',
-              width: '100%',
-              minWidth: TABLE_WIDTH,
-              height: `${totalSize}px`,
-            }}
+        {loading && (
+          <div
+            role="progressbar"
+            aria-label="Loading hangouts"
+            className="flex flex-col gap-2 p-3"
           >
+            {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+            <p className="text-sm text-destructive">{error}</p>
+            <Button variant="outline" size="sm" onClick={onRetry} data-testid="retry-button">
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {!loading && !error && items.length === 0 && (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-sm text-muted-foreground">No hangouts found.</p>
+          </div>
+        )}
+
+        {showVirtualBody && (
+          <div style={{ position: 'relative', width: '100%', height: `${totalSize}px` }}>
             {virtualItems.map((virtualRow) => {
               const row = rows[virtualRow.index];
               const hangout = row.original;
               return (
-                <Box
+                <div
                   key={row.id}
-                  component="div"
                   role="row"
                   aria-label={hangout.name}
                   data-testid={`hangout-row-${hangout.id}`}
-                  sx={{
-                    position: 'absolute',
+                  className={cn(
+                    'absolute left-0 right-0 grid items-center border-b border-border bg-card hover:bg-accent/30',
+                  )}
+                  style={{
                     top: 0,
-                    left: 0,
-                    right: 0,
                     width: '100%',
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
-                    display: 'grid',
                     gridTemplateColumns: GRID_TEMPLATE_FR,
-                    alignItems: 'center',
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    backgroundColor: themeTokens.surface,
-                    '&:hover': {
-                      backgroundColor: themeTokens.background,
-                    },
-                    boxSizing: 'border-box',
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <Box
-                      key={cell.id}
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        minWidth: 0,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </Box>
+                    <div key={cell.id} className="px-3 py-2 min-w-0 overflow-hidden">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </div>
                   ))}
-                </Box>
+                </div>
               );
             })}
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+
+      <TablePagination table={table} />
+    </div>
   );
 }
