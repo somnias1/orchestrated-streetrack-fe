@@ -1,12 +1,14 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from '@mui/material';
 import { useState } from 'react';
-import { themeTokens } from '../../../theme/tailwind';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import type { DeleteHangoutDialogProps } from './types';
 
 export function DeleteHangoutDialog({
@@ -33,42 +35,27 @@ export function DeleteHangoutDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="xs"
-      fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: themeTokens.surface,
-          border: `1px solid ${themeTokens.border}`,
-          color: themeTokens.textPrimary,
-        },
-      }}
-    >
-      <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-        Delete hangout
-      </DialogTitle>
-      <DialogContent sx={{ color: themeTokens.textSecondary }}>
-        Delete this hangout? This cannot be undone.
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button
-          onClick={handleClose}
-          disabled={deleting}
-          sx={{ color: themeTokens.textSecondary }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleConfirm}
-          disabled={deleting}
-          sx={{ backgroundColor: themeTokens.error }}
-        >
-          {deleting ? 'Deleting…' : 'Delete'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <AlertDialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete hangout</AlertDialogTitle>
+          <AlertDialogDescription>
+            Delete this hangout? This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting} onClick={handleClose}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            disabled={deleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleting ? 'Deleting…' : 'Delete'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

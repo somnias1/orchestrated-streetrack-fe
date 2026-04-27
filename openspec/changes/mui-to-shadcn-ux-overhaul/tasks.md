@@ -86,11 +86,11 @@
 
 ## 8. Hangouts screen and table
 
-- [ ] 8.1 Rewrite hangouts table shell — div-grid, Skeleton, shadcn Buttons, Lucide icons
-- [ ] 8.2 Replace Snackbar with `toast.*`; wire TanStack Table manual pagination (`manualPagination: true`, `onPaginationChange`); derive `skip`/`limit` from table state; render `<TablePagination table={table} />`; remove manual `page`/`rowsPerPage` useState
-- [ ] 8.3 Rewrite `hangoutFormDialog` — shadcn Dialog + Form + Input (name, date, description)
-- [ ] 8.4 Rewrite delete confirm dialog — shadcn AlertDialog
-- [ ] 8.5 Update `Hangouts.test.tsx` — selector audit, toast assertions
+- [x] 8.1 Rewrite hangouts table shell — div-grid, Skeleton, shadcn Buttons, Lucide icons
+- [x] 8.2 Replace Snackbar with `toast.*`; wire TanStack Table manual pagination (`manualPagination: true`, `onPaginationChange`); derive `skip`/`limit` from table state; render `<TablePagination table={table} />`; remove manual `page`/`rowsPerPage` useState
+- [x] 8.3 Rewrite `hangoutFormDialog` — shadcn Dialog + Form + Input (name, date, description)
+- [x] 8.4 Rewrite delete confirm dialog — shadcn AlertDialog
+- [x] 8.5 Update `Hangouts.test.tsx` — selector audit, toast assertions (selectors already compatible)
 - [ ] 8.6 Run gate: `npm test && npx biome check .`
 
 ## 9. Test suite audit and coverage gate

@@ -1,21 +1,30 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useCallback, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
 import {
-  Button,
   Dialog,
-  DialogActions,
   DialogContent,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
-  FormHelperText,
-  TextField,
-} from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
-import { themeTokens } from '../../../theme/tailwind';
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { type HangoutFormValues, hangoutFormSchema } from './schema';
 import type { HangoutFormDialogProps, HangoutFormPayload } from './types';
 
 function toPayload(values: HangoutFormValues): HangoutFormPayload {
   return {
     name: values.name.trim(),
-    date: values.date,
+    date: values.date.trim(),
     description:
       values.description === null || values.description.trim() === ''
         ? null
@@ -31,146 +40,113 @@ export function HangoutFormDialog({
   submitError,
 }: HangoutFormDialogProps) {
   const isEdit = initialValues !== null;
-  const [name, setName] = useState(initialValues?.name ?? '');
-  const [date, setDate] = useState(initialValues?.date ?? '');
-  const [description, setDescription] = useState(
-    initialValues?.description ?? '',
-  );
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const form = useForm<HangoutFormValues>({
+    resolver: zodResolver(hangoutFormSchema),
+    defaultValues: {
+      name: '',
+      date: '',
+      description: '',
+    },
+  });
+
+  const { handleSubmit, reset, formState: { isSubmitting } } = form;
 
   useEffect(() => {
     if (open) {
-      setName(initialValues?.name ?? '');
-      setDate(initialValues?.date ?? '');
-      setDescription(initialValues?.description ?? '');
-      setFieldErrors({});
+      reset({
+        name: initialValues?.name ?? '',
+        date: initialValues?.date ?? '',
+        description: initialValues?.description ?? '',
+      });
     }
-  }, [open, initialValues]);
+  }, [open, initialValues, reset]);
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const raw = {
-        name: name.trim(),
-        date: date.trim(),
-        description: description.trim() === '' ? null : description.trim(),
-      };
-      const parsed = hangoutFormSchema.safeParse(raw);
-      if (!parsed.success) {
-        const errors: Record<string, string> = {};
-        for (const issue of parsed.error.issues) {
-          const path = issue.path[0]?.toString() ?? 'form';
-          if (!errors[path]) errors[path] = issue.message;
-        }
-        setFieldErrors(errors);
-        return;
-      }
-      setFieldErrors({});
-      setSubmitting(true);
+  const onValid = useCallback(
+    async (values: HangoutFormValues) => {
       try {
-        await onSubmit(toPayload(parsed.data));
+        await onSubmit(toPayload(values));
         onClose();
       } catch {
-        // Store sets error; parent can pass submitError
-      } finally {
-        setSubmitting(false);
+        // submitError prop surfaces the error
       }
     },
-    [name, date, description, onSubmit, onClose],
+    [onSubmit, onClose],
   );
 
   const handleClose = useCallback(() => {
-    if (!submitting) onClose();
-  }, [onClose, submitting]);
+    if (!isSubmitting) onClose();
+  }, [onClose, isSubmitting]);
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: themeTokens.surface,
-          border: `1px solid ${themeTokens.border}`,
-          color: themeTokens.textPrimary,
-        },
-      }}
-    >
-      <form onSubmit={handleSubmit}>
-        <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-          {isEdit ? 'Edit hangout' : 'Create hangout'}
-        </DialogTitle>
-        <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-        >
-          {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <TextField
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            fullWidth
-            error={Boolean(fieldErrors.name)}
-            helperText={fieldErrors.name}
-            inputProps={{ 'aria-label': 'Hangout name' }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
-          />
-          <TextField
-            label="Date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            fullWidth
-            error={Boolean(fieldErrors.date)}
-            helperText={fieldErrors.date}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ 'aria-label': 'Hangout date' }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
-          />
-          <TextField
-            label="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            fullWidth
-            multiline
-            minRows={2}
-            error={Boolean(fieldErrors.description)}
-            helperText={fieldErrors.description}
-            inputProps={{ 'aria-label': 'Hangout description' }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': { color: themeTokens.textSecondary },
-            }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            type="button"
-            onClick={handleClose}
-            disabled={submitting}
-            sx={{ color: themeTokens.textSecondary }}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={submitting}
-            sx={{ backgroundColor: themeTokens.primary }}
-          >
-            {submitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
-          </Button>
-        </DialogActions>
-      </form>
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? 'Edit hangout' : 'Create hangout'}</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={handleSubmit(onValid)} className="flex flex-col gap-4">
+            {submitError && (
+              <p className="text-sm text-destructive">{submitError}</p>
+            )}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} aria-label="Hangout name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" aria-label="Date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value ?? ''}
+                      aria-label="Description"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
     </Dialog>
   );
 }
