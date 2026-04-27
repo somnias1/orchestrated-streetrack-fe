@@ -1,27 +1,10 @@
-import AddRounded from '@mui/icons-material/AddRounded';
-import ArrowDropDownRounded from '@mui/icons-material/ArrowDropDownRounded';
-import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
-import FilterAltOff from '@mui/icons-material/FilterAltOff';
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  IconButton,
-  InputLabel,
-  Menu,
-  MenuItem,
-  Select,
-  Snackbar,
-  TablePagination,
-  Typography,
-} from '@mui/material';
+import { ChevronDown, Download, FilterX, Plus } from 'lucide-react';
+import type { PaginationState } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  HangoutAutocomplete,
-  SubcategoryAutocomplete,
-} from '../../components/pickers';
+import { toast } from 'sonner';
+import { HangoutCombobox } from '../../components/pickers/HangoutCombobox';
+import { SubcategoryCombobox } from '../../components/pickers/SubcategoryCombobox';
 import { config } from '../../config';
 import { dashboardQueryKey } from '../../services/dashboard/constants';
 import {
@@ -43,12 +26,21 @@ import type {
   TransactionsListParams,
 } from '../../services/transactions/types';
 import { DEFAULT_LIST_LIMIT } from '../../services/types';
+import { Button } from '@/components/ui/button';
 import {
-  selectFormControlSx,
-  selectMenuPaperSx,
-  selectThemedSx,
-  themeTokens,
-} from '../../theme/tailwind';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import useCallbackApi from '../../utils/callbackApi';
 import { BulkTransactionsDialog } from './bulkTransactionsDialog';
 import {
@@ -66,20 +58,20 @@ import { TransactionsTable } from './transactionsTable';
 
 export function Transactions() {
   const queryClient = useQueryClient();
-  const [showSnackBar, setShowSnackBar] = useState(false);
-  const [snackBarMessage, setSnackBarMessage] = useState('');
   const [year, setYear] = useState(getDefaultYear);
   const [month, setMonth] = useState(getDefaultMonth);
   const [day, setDay] = useState<string>('');
   const [subcategoryId, setSubcategoryId] = useState('');
   const [hangoutId, setHangoutId] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_LIST_LIMIT,
+  });
 
   const listParams = useMemo<TransactionsListParams>(() => {
     const params: TransactionsListParams = {
-      skip: page * rowsPerPage,
-      limit: rowsPerPage,
+      skip: pagination.pageIndex * pagination.pageSize,
+      limit: pagination.pageSize,
     };
     if (year !== '') params.year = Number(year);
     if (month !== '') params.month = Number(month);
@@ -87,7 +79,7 @@ export function Transactions() {
     if (subcategoryId) params.subcategory_id = subcategoryId;
     if (hangoutId) params.hangout_id = hangoutId;
     return params;
-  }, [year, month, day, subcategoryId, hangoutId, page, rowsPerPage]);
+  }, [year, month, day, subcategoryId, hangoutId, pagination]);
 
   const clearFilters = useCallback(() => {
     setYear('');
@@ -95,7 +87,7 @@ export function Transactions() {
     setDay('');
     setSubcategoryId('');
     setHangoutId('');
-    setPage(0);
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
   }, []);
 
   const {
@@ -128,38 +120,32 @@ export function Transactions() {
   const createMutation = useCreateTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
-      setShowSnackBar(true);
-      setSnackBarMessage('Transaction created');
+      toast.success('Transaction created');
     },
   });
   const updateMutation = useUpdateTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
-      setShowSnackBar(true);
-      setSnackBarMessage('Transaction updated');
+      toast.success('Transaction updated');
     },
   });
   const deleteMutation = useDeleteTransactionMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
-      setShowSnackBar(true);
-      setSnackBarMessage('Transaction deleted');
+      toast.success('Transaction deleted');
     },
   });
   const bulkCreateMutation = useBulkCreateTransactionsMutation({
     onSuccess: () => {
       handleInvalidateTransactions();
-      setShowSnackBar(true);
-      setSnackBarMessage('Transactions bulk created');
+      toast.success('Transactions bulk created');
     },
   });
 
   const { callbackApi } = useCallbackApi();
   const importPreviewMutation = useImportPreviewMutation();
   const [formOpen, setFormOpen] = useState(false);
-  const [editingTransactionId, setEditingTransactionId] = useState<
-    string | null
-  >(null);
+  const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
   const [formInitial, setFormInitial] = useState<{
     subcategory_id: string;
     value: number;
@@ -168,19 +154,13 @@ export function Transactions() {
     hangout_id: string | null;
   } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] =
-    useState<TransactionRead | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<TransactionRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkSubmitError, setBulkSubmitError] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
-  const [importPreviewError, setImportPreviewError] = useState<string | null>(
-    null,
-  );
-  const [importSubmitError, setImportSubmitError] = useState<string | null>(
-    null,
-  );
+  const [importPreviewError, setImportPreviewError] = useState<string | null>(null);
+  const [importSubmitError, setImportSubmitError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
   const errorMessage =
@@ -191,7 +171,6 @@ export function Transactions() {
         : null;
 
   const openCreate = useCallback(() => {
-    setAddMenuAnchor(null);
     setEditingTransactionId(null);
     setFormInitial(null);
     setSubmitError(null);
@@ -199,33 +178,23 @@ export function Transactions() {
   }, []);
 
   const openBulk = useCallback(() => {
-    setAddMenuAnchor(null);
     setBulkSubmitError(null);
     setBulkOpen(true);
   }, []);
 
   const openImport = useCallback(() => {
-    setAddMenuAnchor(null);
     setImportPreviewError(null);
     setImportSubmitError(null);
     setImportOpen(true);
   }, []);
 
-  const handleCloseSnackBar = useCallback(() => {
-    setShowSnackBar(false);
-  }, []);
-
   const handleImportPreview = useCallback(
-    async (
-      rows: import('../../services/transactionManager/types').TransactionImportRow[],
-    ) => {
+    async (rows: import('../../services/transactionManager/types').TransactionImportRow[]) => {
       setImportPreviewError(null);
       try {
         return await importPreviewMutation.mutateAsync({ rows });
       } catch (err) {
-        setImportPreviewError(
-          err instanceof Error ? err.message : 'Preview failed',
-        );
+        setImportPreviewError(err instanceof Error ? err.message : 'Preview failed');
         throw err;
       }
     },
@@ -239,9 +208,7 @@ export function Transactions() {
         await bulkCreateMutation.mutateAsync(body);
         setImportOpen(false);
       } catch (err) {
-        setImportSubmitError(
-          err instanceof Error ? err.message : 'Import create failed',
-        );
+        setImportSubmitError(err instanceof Error ? err.message : 'Import create failed');
         throw err;
       }
     },
@@ -255,12 +222,8 @@ export function Transactions() {
         ...(listParams.year !== undefined && { year: listParams.year }),
         ...(listParams.month !== undefined && { month: listParams.month }),
         ...(listParams.day !== undefined && { day: listParams.day }),
-        ...(listParams.subcategory_id && {
-          subcategory_id: listParams.subcategory_id,
-        }),
-        ...(listParams.hangout_id && {
-          hangout_id: listParams.hangout_id,
-        }),
+        ...(listParams.subcategory_id && { subcategory_id: listParams.subcategory_id }),
+        ...(listParams.hangout_id && { hangout_id: listParams.hangout_id }),
       };
       await downloadCsvBlob(() =>
         callbackApi<Blob>(transactionManagerPaths.export, {
@@ -281,9 +244,7 @@ export function Transactions() {
         await bulkCreateMutation.mutateAsync(body);
         setBulkOpen(false);
       } catch (err) {
-        setBulkSubmitError(
-          err instanceof Error ? err.message : 'Bulk create failed',
-        );
+        setBulkSubmitError(err instanceof Error ? err.message : 'Bulk create failed');
         throw err;
       }
     },
@@ -321,16 +282,11 @@ export function Transactions() {
         if (editingTransactionId === null) {
           await createMutation.mutateAsync(data);
         } else {
-          await updateMutation.mutateAsync({
-            id: editingTransactionId,
-            body: data,
-          });
+          await updateMutation.mutateAsync({ id: editingTransactionId, body: data });
         }
         setFormOpen(false);
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : 'Something went wrong',
-        );
+        setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
         throw err;
       }
     },
@@ -346,177 +302,131 @@ export function Transactions() {
     [deleteMutation],
   );
 
+  const filtersActive = !!(year || month || day || subcategoryId || hangoutId);
+
   return (
-    <Box sx={{ py: 2, height: '80vh', maxHeight: '80vh' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-          flexWrap: 'wrap',
-          gap: 1,
-        }}
-      >
-        <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
-          Transactions
-          {total > 0 ? ` (${total})` : ''}
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+    <div className="py-2 space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-lg font-semibold text-foreground">
+          Transactions{total > 0 ? ` (${total})` : ''}
+        </h2>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-1" />
+                Add
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={openCreate}>Transaction</DropdownMenuItem>
+              <DropdownMenuItem onSelect={openBulk}>Bulk</DropdownMenuItem>
+              <DropdownMenuItem onSelect={openImport}>Import</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
-            variant="contained"
-            startIcon={<AddRounded />}
-            endIcon={<ArrowDropDownRounded />}
-            onClick={(e) => setAddMenuAnchor(e.currentTarget)}
-            aria-haspopup="menu"
-            aria-expanded={Boolean(addMenuAnchor)}
-            sx={{ backgroundColor: themeTokens.primary }}
-            data-testid="transactions-add-button"
-          >
-            Add
-          </Button>
-          <Menu
-            anchorEl={addMenuAnchor}
-            open={Boolean(addMenuAnchor)}
-            onClose={() => setAddMenuAnchor(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          >
-            <MenuItem onClick={openCreate}>Transaction</MenuItem>
-            <MenuItem onClick={openBulk}>Bulk</MenuItem>
-            <MenuItem onClick={openImport}>Import</MenuItem>
-          </Menu>
-          <Button
-            variant="outlined"
-            startIcon={<FileDownloadOutlined />}
+            variant="outline"
             onClick={handleExport}
             disabled={exporting}
-            sx={{
-              borderColor: themeTokens.border,
-              color: themeTokens.textPrimary,
-            }}
             data-testid="transactions-export-csv-button"
           >
+            <Download className="h-4 w-4 mr-2" />
             {exporting ? 'Exporting…' : 'Export CSV'}
           </Button>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <FormControl size="small" sx={{ minWidth: 90, ...selectFormControlSx }}>
-          <InputLabel id="transactions-year-label">Year</InputLabel>
-          <Select
-            labelId="transactions-year-label"
-            id="transactions-year"
-            value={year}
-            label="Year"
-            onChange={(e) => {
-              setPage(0);
-              setYear(e.target.value);
-            }}
-            sx={selectThemedSx}
-            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
-          >
-            <MenuItem value="">All</MenuItem>
-            {YEAR_OPTIONS.map((y) => (
-              <MenuItem key={y} value={String(y)}>
-                {y}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 100, ...selectFormControlSx }}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={year}
+          onValueChange={(v) => {
+            setPagination((p) => ({ ...p, pageIndex: 0 }));
+            setYear(v);
+          }}
         >
-          <InputLabel id="transactions-month-label">Month</InputLabel>
-          <Select
-            labelId="transactions-month-label"
-            id="transactions-month"
-            value={month}
-            label="Month"
-            onChange={(e) => {
-              setPage(0);
-              setMonth(e.target.value);
-            }}
-            sx={selectThemedSx}
-            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
-          >
-            <MenuItem value="">All</MenuItem>
+          <SelectTrigger className="w-24">
+            <SelectValue placeholder="Year" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All</SelectItem>
+            {YEAR_OPTIONS.map((y) => (
+              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={month}
+          onValueChange={(v) => {
+            setPagination((p) => ({ ...p, pageIndex: 0 }));
+            setMonth(v);
+          }}
+        >
+          <SelectTrigger className="w-28">
+            <SelectValue placeholder="Month" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All</SelectItem>
             {MONTHS.map((m) => (
-              <MenuItem key={m} value={String(m)}>
-                {m}
-              </MenuItem>
+              <SelectItem key={m} value={String(m)}>{m}</SelectItem>
             ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 80, ...selectFormControlSx }}>
-          <InputLabel id="transactions-day-label">Day</InputLabel>
-          <Select
-            labelId="transactions-day-label"
-            id="transactions-day"
-            value={day}
-            label="Day"
-            onChange={(e) => {
-              setPage(0);
-              setDay(e.target.value);
-            }}
-            sx={selectThemedSx}
-            MenuProps={{
-              PaperProps: { sx: { ...selectMenuPaperSx, maxHeight: 350 } },
-            }}
-          >
-            <MenuItem value="">All</MenuItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={day}
+          onValueChange={(v) => {
+            setPagination((p) => ({ ...p, pageIndex: 0 }));
+            setDay(v);
+          }}
+        >
+          <SelectTrigger className="w-20">
+            <SelectValue placeholder="Day" />
+          </SelectTrigger>
+          <SelectContent className="max-h-60">
+            <SelectItem value="">All</SelectItem>
             {DAY_OPTIONS.map((d) => (
-              <MenuItem key={d} value={String(d)}>
-                {d}
-              </MenuItem>
+              <SelectItem key={d} value={String(d)}>{d}</SelectItem>
             ))}
-          </Select>
-        </FormControl>
-        <Divider
-          orientation="vertical"
-          flexItem
-          sx={{ borderColor: themeTokens.border }}
-        />
-        <Box sx={{ minWidth: 200, flex: '0 1 200px', maxWidth: 320 }}>
-          <SubcategoryAutocomplete
-            label="Subcategory"
+          </SelectContent>
+        </Select>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <div className="w-52">
+          <SubcategoryCombobox
             value={subcategoryId}
             onChange={(id) => {
-              setPage(0);
+              setPagination((p) => ({ ...p, pageIndex: 0 }));
               setSubcategoryId(id);
             }}
-            allowEmpty
           />
-        </Box>
-        <Box sx={{ minWidth: 180, flex: '0 1 180px', maxWidth: 280 }}>
-          <HangoutAutocomplete
-            label="Hangout"
+        </div>
+
+        <div className="w-44">
+          <HangoutCombobox
             value={hangoutId}
             onChange={(id) => {
-              setPage(0);
+              setPagination((p) => ({ ...p, pageIndex: 0 }));
               setHangoutId(id);
             }}
-            allowEmpty
           />
-        </Box>
-        <Divider
-          orientation="vertical"
-          flexItem
-          sx={{ borderColor: themeTokens.border }}
-        />
-        <IconButton
+        </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={clearFilters}
-          sx={{
-            alignSelf: 'flex-start',
-            color: themeTokens.textSecondary,
-            '&.Mui-disabled': { color: themeTokens.disabled },
-          }}
-          disabled={!year && !month && !day && !subcategoryId && !hangoutId}
+          disabled={!filtersActive}
+          aria-label="Clear filters"
         >
-          <FilterAltOff />
-        </IconButton>
-      </Box>
+          <FilterX className="h-4 w-4" />
+        </Button>
+      </div>
+
       <TransactionsTable
         items={items}
         loading={isLoading}
@@ -524,23 +434,12 @@ export function Transactions() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+        total={total}
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        onPaginationChange={setPagination}
       />
-      <TablePagination
-        component="div"
-        count={total}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(Number.parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[10, 25, 50, 100]}
-        sx={{
-          color: themeTokens.textSecondary,
-          borderTop: `1px solid ${themeTokens.border}`,
-        }}
-      />
+
       <TransactionFormDialog
         open={formOpen}
         onClose={() => setFormOpen(false)}
@@ -548,6 +447,7 @@ export function Transactions() {
         onSubmit={handleFormSubmit}
         submitError={submitError}
       />
+
       <DeleteTransactionDialog
         open={deleteOpen}
         onClose={() => {
@@ -557,6 +457,7 @@ export function Transactions() {
         transaction={transactionToDelete}
         onConfirm={handleDeleteConfirm}
       />
+
       <BulkTransactionsDialog
         open={bulkOpen}
         onClose={() => {
@@ -567,6 +468,7 @@ export function Transactions() {
         submitError={bulkSubmitError}
         submitting={bulkCreateMutation.isPending}
       />
+
       <ImportTransactionsDialog
         open={importOpen}
         onClose={() => {
@@ -581,13 +483,6 @@ export function Transactions() {
         previewing={importPreviewMutation.isPending}
         submitting={bulkCreateMutation.isPending}
       />
-      <Snackbar
-        open={showSnackBar}
-        onClose={handleCloseSnackBar}
-        message={snackBarMessage}
-        autoHideDuration={1500}
-        data-testid="transactions-snackbar"
-      />
-    </Box>
+    </div>
   );
 }

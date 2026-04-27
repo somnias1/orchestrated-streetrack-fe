@@ -74,14 +74,14 @@
 
 ## 7. Transactions screen and table
 
-- [ ] 7.1 Rewrite transactions table shell — div-grid, Skeleton, shadcn Buttons, Lucide icons
-- [ ] 7.2 Replace filters (year/month/day, subcategory, hangout) with shadcn `Select` + `Combobox`
-- [ ] 7.3 Replace Snackbar with `toast.*`; wire TanStack Table manual pagination (`manualPagination: true`, `onPaginationChange`); derive `skip`/`limit` from table state; render `<TablePagination table={table} />`; remove manual `page`/`rowsPerPage` useState
-- [ ] 7.4 Rewrite `transactionFormDialog` — shadcn Dialog + Form + Input + shadcn Select (date) + `SubcategoryCombobox` + `HangoutCombobox`
-- [ ] 7.5 Rewrite `bulkTransactionsDialog` — shadcn Dialog + Form + `useFieldArray` + `React.memo` BulkRow using shadcn Input + Combobox; lift picker queries as `externalOptions`
-- [ ] 7.6 Rewrite `importTransactionsDialog` — shadcn Dialog + Textarea + shadcn Button
-- [ ] 7.7 Rewrite delete confirm dialog — shadcn AlertDialog
-- [ ] 7.8 Update `Transactions.test.tsx` — selector audit, toast assertions
+- [x] 7.1 Rewrite transactions table shell — div-grid, Skeleton, shadcn Buttons, Lucide icons
+- [x] 7.2 Replace filters (year/month/day, subcategory, hangout) with shadcn `Select` + `Combobox`
+- [x] 7.3 Replace Snackbar with `toast.*`; wire TanStack Table manual pagination (`manualPagination: true`, `onPaginationChange`); derive `skip`/`limit` from table state; render `<TablePagination table={table} />`; remove manual `page`/`rowsPerPage` useState
+- [x] 7.4 Rewrite `transactionFormDialog` — shadcn Dialog + Form + Input + shadcn Select (date) + `SubcategoryCombobox` + `HangoutCombobox`
+- [x] 7.5 Rewrite `bulkTransactionsDialog` — shadcn Dialog + Form + `useFieldArray` + `React.memo` BulkRow using shadcn Input + Combobox; lift picker queries as `externalOptions`
+- [x] 7.6 Rewrite `importTransactionsDialog` — shadcn Dialog + Textarea + shadcn Button
+- [x] 7.7 Rewrite delete confirm dialog — shadcn AlertDialog
+- [x] 7.8 Update `Transactions.test.tsx` — selector audit, toast assertions
 - [ ] 7.9 Run gate: `npm test && npx biome check .`
 
 ## 8. Hangouts screen and table

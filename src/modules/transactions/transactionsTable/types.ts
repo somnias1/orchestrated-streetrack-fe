@@ -1,3 +1,4 @@
+import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
 import type { TransactionRead } from '../../../services/transactions/types';
 
 export type TransactionsTableProps = Readonly<{
@@ -7,4 +8,8 @@ export type TransactionsTableProps = Readonly<{
   onRetry: () => void;
   onEdit: (transaction: TransactionRead) => void;
   onDelete: (transaction: TransactionRead) => void;
+  total: number;
+  pageIndex: number;
+  pageSize: number;
+  onPaginationChange: OnChangeFn<PaginationState>;
 }>;

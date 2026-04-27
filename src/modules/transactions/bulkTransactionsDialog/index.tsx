@@ -1,16 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormHelperText,
-  IconButton,
-  TextField,
-} from '@mui/material';
+import { Trash2 } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo } from 'react';
 import {
   type Control,
@@ -19,16 +8,22 @@ import {
   useFieldArray,
   useForm,
 } from 'react-hook-form';
-import {
-  HangoutAutocomplete,
-  SubcategoryAutocomplete,
-} from '../../../components/pickers';
+import { HangoutCombobox } from '../../../components/pickers/HangoutCombobox';
+import { SubcategoryCombobox } from '../../../components/pickers/SubcategoryCombobox';
 import { useHangoutsQuery } from '../../../services/hangouts';
 import type { HangoutRead } from '../../../services/hangouts/types';
 import { useSubcategoriesQuery } from '../../../services/subcategories';
 import type { SubcategoryRead } from '../../../services/subcategories/types';
 import { PICKER_LIST_PARAMS } from '../../../services/types';
-import { themeTokens } from '../../../theme/tailwind';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
   type BulkTransactionsFormValues,
   bulkTransactionsFormSchema,
@@ -36,8 +31,7 @@ import {
 import type { BulkTransactionsDialogProps } from './types';
 
 function getDefaultDate(): string {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
 }
 
 function makeEmptyRow() {
@@ -72,49 +66,24 @@ const BulkTransactionRow = memo(function BulkTransactionRow({
   control,
 }: BulkTransactionRowProps) {
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns:
-          'minmax(140px,1fr) minmax(200px,1.3fr) minmax(160px,1fr) 100px minmax(120px,1.2fr) auto',
-        gap: 1,
-        alignItems: 'start',
-      }}
-    >
+    <div className="grid gap-2 items-start" style={{ gridTemplateColumns: '140px 1fr 1fr 80px 1fr auto' }}>
       <Controller
         name={`rows.${index}.date`}
         control={control}
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            label="Date"
-            type="date"
-            size="small"
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            InputLabelProps={{ shrink: true }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': {
-                color: themeTokens.textSecondary,
-              },
-            }}
-          />
+        render={({ field }) => (
+          <Input {...field} type="date" aria-label={`Row ${index + 1} date`} className="h-9" />
         )}
       />
       <Controller
         name={`rows.${index}.subcategory_id`}
         control={control}
-        render={({ field, fieldState }) => (
-          <SubcategoryAutocomplete
-            label="Subcategory"
+        render={({ field }) => (
+          <SubcategoryCombobox
             value={field.value}
             onChange={field.onChange}
-            required
-            queryEnabled={queryEnabled}
             externalOptions={subcategoryOptions}
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
+            queryEnabled={queryEnabled}
+            aria-label={`Row ${index + 1} subcategory`}
           />
         )}
       />
@@ -122,66 +91,47 @@ const BulkTransactionRow = memo(function BulkTransactionRow({
         name={`rows.${index}.hangout_id`}
         control={control}
         render={({ field }) => (
-          <HangoutAutocomplete
-            label="Hangout"
+          <HangoutCombobox
             value={field.value}
             onChange={field.onChange}
-            allowEmpty
-            queryEnabled={queryEnabled}
             externalOptions={hangoutOptions}
+            queryEnabled={queryEnabled}
+            aria-label={`Row ${index + 1} hangout`}
           />
         )}
       />
       <Controller
         name={`rows.${index}.value`}
         control={control}
-        render={({ field, fieldState }) => (
-          <TextField
+        render={({ field }) => (
+          <Input
             {...field}
-            label="Value"
             type="number"
-            size="small"
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            inputProps={{ step: 1 }}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': {
-                color: themeTokens.textSecondary,
-              },
-            }}
+            step={1}
+            aria-label={`Row ${index + 1} value`}
+            className="h-9"
           />
         )}
       />
       <Controller
         name={`rows.${index}.description`}
         control={control}
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            label="Description"
-            size="small"
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            sx={{
-              '& .MuiInputBase-input': { color: themeTokens.textPrimary },
-              '& .MuiInputLabel-root': {
-                color: themeTokens.textSecondary,
-              },
-            }}
-          />
+        render={({ field }) => (
+          <Input {...field} aria-label={`Row ${index + 1} description`} className="h-9" />
         )}
       />
-      <IconButton
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={() => remove(index)}
         disabled={!canRemove || submitting}
         aria-label={`Remove row ${index + 1}`}
-        sx={{ color: themeTokens.textSecondary }}
+        className="h-9 w-9 text-muted-foreground"
       >
-        <DeleteOutlined />
-      </IconButton>
-    </Box>
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
   );
 });
 
@@ -192,24 +142,11 @@ export function BulkTransactionsDialog({
   submitError,
   submitting,
 }: BulkTransactionsDialogProps) {
-  const { data: subcategoriesPage } = useSubcategoriesQuery(
-    PICKER_LIST_PARAMS,
-    {
-      enabled: open,
-    },
-  );
-  const { data: hangoutsPage } = useHangoutsQuery(PICKER_LIST_PARAMS, {
-    enabled: open,
-  });
+  const { data: subcategoriesPage } = useSubcategoriesQuery(PICKER_LIST_PARAMS, { enabled: open });
+  const { data: hangoutsPage } = useHangoutsQuery(PICKER_LIST_PARAMS, { enabled: open });
 
-  const subcategoryOptions = useMemo(
-    () => subcategoriesPage?.items ?? [],
-    [subcategoriesPage?.items],
-  );
-  const hangoutOptions = useMemo(
-    () => hangoutsPage?.items ?? [],
-    [hangoutsPage?.items],
-  );
+  const subcategoryOptions = useMemo(() => subcategoriesPage?.items ?? [], [subcategoriesPage?.items]);
+  const hangoutOptions = useMemo(() => hangoutsPage?.items ?? [], [hangoutsPage?.items]);
 
   const form = useForm<BulkTransactionsFormValues>({
     resolver: zodResolver(bulkTransactionsFormSchema),
@@ -217,16 +154,10 @@ export function BulkTransactionsDialog({
   });
 
   const { control, handleSubmit, reset } = form;
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'rows',
-  });
+  const { fields, append, remove } = useFieldArray({ control, name: 'rows' });
 
   useEffect(() => {
-    if (open) {
-      reset({ rows: [makeEmptyRow()] });
-    }
+    if (open) reset({ rows: [makeEmptyRow()] });
   }, [open, reset]);
 
   const onValid = useCallback(
@@ -242,7 +173,7 @@ export function BulkTransactionsDialog({
         await onSubmit({ transactions });
         onClose();
       } catch {
-        // Parent sets submitError; dialog stays open for retry
+        // Parent sets submitError; dialog stays open
       }
     },
     [onSubmit, onClose],
@@ -253,40 +184,14 @@ export function BulkTransactionsDialog({
   }, [onClose, submitting]);
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: themeTokens.surface,
-          border: `1px solid ${themeTokens.border}`,
-          color: themeTokens.textPrimary,
-        },
-      }}
-    >
-      <form onSubmit={handleSubmit(onValid)}>
-        <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-          Bulk create transactions
-        </DialogTitle>
-        <DialogContent
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-          }}
-        >
-          {submitError && <FormHelperText error>{submitError}</FormHelperText>}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.5,
-              maxHeight: '45vh',
-              overflow: 'auto',
-            }}
-          >
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Bulk create transactions</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onValid)} className="flex flex-col gap-4">
+          {submitError && <p className="text-sm text-destructive">{submitError}</p>}
+          <div className="flex flex-col gap-2 max-h-[45vh] overflow-auto">
             {fields.map((field, index) => (
               <BulkTransactionRow
                 key={field.id}
@@ -300,35 +205,26 @@ export function BulkTransactionsDialog({
                 remove={remove}
               />
             ))}
-          </Box>
+          </div>
           <Button
             type="button"
-            variant="outlined"
+            variant="outline"
+            size="sm"
             onClick={() => append(makeEmptyRow())}
-            sx={{ alignSelf: 'flex-start', borderColor: themeTokens.border }}
+            className="self-start"
           >
             Add row
           </Button>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            type="button"
-            onClick={handleClose}
-            disabled={submitting}
-            sx={{ color: themeTokens.textSecondary }}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={submitting || fields.length === 0}
-            sx={{ backgroundColor: themeTokens.primary }}
-          >
-            {submitting ? 'Creating…' : 'Create all'}
-          </Button>
-        </DialogActions>
-      </form>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={handleClose} disabled={submitting}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting || fields.length === 0}>
+              {submitting ? 'Creating…' : 'Create all'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }
