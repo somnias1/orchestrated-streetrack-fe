@@ -1,18 +1,7 @@
-/**
- * Home screen — Dashboard: cumulative balance, month balance, due periodic expenses (TECHSPEC §3.4).
- */
-import {
-  Box,
-  Button,
-  CircularProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material';
+import { Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { groupBy, sortBy } from 'underscore';
+import type React from 'react';
 import {
   type DashboardMonthParams,
   useDashboardBalanceQuery,
@@ -20,12 +9,10 @@ import {
   useDashboardMonthBalanceQuery,
 } from '../../services/dashboard';
 import type { DashboardDuePeriodicExpenseRead } from '../../services/dashboard/types';
-import {
-  selectFormControlSx,
-  selectMenuPaperSx,
-  selectThemedSx,
-  themeTokens,
-} from '../../theme/tailwind';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DASHBOARD_YEAR_OPTIONS,
   DEFAULT_DASHBOARD_MONTH,
@@ -34,13 +21,10 @@ import {
 } from './constants';
 
 function formatBalance(value: number): string {
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
+  return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-function DashboardSection({
+function SectionCard({
   title,
   loading,
   error,
@@ -53,104 +37,42 @@ function DashboardSection({
   onRetry: () => void;
   children: React.ReactNode;
 }>) {
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          p: 2,
-          borderRadius: 1,
-          border: `1px solid ${themeTokens.border}`,
-          backgroundColor: themeTokens.surface,
-          minHeight: 80,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <CircularProgress size={32} sx={{ color: themeTokens.primary }} />
-      </Box>
-    );
-  }
-  if (error) {
-    return (
-      <Box
-        sx={{
-          p: 2,
-          borderRadius: 1,
-          border: `1px solid ${themeTokens.border}`,
-          backgroundColor: themeTokens.surface,
-        }}
-      >
-        <Typography
-          variant="subtitle2"
-          sx={{ color: themeTokens.textPrimary, mb: 1 }}
-        >
-          {title}
-        </Typography>
-        <Typography sx={{ color: themeTokens.error, mb: 2 }}>
-          {error}
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={onRetry}
-          size="small"
-          sx={{ backgroundColor: themeTokens.primary }}
-        >
-          Retry
-        </Button>
-      </Box>
-    );
-  }
   return (
-    <Box
-      sx={{
-        p: 2,
-        borderRadius: 1,
-        border: `1px solid ${themeTokens.border}`,
-        backgroundColor: themeTokens.surface,
-      }}
-    >
-      <Typography
-        variant="subtitle2"
-        sx={{ color: themeTokens.textSecondary, mb: 1 }}
-      >
-        {title}
-      </Typography>
-      {children}
-    </Box>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="space-y-2">
+            <p className="text-sm text-destructive">{error}</p>
+            <Button size="sm" onClick={onRetry}>Retry</Button>
+          </div>
+        ) : (
+          children
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-function DueExpenseItem({ item }: { item: DashboardDuePeriodicExpenseRead }) {
-  const dueLabel = `Day ${item.due_day}`;
+function DueExpenseItem({ item }: Readonly<{ item: DashboardDuePeriodicExpenseRead }>) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        py: 1,
-        borderBottom: `1px solid ${themeTokens.border}`,
-        '&:last-of-type': { borderBottom: 'none' },
-      }}
-    >
-      <Box>
-        <Typography variant="body2" sx={{ color: themeTokens.textPrimary }}>
-          {item.subcategory_name}
-        </Typography>
-        <Typography variant="caption" sx={{ color: themeTokens.textSecondary }}>
-          {item.category_name} · {dueLabel}
-        </Typography>
-      </Box>
-      <Typography
-        variant="caption"
-        sx={{
-          color: item.paid ? themeTokens.success : themeTokens.textSecondary,
-        }}
-      >
+    <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
+      <div>
+        <p className="text-sm text-foreground">{item.subcategory_name}</p>
+        <p className="text-xs text-muted-foreground">
+          {item.category_name} &middot; Day {item.due_day}
+        </p>
+      </div>
+      <Badge variant={item.paid ? 'paid' : 'due'}>
         {item.paid ? 'Paid' : 'Due'}
-      </Typography>
-    </Box>
+      </Badge>
+    </div>
   );
 }
 
@@ -158,235 +80,137 @@ export function Home() {
   const [year, setYear] = useState(DEFAULT_DASHBOARD_YEAR);
   const [month, setMonth] = useState(DEFAULT_DASHBOARD_MONTH);
 
-  const monthParams = useMemo<DashboardMonthParams>(
-    () => ({ year, month }),
-    [year, month],
-  );
+  const monthParams = useMemo<DashboardMonthParams>(() => ({ year, month }), [year, month]);
 
   const {
-    data: balanceQueryData,
-    isError: isBalanceQueryError,
-    error: balanceQueryError,
-    isLoading: balanceQueryLoading,
-    refetch: balanceQueryRefetch,
+    data: balanceData,
+    isError: isBalanceError,
+    error: balanceError,
+    isLoading: balanceLoading,
+    refetch: refetchBalance,
   } = useDashboardBalanceQuery();
+
   const {
-    data: monthBalanceQueryData,
-    isError: isMonthBalanceQueryError,
-    error: monthBalanceQueryError,
-    isLoading: monthBalanceQueryLoading,
-    refetch: monthBalanceQueryRefetch,
+    data: monthBalanceData,
+    isError: isMonthBalanceError,
+    error: monthBalanceError,
+    isLoading: monthBalanceLoading,
+    refetch: refetchMonthBalance,
   } = useDashboardMonthBalanceQuery(monthParams);
+
   const {
-    data: dueExpensesQueryData,
-    isError: isDueExpensesQueryError,
-    error: dueExpensesQueryError,
-    isLoading: dueExpensesQueryLoading,
-    refetch: dueExpensesQueryRefetch,
+    data: dueExpensesData,
+    isError: isDueExpensesError,
+    error: dueExpensesError,
+    isLoading: dueExpensesLoading,
+    refetch: refetchDueExpenses,
   } = useDashboardDuePeriodicExpensesQuery(monthParams);
 
-  const balanceError =
-    isBalanceQueryError && balanceQueryError instanceof Error
-      ? balanceQueryError.message
-      : balanceQueryError
-        ? 'Failed to load balance'
-        : null;
-  const monthBalanceError =
-    isMonthBalanceQueryError && monthBalanceQueryError instanceof Error
-      ? monthBalanceQueryError.message
-      : monthBalanceQueryError
-        ? 'Failed to load month balance'
-        : null;
-  const dueExpensesError =
-    isDueExpensesQueryError && dueExpensesQueryError instanceof Error
-      ? dueExpensesQueryError.message
-      : dueExpensesQueryError
-        ? 'Failed to load due periodic expenses'
-        : null;
+  const balanceErrorMsg = isBalanceError
+    ? balanceError instanceof Error ? balanceError.message : 'Failed to load balance'
+    : null;
+  const monthBalanceErrorMsg = isMonthBalanceError
+    ? monthBalanceError instanceof Error ? monthBalanceError.message : 'Failed to load month balance'
+    : null;
+  const dueExpensesErrorMsg = isDueExpensesError
+    ? dueExpensesError instanceof Error ? dueExpensesError.message : 'Failed to load due expenses'
+    : null;
 
   const dueExpensesGrouped = useMemo(() => {
-    if (dueExpensesQueryData == null || dueExpensesQueryData.length === 0) {
-      return [];
-    }
-    const byDayKey = groupBy(dueExpensesQueryData, 'due_day');
-    const sections = Object.entries(byDayKey).map(([key, items]) => {
-      const dueDay = Number(key);
-      const unpaid = sortBy(
-        items.filter((i) => !i.paid),
-        'subcategory_name',
-      );
-      const paid = sortBy(
-        items.filter((i) => i.paid),
-        'subcategory_name',
-      );
-      return { dueDay, unpaid, paid };
-    });
-    sections.sort((a, b) => a.dueDay - b.dueDay);
-    return sections;
-  }, [dueExpensesQueryData]);
+    if (!dueExpensesData?.length) return [];
+    const byDay = groupBy(dueExpensesData, 'due_day');
+    return Object.entries(byDay)
+      .map(([key, items]) => ({
+        dueDay: Number(key),
+        unpaid: sortBy(items.filter((i) => !i.paid), 'subcategory_name'),
+        paid: sortBy(items.filter((i) => i.paid), 'subcategory_name'),
+      }))
+      .sort((a, b) => a.dueDay - b.dueDay);
+  }, [dueExpensesData]);
 
   return (
-    <Box sx={{ py: 2 }}>
-      <Typography variant="h6" sx={{ color: themeTokens.textPrimary, mb: 2 }}>
-        Dashboard
-      </Typography>
-
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 100, ...selectFormControlSx }}
-        >
-          <InputLabel id="dashboard-year-label">Year</InputLabel>
-          <Select
-            labelId="dashboard-year-label"
-            id="dashboard-year"
-            value={year}
-            label="Year"
-            onChange={(e) => setYear(Number(e.target.value))}
-            sx={selectThemedSx}
-            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
-          >
-            {DASHBOARD_YEAR_OPTIONS.map((y) => (
-              <MenuItem key={y} value={y}>
-                {y}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 120, ...selectFormControlSx }}
-        >
-          <InputLabel id="dashboard-month-label">Month</InputLabel>
-          <Select
-            labelId="dashboard-month-label"
-            id="dashboard-month"
-            value={month}
-            label="Month"
-            onChange={(e) => setMonth(Number(e.target.value))}
-            sx={selectThemedSx}
-            MenuProps={{ PaperProps: { sx: selectMenuPaperSx } }}
-          >
-            {MONTHS.map((m) => (
-              <MenuItem key={m} value={m}>
-                {new Date(2000, m - 1, 1).toLocaleString(undefined, {
-                  month: 'long',
-                })}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <DashboardSection
-          title="Cumulative balance"
-          loading={balanceQueryLoading}
-          error={balanceError}
-          onRetry={() => balanceQueryRefetch()}
-        >
-          <Typography variant="h5" sx={{ color: themeTokens.textPrimary }}>
-            {balanceQueryData != null
-              ? formatBalance(balanceQueryData.balance)
-              : '—'}
-          </Typography>
-        </DashboardSection>
-
-        <DashboardSection
-          title="Month balance"
-          loading={monthBalanceQueryLoading}
-          error={monthBalanceError}
-          onRetry={() => monthBalanceQueryRefetch()}
-        >
-          <Typography variant="h5" sx={{ color: themeTokens.textPrimary }}>
-            {monthBalanceQueryData != null
-              ? formatBalance(monthBalanceQueryData.balance)
-              : '—'}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{ color: themeTokens.textSecondary }}
-          >
-            {year} · Month {month}
-          </Typography>
-        </DashboardSection>
-
-        <DashboardSection
-          title="Due periodic expenses"
-          loading={dueExpensesQueryLoading}
-          error={dueExpensesError}
-          onRetry={() => dueExpensesQueryRefetch()}
-        >
-          {dueExpensesQueryData != null && dueExpensesQueryData.length > 0 ? (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-                maxHeight: '39vh',
-                overflowY: 'auto',
-                paddingRight: 1,
-              }}
-            >
-              {dueExpensesGrouped.map((section) => (
-                <Box key={section.dueDay}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: themeTokens.textPrimary, mb: 1 }}
-                  >
-                    Day {section.dueDay}
-                  </Typography>
-                  {section.unpaid.length > 0 ? (
-                    <Box>
-                      {section.paid.length > 0 ? (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            display: 'block',
-                            color: themeTokens.textSecondary,
-                            mb: 0.5,
-                          }}
-                        >
-                          Due
-                        </Typography>
-                      ) : null}
-                      {section.unpaid.map((item) => (
-                        <DueExpenseItem key={item.subcategory_id} item={item} />
-                      ))}
-                    </Box>
-                  ) : null}
-                  {section.paid.length > 0 ? (
-                    <Box sx={{ mt: section.unpaid.length > 0 ? 1 : 0 }}>
-                      {section.unpaid.length > 0 ? (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            display: 'block',
-                            color: themeTokens.textSecondary,
-                            mb: 0.5,
-                          }}
-                        >
-                          Paid
-                        </Typography>
-                      ) : null}
-                      {section.paid.map((item) => (
-                        <DueExpenseItem key={item.subcategory_id} item={item} />
-                      ))}
-                    </Box>
-                  ) : null}
-                </Box>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DASHBOARD_YEAR_OPTIONS.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
               ))}
-            </Box>
-          ) : (
-            <Typography
-              variant="body2"
-              sx={{ color: themeTokens.textSecondary }}
-            >
-              No due periodic expenses for this month.
-            </Typography>
-          )}
-        </DashboardSection>
-      </Box>
-    </Box>
+            </SelectContent>
+          </Select>
+          <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MONTHS.map((m) => (
+                <SelectItem key={m} value={String(m)}>
+                  {new Date(2000, m - 1, 1).toLocaleString(undefined, { month: 'long' })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SectionCard
+          title="Cumulative balance"
+          loading={balanceLoading}
+          error={balanceErrorMsg}
+          onRetry={() => refetchBalance()}
+        >
+          <p className="text-3xl font-bold text-foreground">
+            {balanceData != null ? formatBalance(balanceData.balance) : '&#8212;'}
+          </p>
+        </SectionCard>
+
+        <SectionCard
+          title="Month balance"
+          loading={monthBalanceLoading}
+          error={monthBalanceErrorMsg}
+          onRetry={() => refetchMonthBalance()}
+        >
+          <p className="text-3xl font-bold text-foreground">
+            {monthBalanceData != null ? formatBalance(monthBalanceData.balance) : '&#8212;'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {new Date(2000, month - 1, 1).toLocaleString(undefined, { month: 'long' })} {year}
+          </p>
+        </SectionCard>
+      </div>
+
+      <SectionCard
+        title="Due periodic expenses"
+        loading={dueExpensesLoading}
+        error={dueExpensesErrorMsg}
+        onRetry={() => refetchDueExpenses()}
+      >
+        {dueExpensesGrouped.length > 0 ? (
+          <div className="max-h-[40vh] overflow-y-auto space-y-4 pr-1">
+            {dueExpensesGrouped.map((section) => (
+              <div key={section.dueDay}>
+                <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide">
+                  Day {section.dueDay}
+                </p>
+                {section.unpaid.map((item) => (
+                  <DueExpenseItem key={item.subcategory_id} item={item} />
+                ))}
+                {section.paid.map((item) => (
+                  <DueExpenseItem key={item.subcategory_id} item={item} />
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No due periodic expenses for this month.</p>
+        )}
+      </SectionCard>
+    </div>
   );
 }
