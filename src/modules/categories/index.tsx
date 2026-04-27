@@ -1,21 +1,9 @@
-import AddRounded from '@mui/icons-material/AddRounded';
-import FilterAltOff from '@mui/icons-material/FilterAltOff';
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Snackbar,
-  TablePagination,
-  Typography,
-} from '@mui/material';
-import { useQueryClient } from '@tanstack/react-query';
+import type { PaginationState } from '@tanstack/react-table';
 import type { AxiosError } from 'axios';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FilterX, Plus } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
@@ -25,12 +13,9 @@ import {
 import { categoriesQueryKey } from '../../services/categories/constants';
 import type { CategoryRead } from '../../services/categories/types';
 import { DEFAULT_LIST_LIMIT } from '../../services/types';
-import {
-  selectFormControlSx,
-  selectMenuPaperSx,
-  selectThemedSx,
-  themeTokens,
-} from '../../theme/tailwind';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { CategoriesTable } from './categoriesTable';
 import { CategoryFormDialog } from './categoryFormDialog';
 import { type CategoryTypeFilter, DEFAULT_TYPE_FILTER } from './constants';
@@ -39,233 +24,144 @@ import { useCategoriesStore } from './store';
 
 export function Categories() {
   const queryClient = useQueryClient();
-  const [showSnackBar, setShowSnackBar] = useState(false);
-  const [snackBarMessage, setSnackBarMessage] = useState('');
-  const [typeFilter, setTypeFilter] =
-    useState<CategoryTypeFilter>(DEFAULT_TYPE_FILTER);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+  const [typeFilter, setTypeFilter] = useState<CategoryTypeFilter>(DEFAULT_TYPE_FILTER);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_LIST_LIMIT,
+  });
 
   const queryParams = useMemo(() => {
-    const base = {
-      skip: page * rowsPerPage,
-      limit: rowsPerPage,
-    };
+    const base = { skip: pagination.pageIndex * pagination.pageSize, limit: pagination.pageSize };
     if (typeFilter === 'all') return base;
     return { ...base, is_income: typeFilter === 'income' };
-  }, [typeFilter, page, rowsPerPage]);
+  }, [typeFilter, pagination]);
 
   const clearFilters = useCallback(() => {
-    setPage(0);
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
     setTypeFilter(DEFAULT_TYPE_FILTER);
   }, []);
 
-  const {
-    data: listData,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useCategoriesQuery(queryParams);
+  const { data: listData, isLoading, isError, error, refetch } = useCategoriesQuery(queryParams);
   const items = listData?.items ?? [];
   const total = listData?.total ?? 0;
   const setFromQuery = useCategoriesStore((s) => s.setFromQuery);
 
-  useEffect(() => {
-    const err =
-      isError && error instanceof Error
-        ? error.message
-        : isError
-          ? 'Failed to load categories'
-          : null;
-    setFromQuery(items, isLoading, err);
-  }, [items, isLoading, isError, error, setFromQuery]);
-
-  const handleCloseSnackBar = useCallback(() => {
-    setShowSnackBar(false);
-  }, []);
-  const handleInvalidateCategories = useCallback(() => {
+  const handleInvalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [categoriesQueryKey] });
   }, [queryClient]);
+
   const createMutation = useCreateCategoryMutation({
-    onSuccess: () => {
-      handleInvalidateCategories();
-      setShowSnackBar(true);
-      setSnackBarMessage('Category created');
-    },
+    onSuccess: () => { handleInvalidate(); toast.success('Category created'); },
   });
   const updateMutation = useUpdateCategoryMutation({
-    onSuccess: () => {
-      handleInvalidateCategories();
-      setShowSnackBar(true);
-      setSnackBarMessage('Category updated');
-    },
+    onSuccess: () => { handleInvalidate(); toast.success('Category updated'); },
   });
   const deleteMutation = useDeleteCategoryMutation({
-    onSuccess: () => {
-      handleInvalidateCategories();
-      setShowSnackBar(true);
-      setSnackBarMessage('Category deleted');
-    },
-    onError: (error) => {
-      setShowSnackBar(true);
-      setSnackBarMessage(
-        (error as AxiosError)?.status === 409
-          ? 'Cannot delete category: it has subcategories. Remove or reassign them first.'
+    onSuccess: () => { handleInvalidate(); toast.success('Category deleted'); },
+    onError: (err) => {
+      toast.error(
+        (err as AxiosError)?.status === 409
+          ? 'Cannot delete: category has subcategories. Remove or reassign them first.'
           : 'Failed to delete category',
       );
     },
   });
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
-    null,
-  );
-  const [formInitial, setFormInitial] = useState<{
-    name: string;
-    description: string | null;
-    is_income: boolean;
-  } | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<CategoryRead | null>(
-    null,
-  );
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formInitial, setFormInitial] = useState<{ name: string; description: string | null; is_income: boolean } | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryRead | null>(null);
 
-  const errorMessage =
-    isError && error instanceof Error
-      ? error.message
-      : isError
-        ? 'Failed to load categories'
-        : null;
+  const errorMessage = isError
+    ? error instanceof Error ? error.message : 'Failed to load categories'
+    : null;
+
+  // Keep Zustand store in sync for global read access
+  useMemo(() => {
+    setFromQuery(items, isLoading, errorMessage);
+  }, [items, isLoading, errorMessage, setFromQuery]);
 
   const openCreate = useCallback(() => {
-    setEditingCategoryId(null);
-    setFormInitial(null);
-    setSubmitError(null);
-    setFormOpen(true);
+    setEditingId(null); setFormInitial(null); setSubmitError(null); setFormOpen(true);
   }, []);
 
   const openEdit = useCallback((category: CategoryRead) => {
-    setEditingCategoryId(category.id);
-    setFormInitial({
-      name: category.name,
-      description: category.description,
-      is_income: category.is_income,
-    });
+    setEditingId(category.id);
+    setFormInitial({ name: category.name, description: category.description, is_income: category.is_income });
     setSubmitError(null);
     setFormOpen(true);
   }, []);
 
   const openDelete = useCallback((category: CategoryRead) => {
-    setCategoryToDelete(category);
-    setDeleteOpen(true);
+    setCategoryToDelete(category); setDeleteOpen(true);
   }, []);
 
-  const handleFormSubmit = useCallback(
-    async (data: {
-      name: string;
-      description: string | null;
-      is_income: boolean;
-    }) => {
-      setSubmitError(null);
-      try {
-        if (editingCategoryId === null) {
-          await createMutation.mutateAsync(data);
-        } else {
-          await updateMutation.mutateAsync({
-            id: editingCategoryId,
-            body: data,
-          });
-        }
-        setFormOpen(false);
-      } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : 'Something went wrong',
-        );
-        throw err;
+  const handleFormSubmit = useCallback(async (data: { name: string; description: string | null; is_income: boolean }) => {
+    setSubmitError(null);
+    try {
+      if (editingId === null) {
+        await createMutation.mutateAsync(data);
+      } else {
+        await updateMutation.mutateAsync({ id: editingId, body: data });
       }
-    },
-    [editingCategoryId, createMutation, updateMutation],
-  );
+      setFormOpen(false);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
+      throw err;
+    }
+  }, [editingId, createMutation, updateMutation]);
 
-  const handleDeleteConfirm = useCallback(
-    async (id: string) => {
-      await deleteMutation.mutateAsync(id);
-      setDeleteOpen(false);
-      setCategoryToDelete(null);
-    },
-    [deleteMutation],
-  );
+  const handleDeleteConfirm = useCallback(async (id: string) => {
+    await deleteMutation.mutateAsync(id);
+    setDeleteOpen(false);
+    setCategoryToDelete(null);
+  }, [deleteMutation]);
 
   return (
-    <Box sx={{ py: 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-          flexWrap: 'wrap',
-          gap: 1,
-        }}
-      >
-        <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
-          Categories
-          {total > 0 ? ` (${total})` : ''}
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddRounded />}
-          onClick={openCreate}
-          sx={{ backgroundColor: themeTokens.primary }}
-          data-testid="categories-add-button"
-        >
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h1 className="text-xl font-semibold text-foreground">
+          Categories{total > 0 ? ` (${total})` : ''}
+        </h1>
+        <Button onClick={openCreate} data-testid="categories-add-button">
+          <Plus className="h-4 w-4" />
           Create category
         </Button>
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 140, ...selectFormControlSx }}
-        >
-          <InputLabel id="categories-type-filter-label">Type</InputLabel>
-          <Select
-            labelId="categories-type-filter-label"
-            id="categories-type-filter"
-            value={typeFilter}
-            label="Type"
-            onChange={(e) => {
-              setPage(0);
-              setTypeFilter(e.target.value as CategoryTypeFilter);
-            }}
-            sx={selectThemedSx}
-            MenuProps={{
-              PaperProps: { sx: selectMenuPaperSx },
-            }}
-          >
-            <MenuItem value="all">All</MenuItem>
-            <MenuItem value="income">Income</MenuItem>
-            <MenuItem value="expense">Expense</MenuItem>
-          </Select>
-        </FormControl>
-        <Divider
-          orientation="vertical"
-          flexItem
-          sx={{ borderColor: themeTokens.border }}
-        />
-        <IconButton
-          onClick={clearFilters}
-          sx={{
-            alignSelf: 'flex-start',
-            color: themeTokens.textSecondary,
-            '&.Mui-disabled': { color: themeTokens.disabled },
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <Select
+          value={typeFilter}
+          onValueChange={(v) => {
+            setPagination((p) => ({ ...p, pageIndex: 0 }));
+            setTypeFilter(v as CategoryTypeFilter);
           }}
-          disabled={typeFilter === 'all'}
         >
-          <FilterAltOff />
-        </IconButton>
-      </Box>
+          <SelectTrigger className="w-36">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="income">Income</SelectItem>
+            <SelectItem value="expense">Expense</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={clearFilters}
+          disabled={typeFilter === 'all'}
+          aria-label="Clear filters"
+        >
+          <FilterX className="h-4 w-4" />
+        </Button>
+      </div>
+
       <CategoriesTable
         items={items}
         loading={isLoading}
@@ -273,23 +169,12 @@ export function Categories() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+        total={total}
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        onPaginationChange={setPagination}
       />
-      <TablePagination
-        component="div"
-        count={total}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(Number.parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[10, 25, 50, 100]}
-        sx={{
-          color: themeTokens.textSecondary,
-          borderTop: `1px solid ${themeTokens.border}`,
-        }}
-      />
+
       <CategoryFormDialog
         open={formOpen}
         onClose={() => setFormOpen(false)}
@@ -297,22 +182,13 @@ export function Categories() {
         onSubmit={handleFormSubmit}
         submitError={submitError}
       />
+
       <DeleteCategoryDialog
         open={deleteOpen}
-        onClose={() => {
-          setDeleteOpen(false);
-          setCategoryToDelete(null);
-        }}
+        onClose={() => { setDeleteOpen(false); setCategoryToDelete(null); }}
         category={categoryToDelete}
         onConfirm={handleDeleteConfirm}
       />
-      <Snackbar
-        open={showSnackBar}
-        onClose={handleCloseSnackBar}
-        message={snackBarMessage}
-        autoHideDuration={1500}
-        data-testid="categories-snackbar"
-      />
-    </Box>
+    </div>
   );
 }

@@ -1,122 +1,102 @@
-import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
-import EditRounded from '@mui/icons-material/EditRounded';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Tooltip,
-  Typography,
-} from '@mui/material';
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
 import type { CategoryRead } from '../../../services/categories/types';
-import { themeTokens } from '../../../theme/tailwind';
-import { CategoryTypeChip } from './CategoryTypeChip';
-import {
-  COLUMN_SIZES,
-  GRID_TEMPLATE_FR,
-  ROW_HEIGHT,
-  STATE_ROW_MIN_HEIGHT,
-  TABLE_MIN_HEIGHT,
-  TABLE_WIDTH,
-} from './constants';
+import { TablePagination } from '@/components/TablePagination';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CategoriesTableProps } from './types';
 
+const GRID_COLS = 'grid-cols-[2fr_3fr_1.2fr_1.2fr]';
+const ROW_HEIGHT = 48;
+const TABLE_MIN_HEIGHT = 400;
+
 function createColumns(
-  onEdit: (category: CategoryRead) => void,
-  onDelete: (category: CategoryRead) => void,
+  onEdit: (c: CategoryRead) => void,
+  onDelete: (c: CategoryRead) => void,
 ): ColumnDef<CategoryRead>[] {
   return [
-    {
-      accessorKey: 'name',
-      header: 'Name',
-      size: COLUMN_SIZES[0],
-      cell: (info) => (
-        <Typography variant="body2" sx={{ color: themeTokens.textPrimary }}>
-          {info.getValue<string>()}
-        </Typography>
-      ),
-    },
+    { accessorKey: 'name', header: 'Name' },
     {
       accessorKey: 'description',
       header: 'Description',
-      size: COLUMN_SIZES[1],
       cell: (info) => {
-        const value = info.getValue<string | null>();
-        const text = value ?? '—';
-        const truncated = text.length > 60 ? `${text.slice(0, 60)}…` : text;
-        const cell = (
-          <Typography
-            variant="body2"
-            sx={{
-              color: themeTokens.textSecondary,
-              maxWidth: 260,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {truncated}
-          </Typography>
-        );
-        return text.length > 60 ? (
-          <Tooltip title={text} placement="top-start">
-            {cell}
-          </Tooltip>
-        ) : (
-          cell
+        const v = info.getValue<string | null>() ?? '—';
+        const truncated = v.length > 60 ? `${v.slice(0, 60)}…` : v;
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="block truncate text-muted-foreground text-sm max-w-[260px]">
+                  {truncated}
+                </span>
+              </TooltipTrigger>
+              {v.length > 60 && <TooltipContent>{v}</TooltipContent>}
+            </Tooltip>
+          </TooltipProvider>
         );
       },
     },
     {
       accessorKey: 'is_income',
       header: 'Type',
-      size: COLUMN_SIZES[2],
-      cell: (info) => <CategoryTypeChip isIncome={info.getValue<boolean>()} />,
+      cell: (info) => (
+        <Badge variant={info.getValue<boolean>() ? 'income' : 'expense'}>
+          {info.getValue<boolean>() ? 'Income' : 'Expense'}
+        </Badge>
+      ),
     },
     {
       id: 'actions',
       header: 'Actions',
-      size: COLUMN_SIZES[3],
       cell: (info) => {
         const category = info.row.original;
         return (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Tooltip title="Edit">
-              <IconButton
-                size="small"
-                onClick={() => onEdit(category)}
-                data-testid="edit-button"
-                aria-label={`Edit ${category.name}`}
-                sx={{ color: themeTokens.primary }}
-              >
-                <EditRounded fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton
-                size="small"
-                onClick={() => onDelete(category)}
-                data-testid="delete-button"
-                aria-label={`Delete ${category.name}`}
-                sx={{ color: themeTokens.error }}
-              >
-                <DeleteOutlineRounded fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
+          <div className="flex gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary"
+                    onClick={() => onEdit(category)}
+                    data-testid="edit-button"
+                    aria-label={`Edit ${category.name}`}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Edit</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive"
+                    onClick={() => onDelete(category)}
+                    data-testid="delete-button"
+                    aria-label={`Delete ${category.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         );
       },
     },
@@ -130,6 +110,10 @@ export function CategoriesTable({
   onRetry,
   onEdit,
   onDelete,
+  total,
+  pageIndex,
+  pageSize,
+  onPaginationChange,
 }: CategoriesTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const columns = createColumns(onEdit, onDelete);
@@ -138,6 +122,11 @@ export function CategoriesTable({
     data: items,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    rowCount: total,
+    state: { pagination: { pageIndex, pageSize } },
+    onPaginationChange,
   });
 
   const { rows } = table.getRowModel();
@@ -153,191 +142,68 @@ export function CategoriesTable({
   const showVirtualBody = !loading && !error && items.length > 0;
 
   return (
-    <Box
-      sx={{
-        backgroundColor: themeTokens.surface,
-        border: `1px solid ${themeTokens.border}`,
-        borderRadius: 1,
-        overflow: 'hidden',
-      }}
-    >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: GRID_TEMPLATE_FR,
-          width: '100%',
-          minWidth: TABLE_WIDTH,
-          backgroundColor: themeTokens.surface,
-          borderBottom: `1px solid ${themeTokens.border}`,
-          boxSizing: 'border-box',
-        }}
-      >
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
+      {/* Header */}
+      <div className={`grid ${GRID_COLS} border-b border-border bg-card`}>
         {table.getHeaderGroups().flatMap((group) =>
           group.headers.map((header) => (
-            <Box
-              key={header.id}
-              component="div"
-              role="columnheader"
-              sx={{
-                px: 2,
-                py: 1.5,
-                textAlign: 'left',
-                backgroundColor: themeTokens.surface,
-                color: themeTokens.textPrimary,
-                fontWeight: 600,
-                minWidth: 0,
-                border: 0,
-              }}
-            >
-              {header.isPlaceholder
-                ? null
-                : flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
-            </Box>
+            <div key={header.id} className="px-4 py-3 text-sm font-semibold text-foreground">
+              {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+            </div>
           )),
         )}
-      </Box>
-      <Box
-        ref={parentRef}
-        sx={{
-          overflow: 'auto',
-          minHeight: TABLE_MIN_HEIGHT,
-          maxHeight: '67vh',
-        }}
-      >
-        <TableContainer
-          sx={{
-            width: '100%',
-            minWidth: TABLE_WIDTH,
-            tableLayout: 'fixed',
-          }}
-        >
-          <Table aria-label="categories table">
-            <TableBody>
-              {loading && (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    sx={{
-                      borderBottom: `1px solid ${themeTokens.border}`,
-                      py: 6,
-                      textAlign: 'center',
-                      minHeight: STATE_ROW_MIN_HEIGHT,
-                      verticalAlign: 'middle',
-                    }}
-                  >
-                    <CircularProgress sx={{ color: themeTokens.primary }} />
-                  </TableCell>
-                </TableRow>
-              )}
-              {!loading && error && (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    sx={{
-                      borderBottom: `1px solid ${themeTokens.border}`,
-                      py: 3,
-                      textAlign: 'center',
-                      minHeight: STATE_ROW_MIN_HEIGHT,
-                      verticalAlign: 'middle',
-                    }}
-                  >
-                    <Typography sx={{ color: themeTokens.error, mb: 2 }}>
-                      {error}
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      onClick={onRetry}
-                      data-testid="retry-button"
-                      sx={{ backgroundColor: themeTokens.primary }}
-                    >
-                      Retry
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              )}
-              {!loading && !error && items.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    align="center"
-                    sx={{
-                      borderBottom: `1px solid ${themeTokens.border}`,
-                      py: 3,
-                      color: themeTokens.textSecondary,
-                      minHeight: STATE_ROW_MIN_HEIGHT,
-                      verticalAlign: 'middle',
-                    }}
-                  >
-                    No categories found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      </div>
+
+      {/* Body */}
+      <div ref={parentRef} className="overflow-auto" style={{ minHeight: TABLE_MIN_HEIGHT, maxHeight: '67vh' }}>
+        {loading && (
+          <div role="progressbar" aria-label="Loading categories" className="p-4 space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        )}
+        {!loading && error && (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <p className="text-sm text-destructive">{error}</p>
+            <Button onClick={onRetry} data-testid="retry-button">Retry</Button>
+          </div>
+        )}
+        {!loading && !error && items.length === 0 && (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-sm text-muted-foreground">No categories found.</p>
+          </div>
+        )}
         {showVirtualBody && (
-          <Box
-            sx={{
-              position: 'relative',
-              width: '100%',
-              minWidth: TABLE_WIDTH,
-              height: `${totalSize}px`,
-            }}
-          >
+          <div className="relative w-full" style={{ height: `${totalSize}px` }}>
             {virtualItems.map((virtualRow) => {
               const row = rows[virtualRow.index];
               const category = row.original;
               return (
-                <Box
+                <div
                   key={row.id}
-                  component="div"
                   role="row"
                   aria-label={category.name}
                   data-testid={`category-row-${category.id}`}
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    width: '100%',
+                  className={`absolute inset-x-0 grid ${GRID_COLS} items-center border-b border-border bg-card hover:bg-accent/30 transition-colors`}
+                  style={{
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
-                    display: 'grid',
-                    gridTemplateColumns: GRID_TEMPLATE_FR,
-                    alignItems: 'center',
-                    borderBottom: `1px solid ${themeTokens.border}`,
-                    backgroundColor: themeTokens.surface,
-                    '&:hover': {
-                      backgroundColor: themeTokens.background,
-                    },
-                    boxSizing: 'border-box',
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <Box
-                      key={cell.id}
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        minWidth: 0,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </Box>
+                    <div key={cell.id} className="px-4 py-2 min-w-0 overflow-hidden text-sm text-foreground">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </div>
                   ))}
-                </Box>
+                </div>
               );
             })}
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+
+      <TablePagination table={table} />
+    </div>
   );
 }
