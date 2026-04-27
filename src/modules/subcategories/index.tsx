@@ -1,22 +1,10 @@
-import AddRounded from '@mui/icons-material/AddRounded';
-import FilterAltOff from '@mui/icons-material/FilterAltOff';
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Snackbar,
-  TablePagination,
-  Typography,
-} from '@mui/material';
+import { Plus, FilterX } from 'lucide-react';
+import type { PaginationState } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CategoryAutocomplete } from '../../components/pickers';
+import { toast } from 'sonner';
+import { CategoryCombobox } from '../../components/pickers/CategoryCombobox';
 import {
   useCreateSubcategoryMutation,
   useDeleteSubcategoryMutation,
@@ -26,12 +14,15 @@ import {
 import { subcategoriesQueryKey } from '../../services/subcategories/constants';
 import type { SubcategoryRead } from '../../services/subcategories/types';
 import { DEFAULT_LIST_LIMIT } from '../../services/types';
+import { Button } from '@/components/ui/button';
 import {
-  selectFormControlSx,
-  selectMenuPaperSx,
-  selectThemedSx,
-  themeTokens,
-} from '../../theme/tailwind';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import {
   DEFAULT_CATEGORY_ID,
   DEFAULT_TYPE_FILTER,
@@ -44,14 +35,12 @@ import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
 export function Subcategories() {
   const queryClient = useQueryClient();
-  const [showSnackBar, setShowSnackBar] = useState(false);
-  const [snackBarMessage, setSnackBarMessage] = useState('');
-  const [typeFilter, setTypeFilter] =
-    useState<SubcategoryTypeFilter>(DEFAULT_TYPE_FILTER);
-  const [categoryIdFilter, setCategoryIdFilter] =
-    useState<string>(DEFAULT_CATEGORY_ID);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_LIST_LIMIT);
+  const [typeFilter, setTypeFilter] = useState<SubcategoryTypeFilter>(DEFAULT_TYPE_FILTER);
+  const [categoryIdFilter, setCategoryIdFilter] = useState<string>(DEFAULT_CATEGORY_ID);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_LIST_LIMIT,
+  });
 
   const queryParams = useMemo(() => {
     const params: {
@@ -60,17 +49,16 @@ export function Subcategories() {
       skip: number;
       limit: number;
     } = {
-      skip: page * rowsPerPage,
-      limit: rowsPerPage,
+      skip: pagination.pageIndex * pagination.pageSize,
+      limit: pagination.pageSize,
     };
-    if (typeFilter !== 'all')
-      params.belongs_to_income = typeFilter === 'income';
+    if (typeFilter !== 'all') params.belongs_to_income = typeFilter === 'income';
     if (categoryIdFilter) params.category_id = categoryIdFilter;
     return params;
-  }, [typeFilter, categoryIdFilter, page, rowsPerPage]);
+  }, [typeFilter, categoryIdFilter, pagination]);
 
   const clearFilters = useCallback(() => {
-    setPage(0);
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
     setTypeFilter(DEFAULT_TYPE_FILTER);
     setCategoryIdFilter(DEFAULT_CATEGORY_ID);
   }, []);
@@ -84,9 +72,7 @@ export function Subcategories() {
   } = useSubcategoriesQuery(queryParams);
   const items = listData?.items ?? [];
   const total = listData?.total ?? 0;
-  const setSubcategoriesFromQuery = useSubcategoriesStore(
-    (s) => s.setFromQuery,
-  );
+  const setSubcategoriesFromQuery = useSubcategoriesStore((s) => s.setFromQuery);
 
   useEffect(() => {
     const err =
@@ -98,10 +84,6 @@ export function Subcategories() {
     setSubcategoriesFromQuery(items, isLoading, err);
   }, [items, isLoading, isError, error, setSubcategoriesFromQuery]);
 
-  const handleCloseSnackBar = useCallback(() => {
-    setShowSnackBar(false);
-  }, []);
-
   const handleInvalidateSubcategories = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [subcategoriesQueryKey] });
   }, [queryClient]);
@@ -109,26 +91,22 @@ export function Subcategories() {
   const createMutation = useCreateSubcategoryMutation({
     onSuccess: () => {
       handleInvalidateSubcategories();
-      setShowSnackBar(true);
-      setSnackBarMessage('Subcategory created');
+      toast.success('Subcategory created');
     },
   });
   const updateMutation = useUpdateSubcategoryMutation({
     onSuccess: () => {
       handleInvalidateSubcategories();
-      setShowSnackBar(true);
-      setSnackBarMessage('Subcategory updated');
+      toast.success('Subcategory updated');
     },
   });
   const deleteMutation = useDeleteSubcategoryMutation({
     onSuccess: () => {
       handleInvalidateSubcategories();
-      setShowSnackBar(true);
-      setSnackBarMessage('Subcategory deleted');
+      toast.success('Subcategory deleted');
     },
     onError: (error) => {
-      setShowSnackBar(true);
-      setSnackBarMessage(
+      toast.error(
         (error as AxiosError)?.status === 409
           ? 'Cannot delete subcategory: it has transactions. Remove or reassign them first.'
           : 'Failed to delete subcategory',
@@ -137,9 +115,7 @@ export function Subcategories() {
   });
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editingSubcategoryId, setEditingSubcategoryId] = useState<
-    string | null
-  >(null);
+  const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
   const [formInitial, setFormInitial] = useState<{
     category_id: string;
     name: string;
@@ -149,8 +125,7 @@ export function Subcategories() {
     due_day: number | null;
   } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [subcategoryToDelete, setSubcategoryToDelete] =
-    useState<SubcategoryRead | null>(null);
+  const [subcategoryToDelete, setSubcategoryToDelete] = useState<SubcategoryRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const errorMessage =
@@ -200,16 +175,11 @@ export function Subcategories() {
         if (editingSubcategoryId === null) {
           await createMutation.mutateAsync(data);
         } else {
-          await updateMutation.mutateAsync({
-            id: editingSubcategoryId,
-            body: data,
-          });
+          await updateMutation.mutateAsync({ id: editingSubcategoryId, body: data });
         }
         setFormOpen(false);
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : 'Something went wrong',
-        );
+        setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
         throw err;
       }
     },
@@ -225,87 +195,61 @@ export function Subcategories() {
     [deleteMutation],
   );
 
+  const filtersActive = typeFilter !== DEFAULT_TYPE_FILTER || categoryIdFilter !== DEFAULT_CATEGORY_ID;
+
   return (
-    <Box sx={{ py: 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-          flexWrap: 'wrap',
-          gap: 1,
-        }}
-      >
-        <Typography variant="h6" sx={{ color: themeTokens.textPrimary }}>
-          Subcategories
-          {total > 0 ? ` (${total})` : ''}
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddRounded />}
-          onClick={openCreate}
-          sx={{ backgroundColor: themeTokens.primary }}
-          data-testid="subcategories-add-button"
-        >
+    <div className="py-2 space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-lg font-semibold text-foreground">
+          Subcategories{total > 0 ? ` (${total})` : ''}
+        </h2>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4 mr-2" />
           Create subcategory
         </Button>
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <FormControl
-          size="small"
-          sx={{ minWidth: 140, ...selectFormControlSx }}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={typeFilter}
+          onValueChange={(v) => {
+            setPagination((p) => ({ ...p, pageIndex: 0 }));
+            setTypeFilter(v as SubcategoryTypeFilter);
+          }}
         >
-          <InputLabel id="subcategories-type-filter-label">Type</InputLabel>
-          <Select
-            labelId="subcategories-type-filter-label"
-            id="subcategories-type-filter"
-            value={typeFilter}
-            label="Type"
-            onChange={(e) => {
-              setPage(0);
-              setTypeFilter(e.target.value as SubcategoryTypeFilter);
-            }}
-            sx={selectThemedSx}
-            MenuProps={{
-              PaperProps: { sx: selectMenuPaperSx },
-            }}
-          >
-            <MenuItem value="all">All</MenuItem>
-            <MenuItem value="income">Income</MenuItem>
-            <MenuItem value="expense">Expense</MenuItem>
-          </Select>
-        </FormControl>
-        <Box sx={{ minWidth: 200, flex: '0 1 200px', maxWidth: 320 }}>
-          <CategoryAutocomplete
-            label="Category"
+          <SelectTrigger className="w-36">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="income">Income</SelectItem>
+            <SelectItem value="expense">Expense</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="w-56">
+          <CategoryCombobox
             value={categoryIdFilter}
             onChange={(id) => {
-              setPage(0);
+              setPagination((p) => ({ ...p, pageIndex: 0 }));
               setCategoryIdFilter(id);
             }}
-            allowEmpty
           />
-        </Box>
-        <Divider
-          orientation="vertical"
-          flexItem
-          sx={{ borderColor: themeTokens.border }}
-        />
-        <IconButton
+        </div>
+
+        <Separator orientation="vertical" className="h-8" />
+
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={clearFilters}
-          sx={{
-            alignSelf: 'flex-start',
-            color: themeTokens.textSecondary,
-            '&.Mui-disabled': { color: themeTokens.disabled },
-          }}
-          disabled={
-            typeFilter === 'all' && categoryIdFilter === DEFAULT_CATEGORY_ID
-          }
+          disabled={!filtersActive}
+          aria-label="Clear filters"
         >
-          <FilterAltOff />
-        </IconButton>
-      </Box>
+          <FilterX className="h-4 w-4" />
+        </Button>
+      </div>
+
       <SubcategoriesTable
         items={items}
         loading={isLoading}
@@ -313,23 +257,12 @@ export function Subcategories() {
         onRetry={refetch}
         onEdit={openEdit}
         onDelete={openDelete}
+        total={total}
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        onPaginationChange={setPagination}
       />
-      <TablePagination
-        component="div"
-        count={total}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(Number.parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[10, 25, 50, 100]}
-        sx={{
-          color: themeTokens.textSecondary,
-          borderTop: `1px solid ${themeTokens.border}`,
-        }}
-      />
+
       <SubcategoryFormDialog
         open={formOpen}
         onClose={() => setFormOpen(false)}
@@ -337,6 +270,7 @@ export function Subcategories() {
         onSubmit={handleFormSubmit}
         submitError={submitError}
       />
+
       <DeleteSubcategoryDialog
         open={deleteOpen}
         onClose={() => {
@@ -346,13 +280,6 @@ export function Subcategories() {
         subcategory={subcategoryToDelete}
         onConfirm={handleDeleteConfirm}
       />
-      <Snackbar
-        open={showSnackBar}
-        onClose={handleCloseSnackBar}
-        message={snackBarMessage}
-        autoHideDuration={1500}
-        data-testid="subcategories-snackbar"
-      />
-    </Box>
+    </div>
   );
 }

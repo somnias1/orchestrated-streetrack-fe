@@ -63,13 +63,13 @@
 
 ## 6. Subcategories screen and table
 
-- [ ] 6.1 Rewrite subcategories table shell — same pattern as Categories (div-grid, Skeleton, shadcn Buttons, Badges)
-- [ ] 6.2 Replace filters (type, category) with shadcn `Select` components
-- [ ] 6.3 Replace Snackbar with `toast.*` calls; remove Snackbar state
-- [ ] 6.4 Replace pagination with shared `<Pagination />`
-- [ ] 6.5 Rewrite `subcategoryFormDialog` — shadcn Dialog + Form + Input + Select + Checkbox + `CategoryCombobox` (externalOptions contract preserved)
-- [ ] 6.6 Rewrite delete confirm dialog — shadcn AlertDialog
-- [ ] 6.7 Update `Subcategories.test.tsx` — selector audit, toast assertions
+- [x] 6.1 Rewrite subcategories table shell — same pattern as Categories (div-grid, Skeleton, shadcn Buttons, Badges)
+- [x] 6.2 Replace filters (type, category) with shadcn `Select` components
+- [x] 6.3 Replace Snackbar with `toast.*` calls; remove Snackbar state
+- [x] 6.4 Replace pagination with shared `<Pagination />`
+- [x] 6.5 Rewrite `subcategoryFormDialog` — shadcn Dialog + Form + Input + Select + Checkbox + `CategoryCombobox` (externalOptions contract preserved)
+- [x] 6.6 Rewrite delete confirm dialog — shadcn AlertDialog
+- [x] 6.7 Update `Subcategories.test.tsx` — selector audit, toast assertions
 - [ ] 6.8 Run gate: `npm test && npx biome check .`
 
 ## 7. Transactions screen and table

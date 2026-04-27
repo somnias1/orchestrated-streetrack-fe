@@ -29,6 +29,7 @@ type ComboboxProps = Readonly<{
   loading?: boolean;
   onSearch?: (query: string) => void;
   className?: string;
+  'data-testid'?: string;
 }>;
 
 export function Combobox({
@@ -43,6 +44,7 @@ export function Combobox({
   loading,
   onSearch,
   className,
+  'data-testid': dataTestId,
 }: ComboboxProps) {
   const [open, setOpen] = useState(false);
 
@@ -58,6 +60,7 @@ export function Combobox({
           aria-expanded={open}
           disabled={disabled}
           className={cn('w-full justify-between', !value && 'text-muted-foreground', className)}
+          data-testid={dataTestId}
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
