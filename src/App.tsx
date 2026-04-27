@@ -5,6 +5,7 @@ import {
   Route,
   Routes,
 } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { AuthCallback, LoginRedirect, ProtectedRoute } from './modules/auth0';
 import { Categories } from './modules/categories';
 import { Hangouts } from './modules/hangouts';
@@ -27,6 +28,7 @@ function ProtectedShell() {
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster richColors position="bottom-right" />
       <Routes>
         <Route path={routes.auth.callback} element={<AuthCallback />} />
         <Route path={routes.auth.login} element={<LoginRedirect />} />
