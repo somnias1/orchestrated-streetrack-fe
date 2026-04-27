@@ -1,3 +1,4 @@
+import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
 import type { CategoryRead } from '../../../services/categories/types';
 
 export type CategoriesTableProps = Readonly<{
@@ -7,4 +8,8 @@ export type CategoriesTableProps = Readonly<{
   onRetry: () => void;
   onEdit: (category: CategoryRead) => void;
   onDelete: (category: CategoryRead) => void;
+  total: number;
+  pageIndex: number;
+  pageSize: number;
+  onPaginationChange: OnChangeFn<PaginationState>;
 }>;

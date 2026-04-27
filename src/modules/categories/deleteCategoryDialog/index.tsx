@@ -1,12 +1,13 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from '@mui/material';
 import { useState } from 'react';
-import { themeTokens } from '../../../theme/tailwind';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import type { DeleteCategoryDialogProps } from './types';
 
 export function DeleteCategoryDialog({
@@ -35,45 +36,30 @@ export function DeleteCategoryDialog({
   const name = category?.name ?? '';
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="xs"
-      fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: themeTokens.surface,
-          border: `1px solid ${themeTokens.border}`,
-          color: themeTokens.textPrimary,
-        },
-      }}
-    >
-      <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-        Delete category
-      </DialogTitle>
-      <DialogContent
-        sx={{ color: themeTokens.textSecondary }}
-        data-testid="delete-category-dialog-content"
-      >
-        Delete category «{name}»? This cannot be undone.
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button
-          onClick={handleClose}
-          disabled={deleting}
-          sx={{ color: themeTokens.textSecondary }}
+    <AlertDialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete category</AlertDialogTitle>
+        </AlertDialogHeader>
+        <p
+          className="text-sm text-muted-foreground"
+          data-testid="delete-category-dialog-content"
         >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleConfirm}
-          disabled={deleting}
-          sx={{ backgroundColor: themeTokens.error }}
-        >
-          {deleting ? 'Deleting…' : 'Delete'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          Delete category «{name}»? This cannot be undone.
+        </p>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting} onClick={handleClose}>
+            Cancel
+          </AlertDialogCancel>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={deleting}
+          >
+            {deleting ? 'Deleting…' : 'Delete'}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
