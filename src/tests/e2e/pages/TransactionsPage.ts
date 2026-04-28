@@ -74,7 +74,6 @@ export class TransactionsPage {
       .click();
   }
 
-  /** Confirm delete in the open dialog. */
   async confirmDelete(): Promise<void> {
     await this.page
       .getByRole('dialog')

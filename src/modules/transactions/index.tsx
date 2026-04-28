@@ -431,6 +431,7 @@ export function Transactions() {
 
         <div className="w-52">
           <SubcategoryCombobox
+            aria-label="Subcategory"
             value={subcategoryId}
             onChange={(id) => {
               setPagination((p) => ({ ...p, pageIndex: 0 }));

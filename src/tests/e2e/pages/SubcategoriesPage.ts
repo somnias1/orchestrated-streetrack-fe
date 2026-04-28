@@ -44,10 +44,9 @@ export class SubcategoriesPage {
     });
   }
 
-  /** Confirm delete in the open dialog (scoped to avoid matching row buttons). */
   async confirmDelete(): Promise<void> {
     await this.page
-      .getByRole('dialog')
+      .getByRole('alertdialog')
       .getByRole('button', { name: /delete|confirm/i })
       .click();
   }
