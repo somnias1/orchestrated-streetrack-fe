@@ -1,14 +1,12 @@
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import type { DeleteHangoutDialogProps } from './types';
 
 export function DeleteHangoutDialog({
@@ -35,27 +33,27 @@ export function DeleteHangoutDialog({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete hangout</AlertDialogTitle>
-          <AlertDialogDescription>
-            Delete this hangout? This cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleting} onClick={handleClose}>
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Delete hangout</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          Delete this hangout? This cannot be undone.
+        </p>
+        <DialogFooter>
+          <Button variant="ghost" onClick={handleClose} disabled={deleting}>
             Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
+          </Button>
+          <Button
+            variant="destructive"
             onClick={handleConfirm}
             disabled={deleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {deleting ? 'Deleting…' : 'Delete'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

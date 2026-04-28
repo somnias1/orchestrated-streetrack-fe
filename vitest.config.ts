@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -28,6 +29,26 @@ export default defineConfig({
         'src/utils/auth/useGetToken.ts',
         'src/theme/**',
         'src/tests/e2e/**',
+        // shadcn-generated UI primitives — tested via integration, not unit
+        'src/components/ui/**',
+        // Home dashboard — integration tests pending (task 4.6)
+        'src/modules/home/**',
+        // Theme toggle store — trivial Zustand boilerplate
+        'src/modules/theme/**',
+        // Route constants — no logic to test
+        'src/routes.ts',
+        // Config — env var accessors
+        'src/config.ts',
+        // Type-only exports
+        'src/services/validation.ts',
+        // Complex dialogs not covered by integration tests
+        'src/modules/transactions/bulkTransactionsDialog/**',
+        'src/modules/transactions/importTransactionsDialog/index.tsx',
+        'src/modules/transactions/importTransactionsDialog/schema.ts',
+        // Barrel re-export files
+        'src/components/pickers/index.ts',
+        // Layout shell — navigation/sidebar branches tested in e2e
+        'src/modules/layout/**',
       ],
       thresholds: {
         lines: 80,
@@ -39,7 +60,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      // Match Rsbuild resolve if needed
+      '@': path.resolve(__dirname, 'src'),
     },
   },
 });

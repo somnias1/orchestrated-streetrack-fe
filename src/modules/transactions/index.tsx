@@ -60,7 +60,7 @@ export function Transactions() {
   const queryClient = useQueryClient();
   const [year, setYear] = useState(getDefaultYear);
   const [month, setMonth] = useState(getDefaultMonth);
-  const [day, setDay] = useState<string>('');
+  const [day, setDay] = useState<string>('all');
   const [subcategoryId, setSubcategoryId] = useState('');
   const [hangoutId, setHangoutId] = useState('');
   const [pagination, setPagination] = useState<PaginationState>({
@@ -73,18 +73,18 @@ export function Transactions() {
       skip: pagination.pageIndex * pagination.pageSize,
       limit: pagination.pageSize,
     };
-    if (year !== '') params.year = Number(year);
-    if (month !== '') params.month = Number(month);
-    if (day !== '') params.day = Number(day);
+    if (year !== 'all') params.year = Number(year);
+    if (month !== 'all') params.month = Number(month);
+    if (day !== 'all') params.day = Number(day);
     if (subcategoryId) params.subcategory_id = subcategoryId;
     if (hangoutId) params.hangout_id = hangoutId;
     return params;
   }, [year, month, day, subcategoryId, hangoutId, pagination]);
 
   const clearFilters = useCallback(() => {
-    setYear('');
-    setMonth('');
-    setDay('');
+    setYear('all');
+    setMonth('all');
+    setDay('all');
     setSubcategoryId('');
     setHangoutId('');
     setPagination((p) => ({ ...p, pageIndex: 0 }));
@@ -302,7 +302,7 @@ export function Transactions() {
     [deleteMutation],
   );
 
-  const filtersActive = !!(year || month || day || subcategoryId || hangoutId);
+  const filtersActive = year !== 'all' || month !== 'all' || day !== 'all' || !!subcategoryId || !!hangoutId;
 
   return (
     <div className="py-2 space-y-4">
@@ -349,7 +349,7 @@ export function Transactions() {
             <SelectValue placeholder="Year" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             {YEAR_OPTIONS.map((y) => (
               <SelectItem key={y} value={String(y)}>{y}</SelectItem>
             ))}
@@ -367,7 +367,7 @@ export function Transactions() {
             <SelectValue placeholder="Month" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             {MONTHS.map((m) => (
               <SelectItem key={m} value={String(m)}>{m}</SelectItem>
             ))}
@@ -385,7 +385,7 @@ export function Transactions() {
             <SelectValue placeholder="Day" />
           </SelectTrigger>
           <SelectContent className="max-h-60">
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             {DAY_OPTIONS.map((d) => (
               <SelectItem key={d} value={String(d)}>{d}</SelectItem>
             ))}
