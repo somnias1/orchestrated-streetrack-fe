@@ -1,3 +1,4 @@
+import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
 import type { HangoutRead } from '../../../services/hangouts/types';
 
 export type HangoutsTableProps = Readonly<{
@@ -7,4 +8,8 @@ export type HangoutsTableProps = Readonly<{
   onRetry: () => void;
   onEdit: (hangout: HangoutRead) => void;
   onDelete: (hangout: HangoutRead) => void;
+  total: number;
+  pageIndex: number;
+  pageSize: number;
+  onPaginationChange: OnChangeFn<PaginationState>;
 }>;

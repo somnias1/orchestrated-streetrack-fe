@@ -1,9 +1,3 @@
-export {
-  CategoryAutocomplete,
-  categoryOptionLabel,
-} from './CategoryAutocomplete';
-export { HangoutAutocomplete } from './HangoutAutocomplete';
-export {
-  SubcategoryAutocomplete,
-  subcategoryOptionLabel,
-} from './SubcategoryAutocomplete';
+export { CategoryCombobox } from './CategoryCombobox';
+export { HangoutCombobox } from './HangoutCombobox';
+export { SubcategoryCombobox } from './SubcategoryCombobox';

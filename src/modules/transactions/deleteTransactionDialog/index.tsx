@@ -1,12 +1,12 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from '@mui/material';
 import { useState } from 'react';
-import { themeTokens } from '../../../theme/tailwind';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import type { DeleteTransactionDialogProps } from './types';
 
 export function DeleteTransactionDialog({
@@ -33,42 +33,23 @@ export function DeleteTransactionDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="xs"
-      fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: themeTokens.surface,
-          border: `1px solid ${themeTokens.border}`,
-          color: themeTokens.textPrimary,
-        },
-      }}
-    >
-      <DialogTitle sx={{ color: themeTokens.textPrimary }}>
-        Delete transaction
-      </DialogTitle>
-      <DialogContent sx={{ color: themeTokens.textSecondary }}>
-        Delete this transaction? This cannot be undone.
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Delete transaction</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          Delete this transaction? This cannot be undone.
+        </p>
+        <DialogFooter>
+          <Button variant="ghost" onClick={handleClose} disabled={deleting}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={handleConfirm} disabled={deleting}>
+            {deleting ? 'Deleting…' : 'Delete'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button
-          onClick={handleClose}
-          disabled={deleting}
-          sx={{ color: themeTokens.textSecondary }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleConfirm}
-          disabled={deleting}
-          sx={{ backgroundColor: themeTokens.error }}
-        >
-          {deleting ? 'Deleting…' : 'Delete'}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

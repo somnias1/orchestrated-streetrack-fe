@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineConfig, loadEnv } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 
@@ -9,6 +10,9 @@ export default defineConfig({
   source: {
     define: {
       ...publicVars,
+    },
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
     },
   },
   html: {
