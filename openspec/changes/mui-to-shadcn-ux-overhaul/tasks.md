@@ -7,9 +7,9 @@
 - [x] 1.5 Delete `src/theme/tailwind.ts` (`themeTokens` JS object); update any lingering imports to use Tailwind utility classes
 - [x] 1.6 Add `cn()` helper at `src/lib/utils.ts` (`clsx` + `tailwind-merge`)
 - [x] 1.7 Add `<Toaster />` from `sonner` to app root (`src/App.tsx`)
-- [ ] 1.8 Run `npm run build` — confirm zero MUI/Emotion import errors
-- [ ] 1.9 Run `npx biome check .` — fix any lint issues introduced by removals
-- [ ] 1.10 Commit SPEC + initial scaffold; create `.planning/phase-NN-SPEC.md` for this phase
+- [x] 1.8 Run `npm run build` — confirm zero MUI/Emotion import errors
+- [x] 1.9 Run `npx biome check .` — fix any lint issues introduced by removals
+- [x] 1.10 Commit SPEC + initial scaffold; create `.planning/phase-NN-SPEC.md` for this phase
 
 ## 2. shadcn component primitives
 
@@ -36,7 +36,7 @@
 - [x] 3.4 Replace all `useAuth0` logout call and `NavLink` wrappers — use Lucide icons for nav items (`House`, `Tag`, `Layers`, `ReceiptText`, `CalendarDays`)
 - [x] 3.5 Wire `useThemeStore` toggle to update `data-theme` on `document.documentElement`
 - [x] 3.6 Update `src/modules/layout/Layout.test.tsx` — remove MUI AppBar assertions; assert on sidebar nav links by role/text
-- [ ] 3.7 Run gate: `npm test && npx biome check .`
+- [x] 3.7 Run gate: `npm test && npx biome check .`
 
 ## 4. Home dashboard redesign
 
@@ -45,21 +45,21 @@
 - [x] 4.3 Replace MUI `CircularProgress` with `Loader2` + `animate-spin` in loading states
 - [x] 4.4 Replace MUI `Button` retry CTAs with shadcn `Button`
 - [x] 4.5 Add shadcn `Badge` for paid/unpaid status on due expense items
-- [ ] 4.6 Update or create Home test file — assert on Card content, selectors, loading/error/retry states
-- [ ] 4.7 Run gate: `npm test && npx biome check .`
+- [x] 4.6 Update or create Home test file — assert on Card content, selectors, loading/error/retry states
+- [x] 4.7 Run gate: `npm test && npx biome check .`
 
 ## 5. Categories screen and table
 
-- [ ] 5.1 Rewrite `src/modules/categories/categoriesTable/index.tsx` — div-grid shell, shadcn Skeleton loading, shadcn Button icon actions, Lucide Pencil/Trash2 icons
-- [ ] 5.2 Replace `CategoryTypeChip` with shadcn `Badge` (green for income, red for expense)
-- [ ] 5.3 Replace MUI `Select` type filter with shadcn `Select` in `src/modules/categories/index.tsx`
-- [ ] 5.4 Replace MUI `IconButton` clear-filters with shadcn `Button variant="ghost" size="icon"` + Lucide `FilterX`
-- [ ] 5.5 Replace MUI `Snackbar` with `toast.success()` / `toast.error()`; remove `showSnackBar` state
-- [ ] 5.6 Replace MUI `TablePagination` with shared `<Pagination />` component
+- [x] 5.1 Rewrite `src/modules/categories/categoriesTable/index.tsx` — div-grid shell, shadcn Skeleton loading, shadcn Button icon actions, Lucide Pencil/Trash2 icons
+- [x] 5.2 Replace `CategoryTypeChip` with shadcn `Badge` (green for income, red for expense)
+- [x] 5.3 Replace MUI `Select` type filter with shadcn `Select` in `src/modules/categories/index.tsx`
+- [x] 5.4 Replace MUI `IconButton` clear-filters with shadcn `Button variant="ghost" size="icon"` + Lucide `FilterX`
+- [x] 5.5 Replace MUI `Snackbar` with `toast.success()` / `toast.error()`; remove `showSnackBar` state
+- [x] 5.6 Replace MUI `TablePagination` with shared `<Pagination />` component
 - [x] 5.7 Rewrite `src/modules/categories/categoryFormDialog/index.tsx` — shadcn Dialog + Form + Input + Select + Checkbox
 - [x] 5.8 Rewrite `src/modules/categories/deleteCategoryDialog/index.tsx` — shadcn AlertDialog
 - [x] 5.9 Update `src/modules/categories/Categories.test.tsx` — remove MUI/Snackbar selectors, assert on toast text and shadcn DOM
-- [ ] 5.10 Run gate: `npm test && npx biome check .`
+- [x] 5.10 Run gate: `npm test && npx biome check .`
 
 ## 6. Subcategories screen and table
 
@@ -70,7 +70,7 @@
 - [x] 6.5 Rewrite `subcategoryFormDialog` — shadcn Dialog + Form + Input + Select + Checkbox + `CategoryCombobox` (externalOptions contract preserved)
 - [x] 6.6 Rewrite delete confirm dialog — shadcn AlertDialog
 - [x] 6.7 Update `Subcategories.test.tsx` — selector audit, toast assertions
-- [ ] 6.8 Run gate: `npm test && npx biome check .`
+- [x] 6.8 Run gate: `npm test && npx biome check .`
 
 ## 7. Transactions screen and table
 
@@ -82,7 +82,7 @@
 - [x] 7.6 Rewrite `importTransactionsDialog` — shadcn Dialog + Textarea + shadcn Button
 - [x] 7.7 Rewrite delete confirm dialog — shadcn AlertDialog
 - [x] 7.8 Update `Transactions.test.tsx` — selector audit, toast assertions
-- [ ] 7.9 Run gate: `npm test && npx biome check .`
+- [x] 7.9 Run gate: `npm test && npx biome check .`
 
 ## 8. Hangouts screen and table
 
@@ -91,7 +91,7 @@
 - [x] 8.3 Rewrite `hangoutFormDialog` — shadcn Dialog + Form + Input (name, date, description)
 - [x] 8.4 Rewrite delete confirm dialog — shadcn AlertDialog
 - [x] 8.5 Update `Hangouts.test.tsx` — selector audit, toast assertions (selectors already compatible)
-- [ ] 8.6 Run gate: `npm test && npx biome check .`
+- [x] 8.6 Run gate: `npm test && npx biome check .`
 
 ## 9. Test suite audit and coverage gate
 
@@ -100,6 +100,6 @@
 - [x] 9.3 Audit all `*.test.tsx` for MUI class selectors or `data-testid` values that no longer exist — fix with RTL semantic queries
 - [x] 9.4 Verify all MSW handlers return `PaginatedRead<T>` envelope — fix any handlers that return bare arrays
 - [x] 9.5 Remove all `data-testid="*-snackbar"` attributes from production components; update test assertions to use text queries on toast content
-- [x] 9.6 Confirm lines ≥ 80%, statements ≥ 80%, branches ≥ 70%, functions ≥ 70% (all 86 tests pass, thresholds met)
-- [ ] 9.7 Run final gate: `npm test && npx biome check .`
-- [ ] 9.8 Commit `.planning/phase-NN-SUMMARY.md` for each phase; merge feature branches into `main`
+- [x] 9.6 Confirm lines ≥ 80%, statements ≥ 80%, branches ≥ 70%, functions ≥ 70% (all 93 tests pass, thresholds met)
+- [x] 9.7 Run final gate: `npm test && npx biome check .`
+- [x] 9.8 Commit `.planning/phase-NN-SUMMARY.md` for each phase; merge feature branches into `main`
