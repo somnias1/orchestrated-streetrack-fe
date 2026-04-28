@@ -8,7 +8,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
-window.HTMLElement.prototype.scrollIntoView = function () {};
+window.HTMLElement.prototype.scrollIntoView = () => {};
 
 vi.mock('@auth0/auth0-react', async () => {
   const React = await import('react');

@@ -5,7 +5,9 @@ import { Check } from 'lucide-react';
 import type * as React from 'react';
 import { cn } from '@/lib/utils';
 
-type CheckboxProps = React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>;
+type CheckboxProps = React.ComponentPropsWithoutRef<
+  typeof CheckboxPrimitive.Root
+>;
 
 function Checkbox({ className, ...props }: CheckboxProps) {
   return (

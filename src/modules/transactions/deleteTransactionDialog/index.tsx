@@ -45,7 +45,11 @@ export function DeleteTransactionDialog({
           <Button variant="ghost" onClick={handleClose} disabled={deleting}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleConfirm} disabled={deleting}>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={deleting}
+          >
             {deleting ? 'Deleting…' : 'Delete'}
           </Button>
         </DialogFooter>

@@ -4,16 +4,16 @@ import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { config } from '../../config';
-import { toPaginatedRead } from '../../services/pagination';
-import { Subcategories } from './index';
-import { subcategoriesPaths } from '../../services/subcategories/constants';
 import { categoriesPaths } from '../../services/categories/constants';
-import ProviderWrapper from '../../utils/test/provider';
-import {
-  subcategoryMock,
-  subcategoriesMock,
-} from '../../services/subcategories/mocks';
 import { categoriesMock } from '../../services/categories/mocks';
+import { toPaginatedRead } from '../../services/pagination';
+import { subcategoriesPaths } from '../../services/subcategories/constants';
+import {
+  subcategoriesMock,
+  subcategoryMock,
+} from '../../services/subcategories/mocks';
+import ProviderWrapper from '../../utils/test/provider';
+import { Subcategories } from './index';
 
 // So virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
 vi.mock('@tanstack/react-virtual', () => ({
@@ -216,7 +216,9 @@ describe('Subcategories screen', () => {
     const dialog = screen.getByRole('dialog', { name: /create subcategory/i });
 
     // Open category combobox and select category
-    await userEvent.click(within(dialog).getByTestId('subcategory-form-category'));
+    await userEvent.click(
+      within(dialog).getByTestId('subcategory-form-category'),
+    );
     await userEvent.type(
       screen.getByPlaceholderText('Search category…'),
       categories[0].name,

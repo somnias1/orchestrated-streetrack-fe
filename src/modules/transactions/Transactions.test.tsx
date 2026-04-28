@@ -4,14 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { config } from '../../config';
-import { toPaginatedRead } from '../../services/pagination';
-import { Transactions } from './index';
-import { transactionsPaths } from '../../services/transactions/constants';
 import { hangoutsPaths } from '../../services/hangouts/constants';
+import { toPaginatedRead } from '../../services/pagination';
 import { subcategoriesPaths } from '../../services/subcategories/constants';
 import { subcategoryMock } from '../../services/subcategories/mocks';
-import ProviderWrapper from '../../utils/test/provider';
+import { transactionsPaths } from '../../services/transactions/constants';
 import { transactionMock } from '../../services/transactions/mocks';
+import ProviderWrapper from '../../utils/test/provider';
+import { Transactions } from './index';
 
 // Virtualized table rows render in jsdom (virtualizer otherwise sees 0 height)
 vi.mock('@tanstack/react-virtual', () => ({

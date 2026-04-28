@@ -49,7 +49,11 @@ export function HangoutFormDialog({
     },
   });
 
-  const { handleSubmit, reset, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
     if (open) {
@@ -81,10 +85,15 @@ export function HangoutFormDialog({
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit hangout' : 'Create hangout'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? 'Edit hangout' : 'Create hangout'}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={handleSubmit(onValid)} className="flex flex-col gap-4">
+          <form
+            onSubmit={handleSubmit(onValid)}
+            className="flex flex-col gap-4"
+          >
             {submitError && (
               <p className="text-sm text-destructive">{submitError}</p>
             )}

@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
-import { useCategoriesQuery, useCategoryQuery } from '../../services/categories';
+import {
+  useCategoriesQuery,
+  useCategoryQuery,
+} from '../../services/categories';
 import type { CategoryRead } from '../../services/categories/types';
 import { PICKER_LIST_PARAMS } from '../../services/types';
 import { useDebouncedValue } from '../../utils/useDebouncedValue';
-import { PICKER_SEARCH_DEBOUNCE_MS } from './constants';
 import { Combobox, type ComboboxOption } from './Combobox';
+import { PICKER_SEARCH_DEBOUNCE_MS } from './constants';
 
 function categoryToOption(c: CategoryRead): ComboboxOption {
   return {

@@ -15,11 +15,16 @@ import {
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import { routes } from '../../routes';
 import { useThemeStore } from '../theme/store';
 
@@ -31,10 +36,26 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Home', href: routes.home, icon: <Home className="h-5 w-5" /> },
-  { label: 'Categories', href: routes.categories, icon: <Tag className="h-5 w-5" /> },
-  { label: 'Subcategories', href: routes.subcategories, icon: <Layers className="h-5 w-5" /> },
-  { label: 'Transactions', href: routes.transactions, icon: <ReceiptText className="h-5 w-5" /> },
-  { label: 'Hangouts', href: routes.hangouts, icon: <CalendarDays className="h-5 w-5" /> },
+  {
+    label: 'Categories',
+    href: routes.categories,
+    icon: <Tag className="h-5 w-5" />,
+  },
+  {
+    label: 'Subcategories',
+    href: routes.subcategories,
+    icon: <Layers className="h-5 w-5" />,
+  },
+  {
+    label: 'Transactions',
+    href: routes.transactions,
+    icon: <ReceiptText className="h-5 w-5" />,
+  },
+  {
+    label: 'Hangouts',
+    href: routes.hangouts,
+    icon: <CalendarDays className="h-5 w-5" />,
+  },
 ];
 
 type Props = Readonly<{ children: ReactNode }>;
@@ -50,6 +71,7 @@ function NavItems({ collapsed }: Readonly<{ collapsed: boolean }>) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span
+                      role="img"
                       className={cn(
                         'flex h-9 w-9 items-center justify-center rounded-md transition-colors',
                         isActive
@@ -91,7 +113,9 @@ export function Layout({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () =>
-    logout({ logoutParams: { returnTo: window.location.origin + routes.auth.login } });
+    logout({
+      logoutParams: { returnTo: window.location.origin + routes.auth.login },
+    });
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -120,7 +144,11 @@ export function Layout({ children }: Props) {
             onClick={() => setCollapsed((c) => !c)}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
@@ -130,7 +158,9 @@ export function Layout({ children }: Props) {
 
         <Separator className="bg-sidebar-border" />
 
-        <div className={cn('flex flex-col gap-1 p-2', collapsed && 'items-center')}>
+        <div
+          className={cn('flex flex-col gap-1 p-2', collapsed && 'items-center')}
+        >
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -142,9 +172,17 @@ export function Layout({ children }: Props) {
                     'text-sidebar-foreground hover:bg-sidebar-accent',
                     !collapsed && 'w-full justify-start gap-3',
                   )}
-                  aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                  aria-label={
+                    mode === 'dark'
+                      ? 'Switch to light mode'
+                      : 'Switch to dark mode'
+                  }
                 >
-                  {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {mode === 'dark' ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
                   {!collapsed && (mode === 'dark' ? 'Light mode' : 'Dark mode')}
                 </Button>
               </TooltipTrigger>
@@ -173,7 +211,9 @@ export function Layout({ children }: Props) {
                   {!collapsed && 'Log out'}
                 </Button>
               </TooltipTrigger>
-              {collapsed && <TooltipContent side="right">Log out</TooltipContent>}
+              {collapsed && (
+                <TooltipContent side="right">Log out</TooltipContent>
+              )}
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -190,13 +230,20 @@ export function Layout({ children }: Props) {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <span className="text-sm font-semibold text-sidebar-foreground">Streetrack</span>
+        <span className="text-sm font-semibold text-sidebar-foreground">
+          Streetrack
+        </span>
       </div>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-56 bg-sidebar border-r border-sidebar-border p-0">
+        <SheetContent
+          side="left"
+          className="w-56 bg-sidebar border-r border-sidebar-border p-0"
+        >
           <div className="flex h-14 items-center border-b border-sidebar-border px-4">
-            <span className="text-sm font-semibold text-sidebar-foreground">Streetrack</span>
+            <span className="text-sm font-semibold text-sidebar-foreground">
+              Streetrack
+            </span>
           </div>
           <div className="py-3">
             <NavItems collapsed={false} />
@@ -209,7 +256,11 @@ export function Layout({ children }: Props) {
               onClick={toggle}
               className="w-full justify-start gap-3 text-sidebar-foreground"
             >
-              {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {mode === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
               {mode === 'dark' ? 'Light mode' : 'Dark mode'}
             </Button>
             <Button

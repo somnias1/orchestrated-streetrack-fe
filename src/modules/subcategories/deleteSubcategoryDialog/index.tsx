@@ -48,7 +48,11 @@ export function DeleteSubcategoryDialog({
           <AlertDialogCancel disabled={deleting} onClick={handleClose}>
             Cancel
           </AlertDialogCancel>
-          <Button variant="destructive" onClick={handleConfirm} disabled={deleting}>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={deleting}
+          >
             {deleting ? 'Deleting…' : 'Delete'}
           </Button>
         </AlertDialogFooter>

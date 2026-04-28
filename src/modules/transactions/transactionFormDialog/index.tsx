@@ -1,8 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { HangoutCombobox } from '../../../components/pickers/HangoutCombobox';
-import { SubcategoryCombobox } from '../../../components/pickers/SubcategoryCombobox';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,6 +18,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { HangoutCombobox } from '../../../components/pickers/HangoutCombobox';
+import { SubcategoryCombobox } from '../../../components/pickers/SubcategoryCombobox';
 import {
   type TransactionDialogFormValues,
   transactionDialogFormSchema,
@@ -29,13 +29,16 @@ import type {
   TransactionFormPayload,
 } from './types';
 
-function toPayload(values: TransactionDialogFormValues): TransactionFormPayload {
+function toPayload(
+  values: TransactionDialogFormValues,
+): TransactionFormPayload {
   return {
     subcategory_id: values.subcategory_id.trim(),
     value: Number(values.value),
     description: values.description.trim(),
     date: values.date.trim(),
-    hangout_id: values.hangout_id.trim() === '' ? null : values.hangout_id.trim(),
+    hangout_id:
+      values.hangout_id.trim() === '' ? null : values.hangout_id.trim(),
   };
 }
 
@@ -58,13 +61,18 @@ export function TransactionFormDialog({
     },
   });
 
-  const { handleSubmit, reset, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
     if (open) {
       reset({
         subcategory_id: initialValues?.subcategory_id ?? '',
-        value: initialValues?.value !== undefined ? String(initialValues.value) : '',
+        value:
+          initialValues?.value !== undefined ? String(initialValues.value) : '',
         description: initialValues?.description ?? '',
         date: initialValues?.date ?? '',
         hangout_id: initialValues?.hangout_id ?? '',
@@ -92,10 +100,15 @@ export function TransactionFormDialog({
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit transaction' : 'Create transaction'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? 'Edit transaction' : 'Create transaction'}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={handleSubmit(onValid)} className="flex flex-col gap-4">
+          <form
+            onSubmit={handleSubmit(onValid)}
+            className="flex flex-col gap-4"
+          >
             {submitError && (
               <p className="text-sm text-destructive">{submitError}</p>
             )}

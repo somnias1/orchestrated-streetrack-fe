@@ -1,4 +1,3 @@
-import { Pencil, Trash2 } from 'lucide-react';
 import {
   type ColumnDef,
   flexRender,
@@ -7,11 +6,17 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
+import { TablePagination } from '@/components/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TablePagination } from '@/components/TablePagination';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { HangoutRead } from '../../../services/hangouts/types';
 import { formatDate } from '../../../utils';
@@ -162,12 +167,14 @@ export function HangoutsTable({
           group.headers.map((header) => (
             <div
               key={header.id}
-              role="columnheader"
               className="px-3 py-2.5 text-sm font-semibold text-foreground"
             >
               {header.isPlaceholder
                 ? null
-                : flexRender(header.column.columnDef.header, header.getContext())}
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
             </div>
           )),
         )}
@@ -180,21 +187,25 @@ export function HangoutsTable({
         style={{ minHeight: TABLE_MIN_HEIGHT, maxHeight: '60vh' }}
       >
         {loading && (
-          <div
-            role="progressbar"
-            aria-label="Loading hangouts"
-            className="flex flex-col gap-2 p-3"
-          >
-            {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
+          <>
+            <progress aria-label="Loading hangouts" className="sr-only" />
+            <div className="flex flex-col gap-2 p-3">
+              {Array.from({ length: SKELETON_ROWS }, (_, n) => n).map((n) => (
+                <Skeleton key={n} className="h-10 w-full" />
+              ))}
+            </div>
+          </>
         )}
 
         {!loading && error && (
           <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
             <p className="text-sm text-destructive">{error}</p>
-            <Button variant="outline" size="sm" onClick={onRetry} data-testid="retry-button">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              data-testid="retry-button"
+            >
               Retry
             </Button>
           </div>
@@ -207,15 +218,19 @@ export function HangoutsTable({
         )}
 
         {showVirtualBody && (
-          <div style={{ position: 'relative', width: '100%', height: `${totalSize}px` }}>
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: `${totalSize}px`,
+            }}
+          >
             {virtualItems.map((virtualRow) => {
               const row = rows[virtualRow.index];
               const hangout = row.original;
               return (
                 <div
                   key={row.id}
-                  role="row"
-                  aria-label={hangout.name}
                   data-testid={`hangout-row-${hangout.id}`}
                   className={cn(
                     'absolute left-0 right-0 grid items-center border-b border-border bg-card hover:bg-accent/30',
@@ -229,8 +244,14 @@ export function HangoutsTable({
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <div key={cell.id} className="px-3 py-2 min-w-0 overflow-hidden">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <div
+                      key={cell.id}
+                      className="px-3 py-2 min-w-0 overflow-hidden"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </div>
                   ))}
                 </div>

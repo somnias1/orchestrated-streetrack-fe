@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { TransactionImportPreview } from '../../../services/transactionManager/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import type { TransactionImportPreview } from '../../../services/transactionManager/types';
 import { parsePastedRows } from './parsePaste';
 import type { ImportTransactionsDialogProps } from './types';
 
@@ -26,7 +26,9 @@ export function ImportTransactionsDialog({
 }: ImportTransactionsDialogProps) {
   const [pasteText, setPasteText] = useState('');
   const [preview, setPreview] = useState<TransactionImportPreview | null>(null);
-  const [previewRequestError, setPreviewRequestError] = useState<string | null>(null);
+  const [previewRequestError, setPreviewRequestError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (open) {
@@ -39,7 +41,9 @@ export function ImportTransactionsDialog({
   const handlePreview = useCallback(async () => {
     const rows = parsePastedRows(pasteText);
     if (rows.length === 0) {
-      setPreviewRequestError('Paste at least one row (Category, Subcategory, Value, Description, Date).');
+      setPreviewRequestError(
+        'Paste at least one row (Category, Subcategory, Value, Description, Date).',
+      );
       setPreview(null);
       return;
     }
@@ -89,11 +93,14 @@ export function ImportTransactionsDialog({
             className="font-mono text-sm p-3 text-foreground bg-card border border-border rounded-md resize-y w-full"
             aria-label="Paste import data"
           />
-          {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+          {errorMessage && (
+            <p className="text-sm text-destructive">{errorMessage}</p>
+          )}
           {preview && (
             <div>
               <p className="text-sm text-foreground">
-                Valid: {preview.transactions.length} · Invalid: {preview.invalid_rows.length}
+                Valid: {preview.transactions.length} · Invalid:{' '}
+                {preview.invalid_rows.length}
               </p>
               {preview.invalid_rows.length > 0 && (
                 <ul className="mt-1 pl-4 text-sm text-destructive list-disc">
@@ -108,7 +115,12 @@ export function ImportTransactionsDialog({
           )}
         </div>
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={handleClose} disabled={previewing || submitting}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleClose}
+            disabled={previewing || submitting}
+          >
             Cancel
           </Button>
           <Button
@@ -123,12 +135,16 @@ export function ImportTransactionsDialog({
             type="button"
             onClick={handleSubmit}
             disabled={
-              submitting || previewing || !preview ||
+              submitting ||
+              previewing ||
+              !preview ||
               preview.transactions.length === 0 ||
               preview.invalid_rows.length > 0
             }
           >
-            {submitting ? 'Creating…' : `Create ${preview?.transactions.length ?? 0} transactions`}
+            {submitting
+              ? 'Creating…'
+              : `Create ${preview?.transactions.length ?? 0} transactions`}
           </Button>
         </DialogFooter>
       </DialogContent>

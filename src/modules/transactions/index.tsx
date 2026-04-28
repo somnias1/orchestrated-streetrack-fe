@@ -1,8 +1,23 @@
-import { ChevronDown, Download, FilterX, Plus } from 'lucide-react';
-import type { PaginationState } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
+import type { PaginationState } from '@tanstack/react-table';
+import { ChevronDown, Download, FilterX, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { HangoutCombobox } from '../../components/pickers/HangoutCombobox';
 import { SubcategoryCombobox } from '../../components/pickers/SubcategoryCombobox';
 import { config } from '../../config';
@@ -26,21 +41,6 @@ import type {
   TransactionsListParams,
 } from '../../services/transactions/types';
 import { DEFAULT_LIST_LIMIT } from '../../services/types';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import useCallbackApi from '../../utils/callbackApi';
 import { BulkTransactionsDialog } from './bulkTransactionsDialog';
 import {
@@ -145,7 +145,9 @@ export function Transactions() {
   const { callbackApi } = useCallbackApi();
   const importPreviewMutation = useImportPreviewMutation();
   const [formOpen, setFormOpen] = useState(false);
-  const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
+  const [editingTransactionId, setEditingTransactionId] = useState<
+    string | null
+  >(null);
   const [formInitial, setFormInitial] = useState<{
     subcategory_id: string;
     value: number;
@@ -154,13 +156,18 @@ export function Transactions() {
     hangout_id: string | null;
   } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState<TransactionRead | null>(null);
+  const [transactionToDelete, setTransactionToDelete] =
+    useState<TransactionRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkSubmitError, setBulkSubmitError] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
-  const [importPreviewError, setImportPreviewError] = useState<string | null>(null);
-  const [importSubmitError, setImportSubmitError] = useState<string | null>(null);
+  const [importPreviewError, setImportPreviewError] = useState<string | null>(
+    null,
+  );
+  const [importSubmitError, setImportSubmitError] = useState<string | null>(
+    null,
+  );
   const [exporting, setExporting] = useState(false);
 
   const errorMessage =
@@ -189,12 +196,16 @@ export function Transactions() {
   }, []);
 
   const handleImportPreview = useCallback(
-    async (rows: import('../../services/transactionManager/types').TransactionImportRow[]) => {
+    async (
+      rows: import('../../services/transactionManager/types').TransactionImportRow[],
+    ) => {
       setImportPreviewError(null);
       try {
         return await importPreviewMutation.mutateAsync({ rows });
       } catch (err) {
-        setImportPreviewError(err instanceof Error ? err.message : 'Preview failed');
+        setImportPreviewError(
+          err instanceof Error ? err.message : 'Preview failed',
+        );
         throw err;
       }
     },
@@ -208,7 +219,9 @@ export function Transactions() {
         await bulkCreateMutation.mutateAsync(body);
         setImportOpen(false);
       } catch (err) {
-        setImportSubmitError(err instanceof Error ? err.message : 'Import create failed');
+        setImportSubmitError(
+          err instanceof Error ? err.message : 'Import create failed',
+        );
         throw err;
       }
     },
@@ -222,7 +235,9 @@ export function Transactions() {
         ...(listParams.year !== undefined && { year: listParams.year }),
         ...(listParams.month !== undefined && { month: listParams.month }),
         ...(listParams.day !== undefined && { day: listParams.day }),
-        ...(listParams.subcategory_id && { subcategory_id: listParams.subcategory_id }),
+        ...(listParams.subcategory_id && {
+          subcategory_id: listParams.subcategory_id,
+        }),
         ...(listParams.hangout_id && { hangout_id: listParams.hangout_id }),
       };
       await downloadCsvBlob(() =>
@@ -244,7 +259,9 @@ export function Transactions() {
         await bulkCreateMutation.mutateAsync(body);
         setBulkOpen(false);
       } catch (err) {
-        setBulkSubmitError(err instanceof Error ? err.message : 'Bulk create failed');
+        setBulkSubmitError(
+          err instanceof Error ? err.message : 'Bulk create failed',
+        );
         throw err;
       }
     },
@@ -282,11 +299,16 @@ export function Transactions() {
         if (editingTransactionId === null) {
           await createMutation.mutateAsync(data);
         } else {
-          await updateMutation.mutateAsync({ id: editingTransactionId, body: data });
+          await updateMutation.mutateAsync({
+            id: editingTransactionId,
+            body: data,
+          });
         }
         setFormOpen(false);
       } catch (err) {
-        setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
+        setSubmitError(
+          err instanceof Error ? err.message : 'Something went wrong',
+        );
         throw err;
       }
     },
@@ -302,7 +324,12 @@ export function Transactions() {
     [deleteMutation],
   );
 
-  const filtersActive = year !== 'all' || month !== 'all' || day !== 'all' || !!subcategoryId || !!hangoutId;
+  const filtersActive =
+    year !== 'all' ||
+    month !== 'all' ||
+    day !== 'all' ||
+    !!subcategoryId ||
+    !!hangoutId;
 
   return (
     <div className="py-2 space-y-4">
@@ -320,7 +347,9 @@ export function Transactions() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={openCreate}>Transaction</DropdownMenuItem>
+              <DropdownMenuItem onSelect={openCreate}>
+                Transaction
+              </DropdownMenuItem>
               <DropdownMenuItem onSelect={openBulk}>Bulk</DropdownMenuItem>
               <DropdownMenuItem onSelect={openImport}>Import</DropdownMenuItem>
             </DropdownMenuContent>
@@ -351,7 +380,9 @@ export function Transactions() {
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             {YEAR_OPTIONS.map((y) => (
-              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -369,7 +400,9 @@ export function Transactions() {
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             {MONTHS.map((m) => (
-              <SelectItem key={m} value={String(m)}>{m}</SelectItem>
+              <SelectItem key={m} value={String(m)}>
+                {m}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -387,7 +420,9 @@ export function Transactions() {
           <SelectContent className="max-h-60">
             <SelectItem value="all">All</SelectItem>
             {DAY_OPTIONS.map((d) => (
-              <SelectItem key={d} value={String(d)}>{d}</SelectItem>
+              <SelectItem key={d} value={String(d)}>
+                {d}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

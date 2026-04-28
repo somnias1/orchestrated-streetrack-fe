@@ -3,8 +3,8 @@ import { useHangoutQuery, useHangoutsQuery } from '../../services/hangouts';
 import type { HangoutRead } from '../../services/hangouts/types';
 import { PICKER_LIST_PARAMS } from '../../services/types';
 import { useDebouncedValue } from '../../utils/useDebouncedValue';
-import { PICKER_SEARCH_DEBOUNCE_MS } from './constants';
 import { Combobox, type ComboboxOption } from './Combobox';
+import { PICKER_SEARCH_DEBOUNCE_MS } from './constants';
 
 function hangoutToOption(h: HangoutRead): ComboboxOption {
   return { value: h.id, label: h.name };

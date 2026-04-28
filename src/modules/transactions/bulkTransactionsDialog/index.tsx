@@ -8,13 +8,6 @@ import {
   useFieldArray,
   useForm,
 } from 'react-hook-form';
-import { HangoutCombobox } from '../../../components/pickers/HangoutCombobox';
-import { SubcategoryCombobox } from '../../../components/pickers/SubcategoryCombobox';
-import { useHangoutsQuery } from '../../../services/hangouts';
-import type { HangoutRead } from '../../../services/hangouts/types';
-import { useSubcategoriesQuery } from '../../../services/subcategories';
-import type { SubcategoryRead } from '../../../services/subcategories/types';
-import { PICKER_LIST_PARAMS } from '../../../services/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,6 +17,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { HangoutCombobox } from '../../../components/pickers/HangoutCombobox';
+import { SubcategoryCombobox } from '../../../components/pickers/SubcategoryCombobox';
+import { useHangoutsQuery } from '../../../services/hangouts';
+import type { HangoutRead } from '../../../services/hangouts/types';
+import { useSubcategoriesQuery } from '../../../services/subcategories';
+import type { SubcategoryRead } from '../../../services/subcategories/types';
+import { PICKER_LIST_PARAMS } from '../../../services/types';
 import {
   type BulkTransactionsFormValues,
   bulkTransactionsFormSchema,
@@ -66,12 +66,20 @@ const BulkTransactionRow = memo(function BulkTransactionRow({
   control,
 }: BulkTransactionRowProps) {
   return (
-    <div className="grid gap-2 items-start" style={{ gridTemplateColumns: '140px 1fr 1fr 80px 1fr auto' }}>
+    <div
+      className="grid gap-2 items-start"
+      style={{ gridTemplateColumns: '140px 1fr 1fr 80px 1fr auto' }}
+    >
       <Controller
         name={`rows.${index}.date`}
         control={control}
         render={({ field }) => (
-          <Input {...field} type="date" aria-label={`Row ${index + 1} date`} className="h-9" />
+          <Input
+            {...field}
+            type="date"
+            aria-label={`Row ${index + 1} date`}
+            className="h-9"
+          />
         )}
       />
       <Controller
@@ -117,7 +125,11 @@ const BulkTransactionRow = memo(function BulkTransactionRow({
         name={`rows.${index}.description`}
         control={control}
         render={({ field }) => (
-          <Input {...field} aria-label={`Row ${index + 1} description`} className="h-9" />
+          <Input
+            {...field}
+            aria-label={`Row ${index + 1} description`}
+            className="h-9"
+          />
         )}
       />
       <Button
@@ -142,11 +154,22 @@ export function BulkTransactionsDialog({
   submitError,
   submitting,
 }: BulkTransactionsDialogProps) {
-  const { data: subcategoriesPage } = useSubcategoriesQuery(PICKER_LIST_PARAMS, { enabled: open });
-  const { data: hangoutsPage } = useHangoutsQuery(PICKER_LIST_PARAMS, { enabled: open });
+  const { data: subcategoriesPage } = useSubcategoriesQuery(
+    PICKER_LIST_PARAMS,
+    { enabled: open },
+  );
+  const { data: hangoutsPage } = useHangoutsQuery(PICKER_LIST_PARAMS, {
+    enabled: open,
+  });
 
-  const subcategoryOptions = useMemo(() => subcategoriesPage?.items ?? [], [subcategoriesPage?.items]);
-  const hangoutOptions = useMemo(() => hangoutsPage?.items ?? [], [hangoutsPage?.items]);
+  const subcategoryOptions = useMemo(
+    () => subcategoriesPage?.items ?? [],
+    [subcategoriesPage?.items],
+  );
+  const hangoutOptions = useMemo(
+    () => hangoutsPage?.items ?? [],
+    [hangoutsPage?.items],
+  );
 
   const form = useForm<BulkTransactionsFormValues>({
     resolver: zodResolver(bulkTransactionsFormSchema),
@@ -190,7 +213,9 @@ export function BulkTransactionsDialog({
           <DialogTitle>Bulk create transactions</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onValid)} className="flex flex-col gap-4">
-          {submitError && <p className="text-sm text-destructive">{submitError}</p>}
+          {submitError && (
+            <p className="text-sm text-destructive">{submitError}</p>
+          )}
           <div className="flex flex-col gap-2 max-h-[45vh] overflow-auto">
             {fields.map((field, index) => (
               <BulkTransactionRow
@@ -216,7 +241,12 @@ export function BulkTransactionsDialog({
             Add row
           </Button>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={handleClose} disabled={submitting}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleClose}
+              disabled={submitting}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={submitting || fields.length === 0}>

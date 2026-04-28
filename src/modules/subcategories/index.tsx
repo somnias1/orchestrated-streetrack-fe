@@ -1,9 +1,18 @@
-import { Plus, FilterX } from 'lucide-react';
-import type { PaginationState } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
+import type { PaginationState } from '@tanstack/react-table';
 import type { AxiosError } from 'axios';
+import { FilterX, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { CategoryCombobox } from '../../components/pickers/CategoryCombobox';
 import {
   useCreateSubcategoryMutation,
@@ -14,15 +23,6 @@ import {
 import { subcategoriesQueryKey } from '../../services/subcategories/constants';
 import type { SubcategoryRead } from '../../services/subcategories/types';
 import { DEFAULT_LIST_LIMIT } from '../../services/types';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import {
   DEFAULT_CATEGORY_ID,
   DEFAULT_TYPE_FILTER,
@@ -35,8 +35,10 @@ import { SubcategoryFormDialog } from './subcategoryFormDialog';
 
 export function Subcategories() {
   const queryClient = useQueryClient();
-  const [typeFilter, setTypeFilter] = useState<SubcategoryTypeFilter>(DEFAULT_TYPE_FILTER);
-  const [categoryIdFilter, setCategoryIdFilter] = useState<string>(DEFAULT_CATEGORY_ID);
+  const [typeFilter, setTypeFilter] =
+    useState<SubcategoryTypeFilter>(DEFAULT_TYPE_FILTER);
+  const [categoryIdFilter, setCategoryIdFilter] =
+    useState<string>(DEFAULT_CATEGORY_ID);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: DEFAULT_LIST_LIMIT,
@@ -52,7 +54,8 @@ export function Subcategories() {
       skip: pagination.pageIndex * pagination.pageSize,
       limit: pagination.pageSize,
     };
-    if (typeFilter !== 'all') params.belongs_to_income = typeFilter === 'income';
+    if (typeFilter !== 'all')
+      params.belongs_to_income = typeFilter === 'income';
     if (categoryIdFilter) params.category_id = categoryIdFilter;
     return params;
   }, [typeFilter, categoryIdFilter, pagination]);
@@ -72,7 +75,9 @@ export function Subcategories() {
   } = useSubcategoriesQuery(queryParams);
   const items = listData?.items ?? [];
   const total = listData?.total ?? 0;
-  const setSubcategoriesFromQuery = useSubcategoriesStore((s) => s.setFromQuery);
+  const setSubcategoriesFromQuery = useSubcategoriesStore(
+    (s) => s.setFromQuery,
+  );
 
   useEffect(() => {
     const err =
@@ -115,7 +120,9 @@ export function Subcategories() {
   });
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+  const [editingSubcategoryId, setEditingSubcategoryId] = useState<
+    string | null
+  >(null);
   const [formInitial, setFormInitial] = useState<{
     category_id: string;
     name: string;
@@ -125,7 +132,8 @@ export function Subcategories() {
     due_day: number | null;
   } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [subcategoryToDelete, setSubcategoryToDelete] = useState<SubcategoryRead | null>(null);
+  const [subcategoryToDelete, setSubcategoryToDelete] =
+    useState<SubcategoryRead | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const errorMessage =
@@ -175,11 +183,16 @@ export function Subcategories() {
         if (editingSubcategoryId === null) {
           await createMutation.mutateAsync(data);
         } else {
-          await updateMutation.mutateAsync({ id: editingSubcategoryId, body: data });
+          await updateMutation.mutateAsync({
+            id: editingSubcategoryId,
+            body: data,
+          });
         }
         setFormOpen(false);
       } catch (err) {
-        setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
+        setSubmitError(
+          err instanceof Error ? err.message : 'Something went wrong',
+        );
         throw err;
       }
     },
@@ -195,7 +208,9 @@ export function Subcategories() {
     [deleteMutation],
   );
 
-  const filtersActive = typeFilter !== DEFAULT_TYPE_FILTER || categoryIdFilter !== DEFAULT_CATEGORY_ID;
+  const filtersActive =
+    typeFilter !== DEFAULT_TYPE_FILTER ||
+    categoryIdFilter !== DEFAULT_CATEGORY_ID;
 
   return (
     <div className="py-2 space-y-4">

@@ -1,13 +1,16 @@
 'use client';
 
-import { type DialogProps } from '@radix-ui/react-dialog';
+import type { DialogProps } from '@radix-ui/react-dialog';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Search } from 'lucide-react';
 import type * as React from 'react';
-import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
-function Command({ className, ...props }: React.ComponentPropsWithoutRef<typeof CommandPrimitive>) {
+function Command({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
       className={cn(
@@ -38,7 +41,10 @@ function CommandInput({
   ...props
 }: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>) {
   return (
-    <div className="flex items-center border-b border-border px-3" cmdk-input-wrapper="">
+    <div
+      className="flex items-center border-b border-border px-3"
+      cmdk-input-wrapper=""
+    >
       <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         className={cn(
@@ -57,14 +63,21 @@ function CommandList({
 }: React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
-      className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden', className)}
+      className={cn(
+        'max-h-[300px] overflow-y-auto overflow-x-hidden',
+        className,
+      )}
       {...props}
     />
   );
 }
 
-function CommandEmpty(props: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>) {
-  return <CommandPrimitive.Empty className="py-6 text-center text-sm" {...props} />;
+function CommandEmpty(
+  props: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>,
+) {
+  return (
+    <CommandPrimitive.Empty className="py-6 text-center text-sm" {...props} />
+  );
 }
 
 function CommandGroup({
@@ -109,10 +122,16 @@ function CommandItem({
   );
 }
 
-function CommandShortcut({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
+function CommandShortcut({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
-      className={cn('ml-auto text-xs tracking-widest text-muted-foreground', className)}
+      className={cn(
+        'ml-auto text-xs tracking-widest text-muted-foreground',
+        className,
+      )}
       {...props}
     />
   );

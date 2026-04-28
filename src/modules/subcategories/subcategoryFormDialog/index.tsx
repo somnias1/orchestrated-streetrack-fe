@@ -1,8 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { CategoryCombobox } from '../../../components/pickers/CategoryCombobox';
-import { useCategoryQuery } from '../../../services/categories';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -21,19 +19,29 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { CategoryCombobox } from '../../../components/pickers/CategoryCombobox';
+import { useCategoryQuery } from '../../../services/categories';
 import {
   type SubcategoryDialogFormValues,
   subcategoryDialogFormSchema,
 } from './schema';
-import type { SubcategoryFormDialogProps, SubcategoryFormPayload } from './types';
+import type {
+  SubcategoryFormDialogProps,
+  SubcategoryFormPayload,
+} from './types';
 
-function toPayload(values: SubcategoryDialogFormValues): SubcategoryFormPayload {
+function toPayload(
+  values: SubcategoryDialogFormValues,
+): SubcategoryFormPayload {
   const dueDayNum =
-    values.due_day.trim() === '' ? null : Number.parseInt(values.due_day.trim(), 10);
+    values.due_day.trim() === ''
+      ? null
+      : Number.parseInt(values.due_day.trim(), 10);
   return {
     category_id: values.category_id,
     name: values.name.trim(),
-    description: values.description.trim() === '' ? null : values.description.trim(),
+    description:
+      values.description.trim() === '' ? null : values.description.trim(),
     belongs_to_income: values.belongs_to_income,
     is_periodic: values.is_periodic,
     due_day: values.is_periodic ? dueDayNum : null,
@@ -60,7 +68,13 @@ export function SubcategoryFormDialog({
     },
   });
 
-  const { control, handleSubmit, reset, setValue, formState: { isSubmitting } } = form;
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { isSubmitting },
+  } = form;
 
   const categoryId = useWatch({ control, name: 'category_id' });
   const { data: selectedCategory } = useCategoryQuery(categoryId || undefined, {
@@ -75,7 +89,8 @@ export function SubcategoryFormDialog({
         description: initialValues?.description ?? '',
         belongs_to_income: false,
         is_periodic: initialValues?.is_periodic ?? false,
-        due_day: initialValues?.due_day != null ? String(initialValues.due_day) : '',
+        due_day:
+          initialValues?.due_day != null ? String(initialValues.due_day) : '',
       });
     }
   }, [open, initialValues, reset]);
@@ -109,7 +124,9 @@ export function SubcategoryFormDialog({
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit subcategory' : 'Create subcategory'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? 'Edit subcategory' : 'Create subcategory'}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -185,7 +202,10 @@ export function SubcategoryFormDialog({
                         id="is-periodic"
                       />
                     </FormControl>
-                    <FormLabel htmlFor="is-periodic" className="font-normal cursor-pointer">
+                    <FormLabel
+                      htmlFor="is-periodic"
+                      className="font-normal cursor-pointer"
+                    >
                       Periodic expense
                     </FormLabel>
                   </FormItem>
@@ -206,7 +226,9 @@ export function SubcategoryFormDialog({
                         inputMode="numeric"
                         placeholder="e.g. 15"
                         onChange={(e) =>
-                          field.onChange(e.target.value.replace(/\D/g, '').slice(0, 2))
+                          field.onChange(
+                            e.target.value.replace(/\D/g, '').slice(0, 2),
+                          )
                         }
                       />
                     </FormControl>

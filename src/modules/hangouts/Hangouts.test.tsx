@@ -4,12 +4,12 @@ import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { config } from '../../config';
-import { toPaginatedRead } from '../../services/pagination';
 import { hangoutsPaths } from '../../services/hangouts/constants';
 import { hangoutMock, hangoutsMock } from '../../services/hangouts/mocks';
+import type { HangoutCreate } from '../../services/hangouts/types';
+import { toPaginatedRead } from '../../services/pagination';
 import ProviderWrapper from '../../utils/test/provider';
 import { Hangouts } from './index';
-import type { HangoutCreate } from '../../services/hangouts/types';
 
 const queryClientConfig: ConstructorParameters<typeof QueryClient>[0] = {
   defaultOptions: {

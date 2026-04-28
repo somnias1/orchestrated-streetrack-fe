@@ -11,7 +11,9 @@ describe('parsePastedRows', () => {
   });
 
   it('parses a basic row with 5 columns', () => {
-    const result = parsePastedRows('07/03/2026\t$\t130.000,00\tExpenses\tHangout');
+    const result = parsePastedRows(
+      '07/03/2026\t$\t130.000,00\tExpenses\tHangout',
+    );
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
       category_name: 'Expenses',
@@ -24,7 +26,9 @@ describe('parsePastedRows', () => {
   });
 
   it('uses 6th column as description when provided', () => {
-    const result = parsePastedRows('07/03/2026\t$\t50,00\tFood\tLunch\tTeam lunch');
+    const result = parsePastedRows(
+      '07/03/2026\t$\t50,00\tFood\tLunch\tTeam lunch',
+    );
     expect(result[0].description).toBe('Team lunch');
   });
 

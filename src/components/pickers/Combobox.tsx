@@ -1,6 +1,5 @@
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -10,7 +9,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export type ComboboxOption = {
   value: string;
@@ -61,19 +65,26 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn('w-full justify-between', !value && 'text-muted-foreground', className)}
+          className={cn(
+            'w-full justify-between',
+            !value && 'text-muted-foreground',
+            className,
+          )}
           data-testid={dataTestId}
           aria-label={ariaLabel}
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            selected?.label ?? placeholder
+            (selected?.label ?? placeholder)
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+      >
         <Command>
           <CommandInput
             placeholder={searchPlaceholder}
@@ -92,7 +103,10 @@ export function Combobox({
                   }}
                 >
                   <Check
-                    className={cn('mr-2 h-4 w-4', value === option.value ? 'opacity-100' : 'opacity-0')}
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === option.value ? 'opacity-100' : 'opacity-0',
+                    )}
                   />
                   {option.label}
                 </CommandItem>

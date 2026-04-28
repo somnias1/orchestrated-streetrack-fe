@@ -1,8 +1,9 @@
-import { Plus } from 'lucide-react';
-import type { PaginationState } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
+import type { PaginationState } from '@tanstack/react-table';
+import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   useCreateHangoutMutation,
   useDeleteHangoutMutation,
@@ -12,7 +13,6 @@ import {
 import { hangoutsQueryKey } from '../../services/hangouts/constants';
 import type { HangoutRead } from '../../services/hangouts/types';
 import { DEFAULT_LIST_LIMIT } from '../../services/types';
-import { Button } from '@/components/ui/button';
 import { DeleteHangoutDialog } from './deleteHangoutDialog';
 import { HangoutFormDialog } from './hangoutFormDialog';
 import { HangoutsTable } from './hangoutsTable';
@@ -86,7 +86,9 @@ export function Hangouts() {
     description: string | null;
   } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [hangoutToDelete, setHangoutToDelete] = useState<HangoutRead | null>(null);
+  const [hangoutToDelete, setHangoutToDelete] = useState<HangoutRead | null>(
+    null,
+  );
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const errorMessage =
@@ -120,17 +122,26 @@ export function Hangouts() {
   }, []);
 
   const handleFormSubmit = useCallback(
-    async (data: { name: string; date: string; description: string | null }) => {
+    async (data: {
+      name: string;
+      date: string;
+      description: string | null;
+    }) => {
       setSubmitError(null);
       try {
         if (editingHangoutId === null) {
           await createMutation.mutateAsync(data);
         } else {
-          await updateMutation.mutateAsync({ id: editingHangoutId, body: data });
+          await updateMutation.mutateAsync({
+            id: editingHangoutId,
+            body: data,
+          });
         }
         setFormOpen(false);
       } catch (err) {
-        setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
+        setSubmitError(
+          err instanceof Error ? err.message : 'Something went wrong',
+        );
         throw err;
       }
     },

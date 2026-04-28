@@ -31,7 +31,8 @@ import type { CategoryFormDialogProps, CategoryFormPayload } from './types';
 function toPayload(values: CategoryFormValues): CategoryFormPayload {
   return {
     name: values.name.trim(),
-    description: values.description.trim() === '' ? null : values.description.trim(),
+    description:
+      values.description.trim() === '' ? null : values.description.trim(),
     is_income: values.is_income,
   };
 }
@@ -49,7 +50,11 @@ export function CategoryFormDialog({
     defaultValues: { name: '', description: '', is_income: false },
   });
 
-  const { handleSubmit, reset, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
     if (open) {
@@ -81,10 +86,15 @@ export function CategoryFormDialog({
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit category' : 'Create category'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? 'Edit category' : 'Create category'}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={handleSubmit(onValid)} className="flex flex-col gap-4">
+          <form
+            onSubmit={handleSubmit(onValid)}
+            className="flex flex-col gap-4"
+          >
             {submitError && (
               <p className="text-sm text-destructive">{submitError}</p>
             )}
@@ -108,7 +118,11 @@ export function CategoryFormDialog({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} aria-label="Category description" />
+                    <Input
+                      {...field}
+                      value={field.value ?? ''}
+                      aria-label="Category description"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

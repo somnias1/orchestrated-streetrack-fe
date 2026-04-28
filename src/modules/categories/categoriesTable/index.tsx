@@ -8,12 +8,17 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
-import type { CategoryRead } from '../../../services/categories/types';
 import { TablePagination } from '@/components/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import type { CategoryRead } from '../../../services/categories/types';
 import type { CategoriesTableProps } from './types';
 
 const GRID_COLS = 'grid-cols-[2fr_3fr_1.2fr_1.2fr]';
@@ -147,31 +152,50 @@ export function CategoriesTable({
       <div className={`grid ${GRID_COLS} border-b border-border bg-card`}>
         {table.getHeaderGroups().flatMap((group) =>
           group.headers.map((header) => (
-            <div key={header.id} className="px-4 py-3 text-sm font-semibold text-foreground">
-              {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+            <div
+              key={header.id}
+              className="px-4 py-3 text-sm font-semibold text-foreground"
+            >
+              {header.isPlaceholder
+                ? null
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
             </div>
           )),
         )}
       </div>
 
       {/* Body */}
-      <div ref={parentRef} className="overflow-auto" style={{ minHeight: TABLE_MIN_HEIGHT, maxHeight: '67vh' }}>
+      <div
+        ref={parentRef}
+        className="overflow-auto"
+        style={{ minHeight: TABLE_MIN_HEIGHT, maxHeight: '67vh' }}
+      >
         {loading && (
-          <div role="progressbar" aria-label="Loading categories" className="p-4 space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
+          <>
+            <progress aria-label="Loading categories" className="sr-only" />
+            <div className="p-4 space-y-2">
+              {Array.from({ length: 5 }, (_, n) => n).map((n) => (
+                <Skeleton key={n} className="h-10 w-full" />
+              ))}
+            </div>
+          </>
         )}
         {!loading && error && (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <p className="text-sm text-destructive">{error}</p>
-            <Button onClick={onRetry} data-testid="retry-button">Retry</Button>
+            <Button onClick={onRetry} data-testid="retry-button">
+              Retry
+            </Button>
           </div>
         )}
         {!loading && !error && items.length === 0 && (
           <div className="flex items-center justify-center py-12">
-            <p className="text-sm text-muted-foreground">No categories found.</p>
+            <p className="text-sm text-muted-foreground">
+              No categories found.
+            </p>
           </div>
         )}
         {showVirtualBody && (
@@ -182,8 +206,6 @@ export function CategoriesTable({
               return (
                 <div
                   key={row.id}
-                  role="row"
-                  aria-label={category.name}
                   data-testid={`category-row-${category.id}`}
                   className={`absolute inset-x-0 grid ${GRID_COLS} items-center border-b border-border bg-card hover:bg-accent/30 transition-colors`}
                   style={{
@@ -192,8 +214,14 @@ export function CategoriesTable({
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <div key={cell.id} className="px-4 py-2 min-w-0 overflow-hidden text-sm text-foreground">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <div
+                      key={cell.id}
+                      className="px-4 py-2 min-w-0 overflow-hidden text-sm text-foreground"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </div>
                   ))}
                 </div>

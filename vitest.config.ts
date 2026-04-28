@@ -31,9 +31,7 @@ export default defineConfig({
         'src/tests/e2e/**',
         // shadcn-generated UI primitives — tested via integration, not unit
         'src/components/ui/**',
-        // Home dashboard — integration tests pending (task 4.6)
-        'src/modules/home/**',
-        // Theme toggle store — trivial Zustand boilerplate
+        // Theme preference store — localStorage/config-adjacent, no business logic
         'src/modules/theme/**',
         // Route constants — no logic to test
         'src/routes.ts',
@@ -47,8 +45,6 @@ export default defineConfig({
         'src/modules/transactions/importTransactionsDialog/schema.ts',
         // Barrel re-export files
         'src/components/pickers/index.ts',
-        // Layout shell — navigation/sidebar branches tested in e2e
-        'src/modules/layout/**',
       ],
       thresholds: {
         lines: 80,
