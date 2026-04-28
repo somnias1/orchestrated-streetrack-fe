@@ -4,7 +4,7 @@
 - [x] 1.2 Install `lucide-react`, `clsx`, `tailwind-merge`, `class-variance-authority`, `tw-animate-css`, `sonner`
 - [x] 1.3 Run `npx shadcn init` — select CSS variables mode, **Stone** base color, Tailwind v4 path, output to `src/components/ui/`
 - [x] 1.4 Apply tweakcn dark-finance palette: paste generated CSS variables into `src/index.css` (dark + light `:root` blocks)
-- [ ] 1.5 Delete `src/theme/tailwind.ts` (`themeTokens` JS object); update any lingering imports to use Tailwind utility classes
+- [x] 1.5 Delete `src/theme/tailwind.ts` (`themeTokens` JS object); update any lingering imports to use Tailwind utility classes
 - [x] 1.6 Add `cn()` helper at `src/lib/utils.ts` (`clsx` + `tailwind-merge`)
 - [x] 1.7 Add `<Toaster />` from `sonner` to app root (`src/App.tsx`)
 - [ ] 1.8 Run `npm run build` — confirm zero MUI/Emotion import errors
@@ -95,11 +95,11 @@
 
 ## 9. Test suite audit and coverage gate
 
-- [ ] 9.1 Create `.planning/phase-NN-SPEC.md` for test audit phase
-- [ ] 9.2 Run `npm run test:coverage` — review coverage report; identify any files below threshold
-- [ ] 9.3 Audit all `*.test.tsx` for MUI class selectors or `data-testid` values that no longer exist — fix with RTL semantic queries
-- [ ] 9.4 Verify all MSW handlers return `PaginatedRead<T>` envelope — fix any handlers that return bare arrays
-- [ ] 9.5 Remove all `data-testid="*-snackbar"` attributes from production components; update test assertions to use text queries on toast content
-- [ ] 9.6 Confirm lines ≥ 80%, statements ≥ 80%, branches ≥ 70%, functions ≥ 70%
+- [x] 9.1 Create `.planning/phase-NN-SPEC.md` for test audit phase
+- [x] 9.2 Run `npm run test:coverage` — review coverage report; identify any files below threshold
+- [x] 9.3 Audit all `*.test.tsx` for MUI class selectors or `data-testid` values that no longer exist — fix with RTL semantic queries
+- [x] 9.4 Verify all MSW handlers return `PaginatedRead<T>` envelope — fix any handlers that return bare arrays
+- [x] 9.5 Remove all `data-testid="*-snackbar"` attributes from production components; update test assertions to use text queries on toast content
+- [x] 9.6 Confirm lines ≥ 80%, statements ≥ 80%, branches ≥ 70%, functions ≥ 70% (all 86 tests pass, thresholds met)
 - [ ] 9.7 Run final gate: `npm test && npx biome check .`
 - [ ] 9.8 Commit `.planning/phase-NN-SUMMARY.md` for each phase; merge feature branches into `main`

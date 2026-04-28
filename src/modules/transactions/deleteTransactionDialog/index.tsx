@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import type { DeleteTransactionDialogProps } from './types';
 
 export function DeleteTransactionDialog({
@@ -34,23 +33,23 @@ export function DeleteTransactionDialog({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete transaction</AlertDialogTitle>
-        </AlertDialogHeader>
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Delete transaction</DialogTitle>
+        </DialogHeader>
         <p className="text-sm text-muted-foreground">
           Delete this transaction? This cannot be undone.
         </p>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleting} onClick={handleClose}>
+        <DialogFooter>
+          <Button variant="ghost" onClick={handleClose} disabled={deleting}>
             Cancel
-          </AlertDialogCancel>
+          </Button>
           <Button variant="destructive" onClick={handleConfirm} disabled={deleting}>
             {deleting ? 'Deleting…' : 'Delete'}
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
