@@ -12,10 +12,6 @@ export class TransactionsPage {
     return this.page.getByTestId('transactions-export-csv-button');
   }
 
-  get tableBody() {
-    return this.page.locator('table tbody');
-  }
-
   async openAddMenu(): Promise<void> {
     await this.addMenuButton.click();
   }
@@ -38,9 +34,9 @@ export class TransactionsPage {
     await this.page.getByRole('menuitem', { name: /import/i }).click();
   }
 
-  /** Import dialog: paste textarea. */
+  /** Import dialog: paste textarea (aria-label="Paste import data"). */
   get importPasteArea() {
-    return this.page.getByRole('textbox', { name: /paste|rows/i });
+    return this.page.getByRole('textbox', { name: /paste import data/i });
   }
 
   /** Import dialog: Preview button. */
@@ -59,14 +55,17 @@ export class TransactionsPage {
 
   /** Set the Subcategory filter by option label (first match if multiple). */
   async selectSubcategoryFilter(subcategoryName: string): Promise<void> {
-    await this.page.getByRole('combobox', { name: /subcategory/i }).click();
+    await this.page
+      .getByRole('combobox', { name: /subcategory/i })
+      .first()
+      .click();
     await this.page
       .getByRole('option', { name: new RegExp(subcategoryName, 'i') })
       .first()
       .click();
   }
 
-  /** Click Delete on the first transaction row (e.g. after filtering). Uses data-testid so we never target the empty-state row. */
+  /** Click Delete on the first transaction row. Uses data-testid so we never target the empty-state row. */
   async deleteFirstTransaction(): Promise<void> {
     await this.page
       .locator('[data-testid^="transaction-row-"]')

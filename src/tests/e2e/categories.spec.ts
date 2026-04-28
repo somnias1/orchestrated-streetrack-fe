@@ -12,24 +12,17 @@ test.describe('Categories', () => {
     await layout.expectAppShell();
     const categories = new CategoriesPage(page);
 
+    const toast = page.locator('[data-sonner-toast]');
+
     await categories.openAdd();
     const name = `E2E Category ${Date.now()}`;
     await categories.fillCategoryName(name);
     await categories.submitForm();
-    await expect(page.getByTestId('categories-snackbar')).toBeVisible({
-      timeout: 5000,
-    });
-    await expect(page.getByTestId('categories-snackbar')).toContainText(
-      'Category created',
-    );
+    await expect(toast).toContainText(/category created/i, { timeout: 5000 });
 
-    await expect(
-      page.getByRole('row', { name: new RegExp(name, 'i') }).first(),
-    ).toBeVisible();
+    await expect(categories.row(name)).toBeVisible();
     await categories.deleteButton(name).click();
     await categories.confirmDelete();
-    await expect(page.getByTestId('categories-snackbar')).toContainText(
-      'Category deleted',
-    );
+    await expect(toast).toContainText(/category deleted/i, { timeout: 5000 });
   });
 });

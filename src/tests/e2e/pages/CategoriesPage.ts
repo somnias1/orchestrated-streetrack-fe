@@ -7,37 +7,35 @@ export class CategoriesPage {
     return this.page.getByTestId('categories-add-button');
   }
 
-  get typeFilter() {
-    return this.page.getByLabel(/type|filter/i);
-  }
-
-  get tableBody() {
-    return this.page.locator('table tbody');
-  }
-
   /** Open Add Category (new). */
   async openAdd(): Promise<void> {
     await this.addButton.click();
   }
 
-  /** Get Edit button for a row by category name (first match when duplicates exist). */
-  editButton(name: string) {
+  /** Locator for a category row by name. Tables are div-grids so we use the row testid. */
+  row(name: string) {
     return this.page
-      .getByRole('row', { name: new RegExp(name, 'i') })
-      .first()
-      .getByRole('button', { name: /edit/i });
+      .locator('[data-testid^="category-row-"]')
+      .filter({ hasText: name })
+      .first();
   }
 
-  /** Get Delete button for a row by category name (first match when duplicates exist). */
+  /** Edit button for a row by category name (aria-label="Edit ${name}"). */
+  editButton(name: string) {
+    return this.page.getByRole('button', {
+      name: new RegExp(`edit ${name}`, 'i'),
+    });
+  }
+
+  /** Delete button for a row by category name (aria-label="Delete ${name}"). */
   deleteButton(name: string) {
-    return this.page
-      .getByRole('row', { name: new RegExp(name, 'i') })
-      .first()
-      .getByRole('button', { name: /delete/i });
+    return this.page.getByRole('button', {
+      name: new RegExp(`delete ${name}`, 'i'),
+    });
   }
 
   async fillCategoryName(name: string): Promise<void> {
-    await this.page.getByLabel(/name/i).fill(name);
+    await this.page.getByLabel(/category name/i).fill(name);
   }
 
   async submitForm(): Promise<void> {

@@ -340,7 +340,7 @@ export function Transactions() {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button>
+              <Button data-testid="transactions-add-button">
                 <Plus className="h-4 w-4 mr-1" />
                 Add
                 <ChevronDown className="h-4 w-4 ml-1" />

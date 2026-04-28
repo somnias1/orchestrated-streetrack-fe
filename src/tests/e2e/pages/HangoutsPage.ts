@@ -7,20 +7,16 @@ export class HangoutsPage {
     return this.page.getByTestId('hangouts-add-button');
   }
 
-  get tableBody() {
-    return this.page.locator('table tbody');
-  }
-
   async openAdd(): Promise<void> {
     await this.addButton.click();
   }
 
   async fillName(name: string): Promise<void> {
-    await this.page.getByLabel(/hangout name|^name$/i).fill(name);
+    await this.page.getByLabel(/hangout name/i).fill(name);
   }
 
   async fillDate(date: string): Promise<void> {
-    await this.page.getByLabel(/date/i).fill(date);
+    await this.page.getByLabel(/^date$/i).fill(date);
   }
 
   async submitForm(): Promise<void> {
@@ -29,12 +25,19 @@ export class HangoutsPage {
       .click();
   }
 
-  /** Get Delete button for a row by hangout name (first match when duplicates exist). */
-  deleteButton(name: string) {
+  /** Locator for a hangout row by name. */
+  row(name: string) {
     return this.page
-      .getByRole('row', { name: new RegExp(name, 'i') })
-      .first()
-      .getByRole('button', { name: /delete/i });
+      .locator('[data-testid^="hangout-row-"]')
+      .filter({ hasText: name })
+      .first();
+  }
+
+  /** Delete button for a row by hangout name (aria-label="Delete ${name}"). */
+  deleteButton(name: string) {
+    return this.page.getByRole('button', {
+      name: new RegExp(`delete ${name}`, 'i'),
+    });
   }
 
   /** Confirm delete in the open dialog (scoped to avoid matching row buttons). */

@@ -218,7 +218,7 @@ export function Subcategories() {
         <h2 className="text-lg font-semibold text-foreground">
           Subcategories{total > 0 ? ` (${total})` : ''}
         </h2>
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} data-testid="subcategories-add-button">
           <Plus className="h-4 w-4 mr-2" />
           Create subcategory
         </Button>

@@ -12,25 +12,18 @@ test.describe('Hangouts', () => {
     await layout.expectAppShell();
     const hangouts = new HangoutsPage(page);
 
+    const toast = page.locator('[data-sonner-toast]');
+
     await hangouts.openAdd();
     const name = `E2E Hangout ${Date.now()}`;
     await hangouts.fillName(name);
     await hangouts.fillDate('2026-03-15');
     await hangouts.submitForm();
-    await expect(page.getByTestId('hangouts-snackbar')).toBeVisible({
-      timeout: 5000,
-    });
-    await expect(page.getByTestId('hangouts-snackbar')).toContainText(
-      /created|saved/i,
-    );
+    await expect(toast).toContainText(/created|saved/i, { timeout: 5000 });
 
-    await expect(
-      page.getByRole('row', { name: new RegExp(name, 'i') }).first(),
-    ).toBeVisible();
+    await expect(hangouts.row(name)).toBeVisible();
     await hangouts.deleteButton(name).click();
     await hangouts.confirmDelete();
-    await expect(page.getByTestId('hangouts-snackbar')).toContainText(
-      /deleted/i,
-    );
+    await expect(toast).toContainText(/deleted/i, { timeout: 5000 });
   });
 });

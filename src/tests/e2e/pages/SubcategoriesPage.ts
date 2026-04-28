@@ -7,10 +7,6 @@ export class SubcategoriesPage {
     return this.page.getByTestId('subcategories-add-button');
   }
 
-  get tableBody() {
-    return this.page.locator('table tbody');
-  }
-
   async openAdd(): Promise<void> {
     await this.addButton.click();
   }
@@ -20,8 +16,7 @@ export class SubcategoriesPage {
   }
 
   async selectCategory(categoryName: string): Promise<void> {
-    // Click the visible combobox (not the hidden native input with data-testid)
-    await this.page.getByRole('combobox', { name: /category/i }).click();
+    await this.page.getByTestId('subcategory-form-category').click();
     await this.page
       .getByRole('option', { name: new RegExp(categoryName, 'i') })
       .first()
@@ -34,12 +29,19 @@ export class SubcategoriesPage {
       .click();
   }
 
-  /** Get Delete button for a row by subcategory name (first match when duplicates exist). */
-  deleteButton(name: string) {
+  /** Locator for a subcategory row by name. */
+  row(name: string) {
     return this.page
-      .getByRole('row', { name: new RegExp(name, 'i') })
-      .first()
-      .getByRole('button', { name: /delete/i });
+      .locator('[data-testid^="subcategory-row-"]')
+      .filter({ hasText: name })
+      .first();
+  }
+
+  /** Delete button for a row by subcategory name (aria-label="Delete ${name}"). */
+  deleteButton(name: string) {
+    return this.page.getByRole('button', {
+      name: new RegExp(`delete ${name}`, 'i'),
+    });
   }
 
   /** Confirm delete in the open dialog (scoped to avoid matching row buttons). */

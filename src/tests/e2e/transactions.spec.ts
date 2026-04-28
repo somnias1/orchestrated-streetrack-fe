@@ -51,12 +51,12 @@ test.describe('Transactions', () => {
     await layout.expectAppShell();
     const categories = new CategoriesPage(page);
 
+    const toast = page.locator('[data-sonner-toast]');
+
     await categories.openAdd();
     await categories.fillCategoryName(IMPORT_CATEGORY_NAME);
     await categories.submitForm();
-    await expect(page.getByTestId('categories-snackbar')).toContainText(
-      'Category created',
-    );
+    await expect(toast).toContainText(/category created/i, { timeout: 5000 });
 
     await layout.goToSubcategories();
     const subcategories = new SubcategoriesPage(page);
@@ -64,9 +64,7 @@ test.describe('Transactions', () => {
     await subcategories.fillName(IMPORT_SUBCATEGORY_NAME);
     await subcategories.selectCategory(IMPORT_CATEGORY_NAME);
     await subcategories.submitForm();
-    await expect(page.getByTestId('subcategories-snackbar')).toContainText(
-      /created|saved/i,
-    );
+    await expect(toast).toContainText(/created|saved/i, { timeout: 5000 });
 
     await layout.goToTransactions();
     const transactions = new TransactionsPage(page);
@@ -76,12 +74,7 @@ test.describe('Transactions', () => {
     await transactions.importPreviewButton.click();
     await expect(page.getByText(/Valid:\s*8/)).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: /create 8 transactions/i }).click();
-    await expect(page.getByTestId('transactions-snackbar')).toBeVisible({
-      timeout: 10000,
-    });
-    await expect(page.getByTestId('transactions-snackbar')).toContainText(
-      'bulk created',
-    );
+    await expect(toast).toContainText(/bulk created/i, { timeout: 10000 });
 
     // Delete all transactions under this subcategory so it can be deleted
     await page.goto(routes.transactions);
@@ -99,9 +92,7 @@ test.describe('Transactions', () => {
       if (rowCount === 0) break;
       await transactions.deleteFirstTransaction();
       await transactions.confirmDelete();
-      await expect(page.getByTestId('transactions-snackbar')).toContainText(
-        /deleted/i,
-      );
+      await expect(toast).toContainText(/deleted/i, { timeout: 5000 });
       await expect(
         page.locator('[data-testid^="transaction-row-"]'),
       ).toHaveCount(rowCount - 1, { timeout: 10000 });
@@ -110,15 +101,11 @@ test.describe('Transactions', () => {
     await layout.goToSubcategories();
     await subcategories.deleteButton(IMPORT_SUBCATEGORY_NAME).click();
     await subcategories.confirmDelete();
-    await expect(page.getByTestId('subcategories-snackbar')).toContainText(
-      /deleted/i,
-    );
+    await expect(toast).toContainText(/deleted/i, { timeout: 5000 });
 
     await layout.goToCategories();
     await categories.deleteButton(IMPORT_CATEGORY_NAME).click();
     await categories.confirmDelete();
-    await expect(page.getByTestId('categories-snackbar')).toContainText(
-      'Category deleted',
-    );
+    await expect(toast).toContainText(/category deleted/i, { timeout: 5000 });
   });
 });
