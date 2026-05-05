@@ -1,3 +1,5 @@
+console.log('callback URL', import.meta.env.VITE_AUTH0_CALLBACK_URL);
+console.log('current app url', import.meta.env.VITE_APP_URL);
 export const config = {
   apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   auth0: {
