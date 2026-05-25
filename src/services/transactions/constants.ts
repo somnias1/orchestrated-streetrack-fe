@@ -7,6 +7,6 @@ export const transactionsPaths = {
   list: transactionsPath,
   bulk: `${transactionsPath}bulk/` as const,
   get: (id: string) => `${transactionsPath}${id}/`,
-  update: (id: string) => `${transactionsPath}${id}/`,
-  delete: (id: string) => `${transactionsPath}${id}/`,
+  update: (id: string) => `${transactionsPath}${id}`,
+  delete: (id: string) => `${transactionsPath}${id}`,
 } as const;
